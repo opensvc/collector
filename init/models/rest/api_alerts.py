@@ -91,7 +91,7 @@ class rest_delete_alert(rest_delete_handler):
         q = db.dashboard.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Alert %s not found"%str(id))
+            raise HTTP(404, "Alert %s not found"%str(id))
 
         if row is None:
             raise HTTP(404, "alert %d does not exist" % alert_id)

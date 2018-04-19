@@ -39,7 +39,7 @@ class rest_post_action_queue(rest_post_handler):
 
     def handler(self, **vars):
         if 'id' not in vars:
-           raise Exception("The 'id' key must be specified")
+           raise HTTP(400, "The 'id' key must be specified")
         id = vars["id"]
         del(vars["id"])
         return rest_post_action_queue_one().handler(id, **vars)
@@ -122,7 +122,7 @@ Each action has specific property requirements:
         if action_id > 0:
             action_q_event()
         else:
-            raise Exception("Failed to enqueue action")
+            raise HTTP(500, "Failed to enqueue action")
         return rest_get_action_queue_one().handler(action_id)
 
 #

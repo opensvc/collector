@@ -24,12 +24,12 @@ class rest_post_obsolescence_setting(rest_post_handler):
         q = db.obsolescence.id == id
         setting = db(q).select().first()
         if setting is None:
-            raise Exception("Obsolecence setting %s not found"%str(id))
+            raise HTTP(404, "Obsolecence setting %s not found"%str(id))
 
         if "obs_name" in vars:
-            raise Exception("The 'obs_name' key is not allowed")
+            raise HTTP(400, "The 'obs_name' key is not allowed")
         if "obs_type" in vars:
-            raise Exception("The 'obs_name' key is not allowed")
+            raise HTTP(400, "The 'obs_name' key is not allowed")
 
         user = user_name()
 
@@ -89,7 +89,7 @@ class rest_post_obsolescence_settings(rest_post_handler):
         check_privilege("ObsManager")
 
         if "id" not in vars:
-            raise Exception("Key 'id' is mandatory")
+            raise HTTP(400, "Key 'id' is mandatory")
         id = vars.get("id")
         del(vars["id"])
 
@@ -194,7 +194,7 @@ class rest_delete_obsolescence_settings(rest_delete_handler):
 
     def handler(self, **vars):
         if not "id" in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         id = vars.get("id")
         del(vars["id"])
 

@@ -25,7 +25,6 @@ def lib_safe_check_file_responsible(uuid):
         if ok:
             return
         else:
-            #raise Exception(db(q&q1)._select())
             raise HTTP(403, "this node is not authorized to update this file")
 
     if "Manager" in user_groups():
@@ -72,7 +71,6 @@ def lib_safe_check_file_publication(uuid):
         if ok:
             return
         else:
-            #raise Exception(db(q&q1)._select())
             raise HTTP(403, "this node is not authorized to access this file")
 
     if "Manager" in user_groups():

@@ -74,13 +74,13 @@ class rest_post_disks(rest_post_handler):
 
     def handler(self, **vars):
         if "disk_id" not in vars:
-            raise Exception("The 'disk_id' key is mandatory")
+            raise HTTP(400, "The 'disk_id' key is mandatory")
         if "disk_arrayid" not in vars:
-            raise Exception("The 'disk_arrayid' key is mandatory")
+            raise HTTP(400, "The 'disk_arrayid' key is mandatory")
         manager = "Manager" in user_groups()
         proxy_node = auth.user.node_id and auth.user.node_id in array_proxies(vars["disk_arrayid"])
         if not manager and not proxy_node:
-            raise Exception("you are not allowed to use this handler")
+            raise HTTP(403, "you are not allowed to use this handler")
         db.diskinfo.update_or_insert(
             {"disk_id": vars["disk_id"]},
             **vars
@@ -112,7 +112,7 @@ class rest_delete_disks(rest_delete_handler):
 
     def handler(self, **vars):
         if "disk_id" not in vars:
-            raise Exception("The 'disk_id' key is mandatory")
+            raise HTTP(400, "The 'disk_id' key is mandatory")
         return rest_delete_disk().handler(vars["disk_id"])
 
 #
@@ -139,7 +139,7 @@ class rest_delete_disk(rest_delete_handler):
         manager = "Manager" in user_groups()
         proxy_node = hasattr(auth.user, "node_id") and auth.user.node_id in array_proxies(disk.disk_arrayid)
         if not manager and not proxy_node:
-            raise Exception("you are not allowed to use this handler")
+            raise HTTP(403, "you are not allowed to use this handler")
         db(q).delete()
         table_modified("disks")
         ws_send("disks_change")

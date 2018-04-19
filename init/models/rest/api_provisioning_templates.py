@@ -6,7 +6,7 @@ def prov_template_id(tpl_id):
         q = db.prov_templates.tpl_name == tpl_id
         t = db(q).select(db.prov_templates.id).first()
     if t is None:
-        raise Exception("provisioning template %s not found" % str(tpl_id))
+        raise HTTP(404, "provisioning template %s not found" % str(tpl_id))
     return t.id
 
 def prov_template_published(tpl_id):
@@ -14,14 +14,14 @@ def prov_template_published(tpl_id):
         return
     q = db.prov_template_team_publication.group_id.belongs(user_group_ids())
     if db(q).count() == 0:
-        raise Exception("You are not allowed to access the provisioning template %s" % str(tpl_id))
+        raise HTTP(403, "You are not allowed to access the provisioning template %s" % str(tpl_id))
 
 def prov_template_responsible(tpl_id):
     if 'Manager' in user_groups():
         return
     q = db.prov_template_team_responsible.group_id.belongs(user_group_ids())
     if db(q).count() == 0:
-        raise Exception("You are not allowed to do this operation on the provisioning template %s" % str(tpl_id))
+        raise HTTP(403, "You are not allowed to do this operation on the provisioning template %s" % str(tpl_id))
 
 def lib_provisioning_templates_add_default_team_responsible(tpl_id):
     group_id = user_default_group_id()
@@ -188,7 +188,7 @@ class rest_post_provisioning_template(rest_post_handler):
         q = db.prov_templates.id == tpl_id
         tpl = db(q).select().first()
         if tpl is None:
-            raise Exception("Provisioning template %s not found"%str(tpl_id))
+            raise HTTP(404, "Provisioning template %s not found"%str(tpl_id))
 
         tpl_id = db(q).update(**vars)
 
@@ -229,7 +229,7 @@ class rest_post_provisioning_templates(rest_post_handler):
             return rest_post_provisioning_template().handler(tpl_id, **vars)
 
         if "tpl_name" not in vars:
-            raise Exception("Key 'tpl_name' is mandatory")
+            raise HTTP(400, "Key 'tpl_name' is mandatory")
         tpl_name = vars.get("tpl_name")
 
         q = db.prov_templates.tpl_name == vars["tpl_name"]
@@ -276,7 +276,7 @@ class rest_delete_provisioning_template(rest_delete_handler):
         q = db.prov_templates.id == tpl_id
         tpl = db(q).select().first()
         if tpl is None:
-            raise Exception("Provisioning template %s not found"%str(tpl_id))
+            raise HTTP(404, "Provisioning template %s not found"%str(tpl_id))
 
         db(q).delete()
 
@@ -306,7 +306,7 @@ class rest_delete_provisioning_templates(rest_delete_handler):
 
     def handler(self, **vars):
         if not 'id' in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
 
         tpl_id = vars["id"]
         del(vars["id"])
@@ -397,12 +397,12 @@ class rest_delete_provisioning_templates_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "tpl_id" in vars:
-            raise Exception("The 'tpl_id' key is mandatory")
+            raise HTTP(400, "The 'tpl_id' key is mandatory")
         tpl_id = vars.get("tpl_id")
         del(vars["tpl_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -436,7 +436,7 @@ class rest_post_provisioning_template_responsible(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Provisioning template %(tpl_id)s responsibility to group %(group_id)s added"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
@@ -476,12 +476,12 @@ class rest_post_provisioning_templates_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "tpl_id" in vars:
-            raise Exception("The 'tpl_id' key is mandatory")
+            raise HTTP(400, "The 'tpl_id' key is mandatory")
         tpl_id = vars.get("tpl_id")
         del(vars["tpl_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -573,12 +573,12 @@ class rest_delete_provisioning_templates_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "tpl_id" in vars:
-            raise Exception("The 'tpl_id' key is mandatory")
+            raise HTTP(400, "The 'tpl_id' key is mandatory")
         tpl_id = vars.get("tpl_id")
         del(vars["tpl_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -612,7 +612,7 @@ class rest_post_provisioning_template_publication(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Provisioning template %(tpl_id)s publication to group %(group_id)s added"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
@@ -652,12 +652,12 @@ class rest_post_provisioning_templates_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "tpl_id" in vars:
-            raise Exception("The 'tpl_id' key is mandatory")
+            raise HTTP(400, "The 'tpl_id' key is mandatory")
         tpl_id = vars.get("tpl_id")
         del(vars["tpl_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 

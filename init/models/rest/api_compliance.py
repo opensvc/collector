@@ -173,7 +173,7 @@ class rest_delete_compliance_status_runs(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         id = vars["id"]
         del(vars["id"])
         return rest_delete_compliance_status_run().handler(id, **vars)
@@ -621,7 +621,7 @@ class rest_get_compliance_ruleset_usage(rest_get_handler):
         rset = db(q).select(db.comp_rulesets.ALL).first()
 
         if rset is None:
-            raise Exception("ruleset not found or not visible to your groups")
+            raise HTTP(404, "ruleset not found or not visible to your groups")
 
         data = {}
 
@@ -1092,7 +1092,7 @@ class rest_post_compliance_ruleset_variable(rest_post_handler):
             qe = db.comp_rulesets_variables.ruleset_id == ruleset_id
             qe &= db.comp_rulesets_variables.var_name == vars["var_name"]
             if db(qe).count() > 0:
-                raise Exception("'var_name' already exist in the same ruleset")
+                raise HTTP(409, "'var_name' already exist in the same ruleset")
         vars["var_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         vars["var_author"] = user_name()
         vars["ruleset_id"] = ruleset_id
@@ -1134,7 +1134,7 @@ class rest_post_compliance_rulesets_variables(rest_post_handler):
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
             del(vars["ruleset_name"])
         else:
-            raise Exception("The 'ruleset_id' or 'ruleset_name' is mandatory")
+            raise HTTP(400, "The 'ruleset_id' or 'ruleset_name' is mandatory")
         return rest_post_compliance_ruleset_variables().handler(ruleset_id, **vars)
 
 #
@@ -2393,13 +2393,13 @@ class rest_post_compliance_modulesets_nodes(rest_post_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("'node_id' must be specified")
+            raise HTTP(400, "'node_id' must be specified")
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
         elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
         else:
-            raise Exception("Either 'modset_id' or 'modset_name' must be specified")
+            raise HTTP(400, "Either 'modset_id' or 'modset_name' must be specified")
         return rest_post_node_compliance_moduleset().handler(vars["node_id"], modset_id)
 
 class rest_post_compliance_rulesets_nodes(rest_post_handler):
@@ -2419,13 +2419,13 @@ class rest_post_compliance_rulesets_nodes(rest_post_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("'node_id' must be specified")
+            raise HTTP(400, "'node_id' must be specified")
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
         elif "ruleset_name" in vars:
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
         else:
-            raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
+            raise HTTP(400, "Either 'ruleset_id' or 'ruleset_name' must be specified")
         return rest_post_node_compliance_ruleset().handler(vars["node_id"], ruleset_id)
 
 class rest_post_compliance_modulesets_services(rest_post_handler):
@@ -2445,7 +2445,7 @@ class rest_post_compliance_modulesets_services(rest_post_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("'svc_id' must be specified")
+            raise HTTP(400, "'svc_id' must be specified")
         svc_id = vars["svc_id"]
         del(vars["svc_id"])
         if "modset_id" in vars:
@@ -2455,7 +2455,7 @@ class rest_post_compliance_modulesets_services(rest_post_handler):
             modset_id = comp_moduleset_id(vars["modset_name"])
             del(vars["modset_name"])
         else:
-            raise Exception("Either 'modset_id' or 'modset_name' must be specified")
+            raise HTTP(400, "Either 'modset_id' or 'modset_name' must be specified")
         return rest_post_service_compliance_moduleset().handler(svc_id, modset_id, **vars)
 
 class rest_post_compliance_rulesets_services(rest_post_handler):
@@ -2475,7 +2475,7 @@ class rest_post_compliance_rulesets_services(rest_post_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("'svc_id' must be specified")
+            raise HTTP(400, "'svc_id' must be specified")
         svc_id = vars["svc_id"]
         del(vars["svc_id"])
 
@@ -2486,7 +2486,7 @@ class rest_post_compliance_rulesets_services(rest_post_handler):
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
             del(vars["ruleset_name"])
         else:
-            raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
+            raise HTTP(400, "Either 'ruleset_id' or 'ruleset_name' must be specified")
 
         return rest_post_service_compliance_ruleset().handler(svc_id, ruleset_id, **vars)
 
@@ -2507,13 +2507,13 @@ class rest_delete_compliance_modulesets_nodes(rest_delete_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("'node_id' must be specified")
+            raise HTTP(400, "'node_id' must be specified")
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
         elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
         else:
-            raise Exception("Either 'modset_id' or 'modset_name' must be specified")
+            raise HTTP(400, "Either 'modset_id' or 'modset_name' must be specified")
         return rest_delete_node_compliance_moduleset().handler(vars["node_id"], modset_id)
 
 class rest_delete_compliance_rulesets_nodes(rest_delete_handler):
@@ -2533,13 +2533,13 @@ class rest_delete_compliance_rulesets_nodes(rest_delete_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("'node_id' must be specified")
+            raise HTTP(400, "'node_id' must be specified")
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
         elif "ruleset_name" in vars:
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
         else:
-            raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
+            raise HTTP(400, "Either 'ruleset_id' or 'ruleset_name' must be specified")
         return rest_delete_node_compliance_ruleset().handler(vars["node_id"], ruleset_id)
 
 class rest_delete_compliance_modulesets_services(rest_delete_handler):
@@ -2559,7 +2559,7 @@ class rest_delete_compliance_modulesets_services(rest_delete_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("'svc_id' must be specified")
+            raise HTTP(400, "'svc_id' must be specified")
         svc_id = vars["svc_id"]
         del(vars["svc_id"])
         if "modset_id" in vars:
@@ -2569,7 +2569,7 @@ class rest_delete_compliance_modulesets_services(rest_delete_handler):
             modset_id = comp_moduleset_id(vars["modset_name"])
             del(vars["modset_name"])
         else:
-            raise Exception("Either 'modset_id' or 'modset_name' must be specified")
+            raise HTTP(400, "Either 'modset_id' or 'modset_name' must be specified")
         return rest_delete_service_compliance_moduleset().handler(svc_id, modset_id, **vars)
 
 class rest_delete_compliance_rulesets_services(rest_delete_handler):
@@ -2589,7 +2589,7 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("'svc_id' must be specified")
+            raise HTTP(400, "'svc_id' must be specified")
         svc_id = vars["svc_id"]
         del(vars["svc_id"])
         if "ruleset_id" in vars:
@@ -2599,7 +2599,7 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
             del(vars["ruleset_name"])
         else:
-            raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
+            raise HTTP(400, "Either 'ruleset_id' or 'ruleset_name' must be specified")
         return rest_delete_service_compliance_ruleset().handler(svc_id, ruleset_id, **vars)
 
 #

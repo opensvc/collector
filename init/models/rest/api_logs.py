@@ -102,7 +102,7 @@ class rest_post_logs(rest_post_handler):
 
         if "log_fmt" not in vars or vars["log_fmt"] is None or \
            len(str(vars["log_fmt"])) == 0:
-            raise Exception("empty log event discarded")
+            raise HTTP(400, "empty log event discarded")
         if "log_dict" not in vars:
             vars["log_dict"] = {}
 
@@ -125,7 +125,7 @@ class rest_post_logs(rest_post_handler):
             elif "node_id" in vars:
                 node_responsible(vars["node_id"])
         else:
-            raise Exception("unknown log sender")
+            raise HTTP(400, "unknown log sender")
 
         log_id = db.log.insert(**vars)
         ws_send('log_change', {"id": log_id})

@@ -703,7 +703,7 @@ def prepare_data(
     elif type(left) == list:
         pass
     else:
-        raise Exception("invalid 'left' parameter type: %s" % type(left))
+        raise HTTP(500, "invalid 'left' parameter type: %s" % type(left))
 
     if props is not None:
         for i, prop in enumerate(props.split(",")):
@@ -819,7 +819,7 @@ def prepare_data(
             try:
                 q &= pydal.helpers.methods.smart_query(all_cols, query)
             except Exception as e:
-                raise Exception(T("smart query error for '%(s)s': %(err)s", dict(s=str(query), err=str(e))))
+                raise HTTP(400, T("smart query error for '%(s)s': %(err)s", dict(s=str(query), err=str(e))))
         if meta:
             if count_prop:
                 try:
@@ -1001,7 +1001,7 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
         try:
             col = db[v[0]][v[1]]
         except Exception as e:
-            raise Exception("prop does not exist: %s" % str(v))
+            raise HTTP(400, "prop does not exist: %s" % str(v))
 
         if desc:
             col = ~col

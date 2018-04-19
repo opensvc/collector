@@ -562,14 +562,14 @@ class rest_get_node_root_password(rest_get_handler):
 
         node = db(db.auth_node.node_id==node_id).select().first()
         if node is None:
-            raise Exception(T("node not found"))
+            raise HTTP(404, T("node not found"))
         node_uuid = node.uuid
         sql = """select aes_decrypt(pw, "%(sec)s") from node_pw where
                  node_id="%(node_id)s"
               """ % dict(node_id=node_id, sec=node_uuid+salt)
         pwl = db.executesql(sql)
         if len(pwl) == 0:
-            raise Exception(T("This node has not reported its root password (opensvc agent feature not activated or agent too old)"))
+            raise HTTP(404, T("This node has not reported its root password (opensvc agent feature not activated or agent too old)"))
 
         _log('password.retrieve',
              'retrieved root password of node %(nodename)s',
@@ -797,7 +797,7 @@ class rest_delete_nodes(rest_delete_handler):
 
     def handler(self, **vars):
         if 'node_id' not in vars:
-            raise Exception("The 'node_id' key must be specified")
+            raise HTTP(400, "The 'node_id' key must be specified")
         node_id = vars["node_id"]
         return rest_delete_node().handler(node_id)
 
@@ -886,7 +886,7 @@ class rest_post_node(rest_post_handler):
 
         row = db(q).select().first()
         if row is None:
-            raise Exception("node %s does not exist" % node_id)
+            raise HTTP(400, "node %s does not exist" % node_id)
 
         if "node_id" in vars:
             del(vars["node_id"])
@@ -936,7 +936,7 @@ class rest_post_nodes(rest_post_handler):
 
     def handler(self, **vars):
         if 'nodename' not in vars and 'node_id' not in vars:
-            raise Exception("The 'nodename' or 'id' property must be set in the POST data")
+            raise HTTP(400, "The 'nodename' or 'id' property must be set in the POST data")
 
         try:
             _vars = {}
@@ -954,7 +954,7 @@ class rest_post_nodes(rest_post_handler):
         # create node code path
         check_privilege("NodeManager")
         if 'nodename' not in vars:
-            raise Exception("The 'nodename' property must be set in the POST data: %s" % vars)
+            raise HTTP(400, "The 'nodename' property must be set in the POST data: %s" % vars)
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()

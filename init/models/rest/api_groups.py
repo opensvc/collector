@@ -5,12 +5,12 @@ def lib_org_group(s):
         q &= db.auth_group.id.belongs(user_group_ids())
     rows = db(q).select()
     if len(rows) > 1:
-        raise Exception("Ambiguous group id: %s" % str(s))
+        raise HTTP(400, "Ambiguous group id: %s" % str(s))
     if len(rows) == 0:
-        raise Exception("Group not found: %s" % str(s))
+        raise HTTP(404, "Group not found: %s" % str(s))
     g = rows.first()
     if g.privilege:
-        raise Exception("Operation not allowed on privilege group: %s" % str(g.role))
+        raise HTTP(403, "Operation not allowed on privilege group: %s" % str(g.role))
     return g
 
 #
@@ -387,7 +387,7 @@ class rest_post_group(rest_post_handler):
         if row is None:
             return dict(error="Group %s does not exist" % str(id))
         if row.role == "Everybody":
-            raise Exception("The 'Everybody' group is immutable")
+            raise HTTP(400, "The 'Everybody' group is immutable")
         if "id" in vars.keys():
             del(vars["id"])
         db(q).update(**vars)
@@ -427,7 +427,7 @@ class rest_delete_groups(rest_delete_handler):
         elif "role" in vars:
             group_id = vars["role"]
         else:
-            raise Exception("Either the 'id' or the 'role' key is mandatory")
+            raise HTTP(400, "Either the 'id' or the 'role' key is mandatory")
         return rest_delete_group().handler(group_id)
 
 #
@@ -470,7 +470,7 @@ class rest_delete_group(rest_delete_handler):
             return dict(info="Group %s does not exists" % str(id))
 
         if row.role == "Everybody":
-            raise Exception("The 'Everybody' group is immutable")
+            raise HTTP(400, "The 'Everybody' group is immutable")
 
         # group
         db(q).delete()
@@ -589,7 +589,7 @@ class rest_get_group_hidden_menu_entries(rest_get_table_handler):
             return dict(info="Group %s does not exists" % str(group_id))
 
         if group.privilege:
-            raise Exception("Can not set hidden menu entries for privilege groups")
+            raise HTTP(400, "Can not set hidden menu entries for privilege groups")
 
         q = db.group_hidden_menu_entries.group_id == group_id
         try:
@@ -623,11 +623,11 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
         check_privilege("GroupManager")
 
         if "menu_entry" not in vars:
-            raise Exception("'menu_entry' key must be set")
+            raise HTTP(400, "'menu_entry' key must be set")
         menu_entry = vars["menu_entry"]
 
         if menu_entry not in menu_entries:
-            raise Exception("invalid menu entry %s" % menu_entry)
+            raise HTTP(400, "invalid menu entry %s" % menu_entry)
 
         try:
             group_id = int(group_id)
@@ -645,10 +645,10 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
             return dict(info="Group %s does not exists" % str(group_id))
 
         if "Manager" not in user_groups() and row.role == "Everybody":
-            raise Exception("The 'Everybody' group is immutable")
+            raise HTTP(400, "The 'Everybody' group is immutable")
 
         if group.privilege:
-            raise Exception("Can not set hidden menu entries for privilege groups")
+            raise HTTP(400, "Can not set hidden menu entries for privilege groups")
 
         q = db.group_hidden_menu_entries.group_id == group.id
         q &= db.group_hidden_menu_entries.menu_entry == menu_entry
@@ -686,7 +686,7 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
         check_privilege("GroupManager")
 
         if "menu_entry" not in vars:
-            raise Exception("'menu_entry' key must be set")
+            raise HTTP(400, "'menu_entry' key must be set")
         menu_entry = vars["menu_entry"]
 
         try:
@@ -705,10 +705,10 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
             return dict(info="Group %s does not exists" % str(group_id))
 
         if "Manager" not in user_groups() and row.role == "Everybody":
-            raise Exception("The 'Everybody' group is immutable")
+            raise HTTP(400, "The 'Everybody' group is immutable")
 
         if group.privilege:
-            raise Exception("Can not set hidden menu entries for privilege groups")
+            raise HTTP(400, "Can not set hidden menu entries for privilege groups")
 
         q = db.group_hidden_menu_entries.group_id == group.id
         q &= db.group_hidden_menu_entries.menu_entry == menu_entry

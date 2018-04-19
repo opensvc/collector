@@ -60,7 +60,7 @@ def comp_get_fset_data():
 
     def recurse_fset(_data, depth=0):
         if depth > 10:
-            raise Exception("filterset recursion limit")
+            raise HTTP(500, "filterset recursion limit")
         for i, __data in enumerate(_data):
             if __data['type'] != 'filterset':
                 continue

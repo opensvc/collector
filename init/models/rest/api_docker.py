@@ -4,7 +4,7 @@ def docker_registry_responsible(id):
     q = db.docker_registries_responsibles.registry_id == id
     q &= db.docker_registries_responsibles.group_id.belongs(user_group_ids())
     if db(q).count == 0:
-        raise Exception("You are not responsible for this registry")
+        raise HTTP(403, "You are not responsible for this registry")
 
 def docker_registry_responsible(id):
     if "Manager" in user_groups():
@@ -14,7 +14,7 @@ def docker_registry_responsible(id):
     q &= db.docker_registries_responsibles.group_id.belongs(user_group_ids())
     registry = db(q).select(db.docker_registries.id).first()
     if registry is None:
-        raise Exception("Registry %s not found or you are not responsible" % str(id))
+        raise HTTP(404, "Registry %s not found or you are not responsible" % str(id))
 
 def docker_registry_published(id):
     if "Manager" in user_groups():
@@ -24,7 +24,7 @@ def docker_registry_published(id):
     q &= db.docker_registries_publications.group_id.belongs(user_group_ids())
     registry = db(q).select(db.docker_registries.id).first()
     if registry is None:
-        raise Exception("Registry %s not found or not published to you" % str(id))
+        raise HTTP(404, "Registry %s not found or not published to you" % str(id))
 
 class rest_get_docker_repositories(rest_get_table_handler):
     def __init__(self):
@@ -578,12 +578,12 @@ class rest_delete_docker_registries_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "registry_id" in vars:
-            raise Exception("The 'registry_id' key is mandatory")
+            raise HTTP(400, "The 'registry_id' key is mandatory")
         registry_id = vars.get("registry_id")
         del(vars["registry_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -650,12 +650,12 @@ class rest_post_docker_registries_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "registry_id" in vars:
-            raise Exception("The 'registry_id' key is mandatory")
+            raise HTTP(400, "The 'registry_id' key is mandatory")
         registry_id = vars.get("registry_id")
         del(vars["registry_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -748,12 +748,12 @@ class rest_delete_docker_registries_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "registry_id" in vars:
-            raise Exception("The 'registry_id' key is mandatory")
+            raise HTTP(400, "The 'registry_id' key is mandatory")
         registry_id = vars.get("registry_id")
         del(vars["registry_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -820,12 +820,12 @@ class rest_post_docker_registries_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "registry_id" in vars:
-            raise Exception("The 'registry_id' key is mandatory")
+            raise HTTP(400, "The 'registry_id' key is mandatory")
         registry_id = vars.get("registry_id")
         del(vars["registry_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -885,7 +885,7 @@ class rest_post_docker_registries(rest_post_handler):
 
         check_privilege("DockerRegistriesManager")
         if len(vars) == 0 or "service" not in vars:
-            raise Exception("'service' is mandatory in post data")
+            raise HTTP(400, "'service' is mandatory in post data")
         q = db.docker_registries.id > 0
         for v in vars:
             q &= db.docker_registries[v] == vars[v]
@@ -940,7 +940,7 @@ class rest_post_docker_registry(rest_post_handler):
         q = db.docker_registries.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("registry %s does not exist" % str(id))
+            raise HTTP(404, "registry %s does not exist" % str(id))
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
         table_modified("docker_registries")
@@ -980,11 +980,11 @@ class rest_post_docker_repository(rest_post_handler):
         q = db.docker_repositories.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("repository '%s' does not exist" % str(id))
+            raise HTTP(404, "repository '%s' does not exist" % str(id))
         q &= docker_repositories_acls_query(action="push")
         row = db(q).select().first()
         if row is None:
-            raise Exception("you not allowed to modify repository '%s'" % str(id))
+            raise HTTP(403, "you not allowed to modify repository '%s'" % str(id))
         if "id" in vars:
             del(vars["id"])
         if "repository" in vars:
@@ -1031,7 +1031,7 @@ class rest_delete_docker_registries(rest_delete_handler):
         elif "service" in vars:
             registry_id = vars["service"]
         else:
-            raise Exception("Either the 'id' or 'service' key is mandatory")
+            raise HTTP(400, "Either the 'id' or 'service' key is mandatory")
         return rest_delete_docker_registry().handler(registry_id)
 
 #
@@ -1118,7 +1118,7 @@ class rest_delete_docker_tags(rest_delete_handler):
         if "id" in vars:
             tag_id = vars["id"]
         else:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         return rest_delete_docker_tag().handler(tag_id)
 
 #
@@ -1170,7 +1170,7 @@ class rest_delete_docker_tag(rest_delete_handler):
         q = db.docker_tags.id == int(id)
         tag = db(q).select().first()
         if tag is None:
-            raise Exception("tag '%s' does not exist" % str(id))
+            raise HTTP(404, "tag '%s' does not exist" % str(id))
 
         docker_registry_responsible(tag.registry_id)
         repository = get_docker_repository(tag.repository_id)
@@ -1204,7 +1204,7 @@ class rest_delete_docker_repositories(rest_delete_handler):
         if "id" in vars:
             repository_id = vars["id"]
         else:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         return rest_delete_docker_repository().handler(repository_id)
 
 #
@@ -1233,7 +1233,7 @@ class rest_delete_docker_repository(rest_delete_handler):
         q = db.docker_repositories.id == int(id)
         repository = db(q).select().first()
         if repository is None:
-            raise Exception("repository '%s' does not exist" % str(id))
+            raise HTTP(404, "repository '%s' does not exist" % str(id))
 
         docker_registry_responsible(repository.registry_id)
 

@@ -18,13 +18,13 @@ class rest_post_register(rest_post_handler):
     def handler(self, **vars):
         nodename = vars.get("nodename")
         if nodename is None:
-            raise Exception("The 'nodename' key is mandatory")
+            raise HTTP(400, "The 'nodename' key is mandatory")
 
         app = vars.get("app")
         if app is None or app == "None":
             app = user_default_app()
         elif not app in user_apps():
-            raise Exception("You are not responsible for the '%s' app" % app)
+            raise HTTP(403, "You are not responsible for the '%s' app" % app)
 
         q = db.nodes.nodename == nodename
         q &= db.nodes.app == app
@@ -50,7 +50,7 @@ class rest_post_register(rest_post_handler):
                  dict(node=nodename),
                  node_id=node_id,
                  level="warning")
-            raise Exception("already registered")
+            raise HTTP(200, "already registered")
         import uuid
         u = str(uuid.uuid4())
         db.auth_node.insert(nodename=nodename, uuid=u, node_id=node_id)

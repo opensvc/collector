@@ -26,7 +26,7 @@ class rest_delete_report(rest_delete_handler):
         q = db.reports.id == id
         report = db(q).select().first()
         if report is None:
-            raise Exception("Report %s not found"%str(id))
+            raise HTTP(404, "Report %s not found"%str(id))
 
         report_id = db(q).delete()
 
@@ -56,7 +56,7 @@ class rest_delete_reports(rest_delete_handler):
 
     def handler(self, **vars):
         if not 'id' in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
 
         report_id = vars["id"]
         del(vars["id"])
@@ -88,7 +88,7 @@ class rest_post_reports(rest_post_handler):
             return rest_post_report().handler(report_id, **vars)
 
         if "report_name" not in vars:
-            raise Exception("Key 'report_name' is mandatory")
+            raise HTTP(400, "Key 'report_name' is mandatory")
         report_name = vars.get("report_name")
 
         #vars["report_created"] = datetime.datetime.now()
@@ -137,7 +137,7 @@ class rest_post_report(rest_post_handler):
         q = db.reports.id == id
         report = db(q).select().first()
         if report is None:
-            raise Exception("Chart %s not found"%str(id))
+            raise HTTP(404, "Chart %s not found"%str(id))
 
         db(q).update(**vars)
 
@@ -228,7 +228,7 @@ class rest_delete_reports_chart(rest_delete_handler):
         q = db.charts.id == id
         chart = db(q).select().first()
         if chart is None:
-            raise Exception("Chart %s not found"%str(id))
+            raise HTTP(404, "Chart %s not found"%str(id))
 
         chart_id = db(q).delete()
 
@@ -258,7 +258,7 @@ class rest_delete_reports_charts(rest_delete_handler):
 
     def handler(self, **vars):
         if not 'id' in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
 
         chart_id = vars["id"]
         del(vars["id"])
@@ -290,7 +290,7 @@ class rest_post_reports_charts(rest_post_handler):
             return rest_post_reports_chart().handler(chart_id, **vars)
 
         if "chart_name" not in vars:
-            raise Exception("Key 'chart_name' is mandatory")
+            raise HTTP(400, "Key 'chart_name' is mandatory")
         chart_name = vars.get("chart_name")
 
         #vars["chart_created"] = datetime.datetime.now()
@@ -346,7 +346,7 @@ class rest_post_reports_chart(rest_post_handler):
             q &= db.chart_team_publication.group_id.belongs(user_group_ids())
         chart = db(q).select().first()
         if chart is None:
-            raise Exception("Chart %s not found"%str(id))
+            raise HTTP(404, "Chart %s not found"%str(id))
 
         db(q).update(**vars)
 
@@ -434,7 +434,7 @@ class rest_delete_reports_metric(rest_delete_handler):
         q = db.metrics.id == id
         metric = db(q).select().first()
         if metric is None:
-            raise Exception("Metric %s not found"%str(id))
+            raise HTTP(404, "Metric %s not found"%str(id))
 
         metric_id = db(q).delete()
 
@@ -466,7 +466,7 @@ class rest_delete_reports_metrics(rest_delete_handler):
 
     def handler(self, **vars):
         if not 'id' in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
 
         metric_id = vars["id"]
         del(vars["id"])
@@ -498,7 +498,7 @@ class rest_post_reports_metrics(rest_post_handler):
             return rest_post_reports_metric().handler(metric_id, **vars)
 
         if "metric_name" not in vars:
-            raise Exception("Key 'metric_name' is mandatory")
+            raise HTTP(400, "Key 'metric_name' is mandatory")
         metric_name = vars.get("metric_name")
 
         vars["metric_created"] = datetime.datetime.now()
@@ -549,7 +549,7 @@ class rest_post_reports_metric(rest_post_handler):
         q = db.metrics.id == id
         metric = db(q).select().first()
         if metric is None:
-            raise Exception("Metric %s not found"%str(id))
+            raise HTTP(404, "Metric %s not found"%str(id))
 
         db(q).update(**vars)
 
@@ -640,7 +640,7 @@ class rest_get_report_definition(rest_get_line_handler):
         data = db(q).select(db.reports.ALL).first()
 
         if (data == None):
-            raise Exception("no report found")
+            raise HTTP(404, "no report found")
 
         import yaml
         d = yaml.load(data.report_yaml)
@@ -706,12 +706,12 @@ class rest_get_reports_chart_samples(rest_get_handler):
         chart = db(q).select(db.charts.ALL).first()
 
         if chart is None:
-            raise Exception("chart %s not found" % str(id))
+            raise HTTP(404, "chart %s not found" % str(id))
 
         try:
             definition = yaml.load(chart.chart_yaml)
         except Exception:
-            raise Exception("chart %s definition is corrupted" % str(id))
+            raise HTTP(500, "chart %s definition is corrupted" % str(id))
 
         metric_ids = []
         data = {
@@ -1446,12 +1446,12 @@ class rest_delete_reports_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "report_id" in vars:
-            raise Exception("The 'report_id' key is mandatory")
+            raise HTTP(400, "The 'report_id' key is mandatory")
         report_id = vars.get("report_id")
         del(vars["report_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1485,7 +1485,7 @@ class rest_post_report_responsible(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Report %(report_id)s responsibility to group %(group_id)s added"
         d = dict(report_id=str(report_id), group_id=str(group_id))
@@ -1525,12 +1525,12 @@ class rest_post_reports_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "report_id" in vars:
-            raise Exception("The 'report_id' key is mandatory")
+            raise HTTP(400, "The 'report_id' key is mandatory")
         report_id = vars.get("report_id")
         del(vars["report_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1622,12 +1622,12 @@ class rest_delete_reports_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "report_id" in vars:
-            raise Exception("The 'report_id' key is mandatory")
+            raise HTTP(400, "The 'report_id' key is mandatory")
         report_id = vars.get("report_id")
         del(vars["report_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1661,7 +1661,7 @@ class rest_post_report_publication(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Report %(report_id)s publication to group %(group_id)s added"
         d = dict(report_id=str(report_id), group_id=str(group_id))
@@ -1701,12 +1701,12 @@ class rest_post_reports_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "report_id" in vars:
-            raise Exception("The 'report_id' key is mandatory")
+            raise HTTP(400, "The 'report_id' key is mandatory")
         report_id = vars.get("report_id")
         del(vars["report_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1800,12 +1800,12 @@ class rest_delete_reports_charts_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "chart_id" in vars:
-            raise Exception("The 'chart_id' key is mandatory")
+            raise HTTP(400, "The 'chart_id' key is mandatory")
         chart_id = vars.get("chart_id")
         del(vars["chart_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1839,7 +1839,7 @@ class rest_post_reports_chart_responsible(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Chart %(chart_id)s responsibility to group %(group_id)s added"
         d = dict(chart_id=str(chart_id), group_id=str(group_id))
@@ -1879,12 +1879,12 @@ class rest_post_reports_charts_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "chart_id" in vars:
-            raise Exception("The 'chart_id' key is mandatory")
+            raise HTTP(400, "The 'chart_id' key is mandatory")
         chart_id = vars.get("chart_id")
         del(vars["chart_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -1976,12 +1976,12 @@ class rest_delete_reports_charts_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "chart_id" in vars:
-            raise Exception("The 'chart_id' key is mandatory")
+            raise HTTP(400, "The 'chart_id' key is mandatory")
         chart_id = vars.get("chart_id")
         del(vars["chart_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -2015,7 +2015,7 @@ class rest_post_reports_chart_publication(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Chart %(chart_id)s publication to group %(group_id)s added"
         d = dict(chart_id=str(chart_id), group_id=str(group_id))
@@ -2055,12 +2055,12 @@ class rest_post_reports_charts_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "chart_id" in vars:
-            raise Exception("The 'chart_id' key is mandatory")
+            raise HTTP(400, "The 'chart_id' key is mandatory")
         chart_id = vars.get("chart_id")
         del(vars["chart_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -2153,12 +2153,12 @@ class rest_delete_reports_metrics_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "metric_id" in vars:
-            raise Exception("The 'metric_id' key is mandatory")
+            raise HTTP(400, "The 'metric_id' key is mandatory")
         metric_id = vars.get("metric_id")
         del(vars["metric_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -2191,7 +2191,7 @@ class rest_post_reports_metric_publication(rest_post_handler):
             q = db.auth_group.role == group_id
         group = db(q).select().first()
         if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
+            raise HTTP(404, "Group %s does not exist" % str(group_id))
 
         fmt = "Metric %(metric_id)s publication to group %(group_id)s added"
         d = dict(metric_id=str(metric_id), group_id=str(group_id))
@@ -2231,12 +2231,12 @@ class rest_post_reports_metrics_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "metric_id" in vars:
-            raise Exception("The 'metric_id' key is mandatory")
+            raise HTTP(400, "The 'metric_id' key is mandatory")
         metric_id = vars.get("metric_id")
         del(vars["metric_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 

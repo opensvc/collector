@@ -75,7 +75,7 @@ class rest_delete_check(rest_delete_handler):
         q = q_filter(q, node_field=db.checks_live.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("Check instance %s does not exist" % str(id))
+            raise HTTP(404, "Check instance %s does not exist" % str(id))
         node_responsible(node_id=row.node_id)
 
         db(q).delete()
@@ -123,7 +123,7 @@ class rest_delete_checks(rest_delete_handler):
             q &= db.checks_live.chk_instance == vars["chk_instance"]
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+            raise HTTP(400, "id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
         if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_live.svc_id == svc_id
@@ -131,7 +131,7 @@ class rest_delete_checks(rest_delete_handler):
         q = q_filter(q, node_field=db.checks_live.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("check instance %s does not exist" % s)
+            raise HTTP(404, "check instance %s does not exist" % s)
         return rest_delete_check().handler(row.id)
 
 
@@ -203,7 +203,7 @@ class rest_delete_checks_default(rest_delete_handler):
         q = db.checks_defaults.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Check instance defaults %s does not exist" % str(id))
+            raise HTTP(404, "Check instance defaults %s does not exist" % str(id))
 
         db(q).delete()
 
@@ -241,7 +241,7 @@ class rest_delete_checks_defaults(rest_delete_handler):
     def handler(self, **vars):
         check_privilege("CheckManager")
         if 'id' not in vars:
-            raise Exception("id key must be specified")
+            raise HTTP(400, "id key must be specified")
         return rest_delete_checks_default().handler(vars["id"])
 
 #
@@ -269,7 +269,7 @@ class rest_post_checks_default(rest_post_handler):
         q = db.checks_defaults.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Check instance defaults %s does not exist" % str(id))
+            raise HTTP(404, "Check instance defaults %s does not exist" % str(id))
 
         if "id" in vars:
             del vars["id"]
@@ -313,7 +313,7 @@ class rest_post_checks_defaults(rest_post_handler):
         if 'id' not in vars:
             check_privilege("CheckManager")
             if not "chk_type" in vars:
-                raise Exception("chk_type must be specified")
+                raise HTTP(400, "chk_type must be specified")
 
             id = db.checks_defaults.insert(**vars)
             fmt = 'add check instance defaults %(data)s'
@@ -406,7 +406,7 @@ class rest_delete_checks_setting(rest_delete_handler):
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("Check instance settings %s does not exist" % str(id))
+            raise HTTP(404, "Check instance settings %s does not exist" % str(id))
         node_responsible(node_id=row.node_id)
 
         db(q).delete()
@@ -461,7 +461,7 @@ class rest_delete_checks_settings(rest_delete_handler):
             q &= db.checks_settings.chk_instance == vars["chk_instance"]
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+            raise HTTP(400, "id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
         if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_settings.svc_id == svc_id
@@ -469,7 +469,7 @@ class rest_delete_checks_settings(rest_delete_handler):
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("check instance settings %s does not exist" % s)
+            raise HTTP(404, "check instance settings %s does not exist" % s)
         return rest_delete_checks_setting().handler(row.id)
 
 #
@@ -499,7 +499,7 @@ class rest_post_checks_setting(rest_post_handler):
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("Check instance settings %s does not exist" % str(id))
+            raise HTTP(404, "Check instance settings %s does not exist" % str(id))
         node_responsible(node_id=row.node_id)
 
         data = {}
@@ -569,7 +569,7 @@ class rest_post_checks_settings(rest_post_handler):
             q &= db.checks_settings.chk_instance == vars["chk_instance"]
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+            raise HTTP(400, "id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
         if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_settings.svc_id == svc_id
@@ -579,7 +579,7 @@ class rest_post_checks_settings(rest_post_handler):
         row = db(q).select().first()
         if row is None:
             if not "node_id" in vars or not "chk_type" in vars or not "chk_instance" in vars:
-                raise Exception("node_id+chk_type+chk_instance[+svc_id] must be specified")
+                raise HTTP(400, "node_id+chk_type+chk_instance[+svc_id] must be specified")
             check_privilege("CheckManager")
             node_id = get_node_id(vars["node_id"])
             node_responsible(node_id=node_id)
@@ -593,7 +593,7 @@ class rest_post_checks_settings(rest_post_handler):
             rows = db(q).select()
             row = rows.first()
             if row is None:
-                raise Exception("check instance not found")
+                raise HTTP(404, "check instance not found")
 
             if "chk_low" not in vars:
                 vars["chk_low"] = row.chk_low
@@ -688,7 +688,7 @@ class rest_delete_checks_contextual_setting(rest_delete_handler):
         q = db.v_gen_filterset_check_threshold.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Checks contextual settings %s does not exist" % str(id))
+            raise HTTP(404, "Checks contextual settings %s does not exist" % str(id))
 
         q = db.gen_filterset_check_threshold.id == id
         db(q).delete()
@@ -723,7 +723,7 @@ class rest_delete_checks_contextual_settings(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory.")
+            raise HTTP(400, "The 'id' key is mandatory.")
         return rest_delete_checks_contextual_setting().handler(vars["id"])
 
 
@@ -752,7 +752,7 @@ class rest_post_checks_contextual_setting(rest_post_handler):
         q = db.gen_filterset_check_threshold.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Contextual setting %s not found" % str(id))
+            raise HTTP(404, "Contextual setting %s not found" % str(id))
 
         db(q).update(**vars)
         _log('check.contextual_settings.change',
@@ -797,11 +797,11 @@ class rest_post_checks_contextual_settings(rest_post_handler):
             q &= db.gen_filterset_check_threshold.chk_instance == vars["chk_instance"]
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], str(vars["fset_id"]))
         else:
-            raise Exception("id key or fset_id+chk_type+chk_instance must be specified")
+            raise HTTP(400, "id key or fset_id+chk_type+chk_instance must be specified")
         row = db(q).select().first()
         if row is None:
             if not "fset_id" in vars or not "chk_type" in vars or not "chk_instance" in vars or not "chk_low" in vars or not "chk_high" in vars:
-                raise Exception("fset_id+chk_type+chk_instance+chk_low+chk_high must be specified")
+                raise HTTP(400, "fset_id+chk_type+chk_instance+chk_low+chk_high must be specified")
 
             check_privilege("ContextCheckManager")
             id = db.gen_filterset_check_threshold.insert(**vars)

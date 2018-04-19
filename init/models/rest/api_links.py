@@ -66,7 +66,7 @@ class rest_post_link(rest_post_handler):
 
     def handler(self, **vars):
         if 'fn' not in vars:
-            raise Exception("the fn property is mandatory")
+            raise HTTP(400, "the fn property is mandatory")
         fn = vars['fn']
 
         param = vars.get("param")

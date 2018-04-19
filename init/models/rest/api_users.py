@@ -139,7 +139,7 @@ class rest_post_user_prefs(rest_post_handler):
         q &= user_id_q(id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("Not authorized")
+            raise HTTP(403, "Not authorized")
         prefs = json.dumps(vars["data"])
         db.user_prefs.update_or_insert(
             {"user_id": row.id},
@@ -359,7 +359,7 @@ class rest_post_users(rest_post_handler):
         elif "username" in vars:
             q &= db.auth_user.username == vars["username"]
         else:
-            raise Exception("email or username are mandatory")
+            raise HTTP(400, "email or username are mandatory")
         user = db(q).select().first()
         if user is not None:
             return rest_post_user().handler(user.id, **vars)
@@ -450,7 +450,7 @@ class rest_post_user(rest_post_handler):
                 del(vars["quota_org_group"])
 
         if "username" in vars and not login_form_username:
-            raise Exception(T("The 'username' property is updatable only with a collector setup for ldap authentication"))
+            raise HTTP(400, T("The 'username' property is updatable only with a collector setup for ldap authentication"))
 
         if "email" in vars and row.email == vars["email"]:
             # avoid the IS_IN_DB raising an undue error
@@ -501,7 +501,7 @@ class rest_delete_users(rest_delete_handler):
             user_id = vars["email"]
             del(vars["email"])
         else:
-            raise Exception("Either the 'id' or 'email' key is mandatory")
+            raise HTTP(400, "Either the 'id' or 'email' key is mandatory")
         return rest_delete_user().handler(user_id, **vars)
 
 #
@@ -647,9 +647,9 @@ class rest_post_users_groups(rest_post_handler):
 
     def handler(self, **vars):
         if "user_id" not in vars:
-            raise Exception("The 'user_id' key is mandatory")
+            raise HTTP(400, "The 'user_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_post_user_group().handler(vars["user_id"], vars["group_id"])
 
 #
@@ -673,9 +673,9 @@ class rest_delete_users_groups(rest_delete_handler):
 
     def handler(self, **vars):
         if "user_id" not in vars:
-            raise Exception("The 'user_id' key is mandatory")
+            raise HTTP(400, "The 'user_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_delete_user_group().handler(vars["user_id"], vars["group_id"])
 
 #

@@ -74,7 +74,7 @@ class rest_delete_ips(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         id = vars["id"]
         del(vars["id"])
         return rest_delete_ip().handler(id, **vars)
@@ -102,7 +102,7 @@ class rest_delete_ip(rest_delete_handler):
         q = q_filter(q, node_field=db.node_ip.node_id)
         row = db(q).select().first()
         if row is None:
-            raise Exception("ip %s not found" % str(id))
+            raise HTTP(404, "ip %s not found" % str(id))
         node = db(db.nodes.node_id==row.node_id).select().first()
         if node:
             # don't check privs if the node does not exist

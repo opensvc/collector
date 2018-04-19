@@ -107,7 +107,7 @@ class rest_get_filterset_usage(rest_get_handler):
             q = db.gen_filtersets.fset_name == id
         fset = db(q).select().first()
         if fset is None:
-            raise Exception("fset %s does not exist" % str(id))
+            raise HTTP(404, "fset %s does not exist" % str(id))
         data = {}
 
         #
@@ -322,7 +322,7 @@ class rest_delete_filtersets(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         fset_id = vars["id"]
         del(vars["id"])
         return rest_delete_filterset().handler(fset_id, **vars)
@@ -406,9 +406,9 @@ class rest_delete_filtersets_filters(rest_delete_handler):
 
     def handler(self, **vars):
         if not "fset_id" in vars:
-            raise Exception("The 'fset_id' key is mandatory")
+            raise HTTP(400, "The 'fset_id' key is mandatory")
         if not "f_id" in vars:
-            raise Exception("The 'f_id' key is mandatory")
+            raise HTTP(400, "The 'f_id' key is mandatory")
         fset_id = vars["fset_id"]
         del(vars["fset_id"])
         f_id = vars["f_id"]
@@ -434,9 +434,9 @@ class rest_post_filtersets_filters(rest_post_handler):
 
     def handler(self, **vars):
         if not "fset_id" in vars:
-            raise Exception("The 'fset_id' key is mandatory")
+            raise HTTP(400, "The 'fset_id' key is mandatory")
         if not "f_id" in vars:
-            raise Exception("The 'f_id' key is mandatory")
+            raise HTTP(400, "The 'f_id' key is mandatory")
         fset_id = vars["fset_id"]
         del(vars["fset_id"])
         f_id = vars["f_id"]
@@ -462,9 +462,9 @@ class rest_delete_filtersets_filtersets(rest_delete_handler):
 
     def handler(self, **vars):
         if not "parent_fset_id" in vars:
-            raise Exception("The 'parent_fset_id' key is mandatory")
+            raise HTTP(400, "The 'parent_fset_id' key is mandatory")
         if not "child_fset_id" in vars:
-            raise Exception("The 'child_fset_id' key is mandatory")
+            raise HTTP(400, "The 'child_fset_id' key is mandatory")
         parent_fset_id = vars["parent_fset_id"]
         del(vars["parent_fset_id"])
         child_fset_id = vars["child_fset_id"]
@@ -490,9 +490,9 @@ class rest_post_filtersets_filtersets(rest_post_handler):
 
     def handler(self, **vars):
         if not "parent_fset_id" in vars:
-            raise Exception("The 'parent_fset_id' key is mandatory")
+            raise HTTP(400, "The 'parent_fset_id' key is mandatory")
         if not "child_fset_id" in vars:
-            raise Exception("The 'child_fset_id' key is mandatory")
+            raise HTTP(400, "The 'child_fset_id' key is mandatory")
         parent_fset_id = vars["parent_fset_id"]
         del(vars["parent_fset_id"])
         child_fset_id = vars["child_fset_id"]
@@ -640,7 +640,7 @@ class rest_delete_filters(rest_delete_handler):
 
     def handler(self, **vars):
         if not "id" in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         id = vars["id"]
         del(vars["id"])
         return rest_delete_filter().handler(id, **vars)

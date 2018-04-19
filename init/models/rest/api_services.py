@@ -46,7 +46,7 @@ class rest_get_service(rest_get_line_handler):
         q = db.services.svc_id == svc_id
         if auth_is_node():
             if not common_responsible(svc_id=svc_id, node_id=auth.user.node_id):
-                raise Exception("the node and service must have a common responsible")
+                raise HTTP(403, "the node and service must have a common responsible")
         else:
             q = q_filter(q, app_field=db.services.svc_app)
         self.set_q(q)
@@ -105,7 +105,7 @@ class rest_post_service(rest_post_handler):
         q = db.services.svc_id == svc_id
         svc = db(q).select().first()
         if svc is None:
-            raise Exception("Service %s not found"%str(id))
+            raise HTTP(404, "Service %s not found"%str(id))
 
         vars["updated"] = datetime.datetime.now()
         if "svc_app" in vars and (
@@ -152,7 +152,7 @@ class rest_post_services(rest_post_handler):
             elif "svcname" in vars:
                 svc_id = get_svc_id(vars.get("svcname"))
             else:
-                raise Exception("Either the 'svc_id' or 'svcname' key is mandatory")
+                raise HTTP(400, "Either the 'svc_id' or 'svcname' key is mandatory")
             q = db.services.svc_id == svc_id
             svc = db(q).select().first()
             if svc is not None:
@@ -207,7 +207,7 @@ class rest_delete_service(rest_delete_handler):
         q = q_filter(q, app_field=db.services.svc_app)
         row = db(q).select(db.services.svc_id).first()
         if row is None:
-            raise Exception("service %s does not exist" % svc_id)
+            raise HTTP(404, "service %s does not exist" % svc_id)
         svc_responsible(row.svc_id)
         svcname = get_svcname(svc_id)
 
@@ -275,12 +275,12 @@ class rest_delete_services(rest_delete_handler):
             s = vars["svc_id"]
             q = db.services.svc_id == s
         if q is None:
-            raise Exception("The 'svc_id' key must be specified")
+            raise HTTP(400, "The 'svc_id' key must be specified")
         q = q_filter(q, app_field=db.services.svc_app)
         row = db(q).select(db.services.svc_id).first()
         if row is None:
             svcname = get_svcname(row.svc_id)
-            raise Exception("service %s does not exist" % s)
+            raise HTTP(404, "service %s does not exist" % s)
         return rest_delete_service().handler(row.svc_id)
 
 
@@ -360,7 +360,7 @@ class rest_delete_service_instance(rest_delete_handler):
         q = q_filter(q, svc_field=db.svcmon.svc_id)
         row = db(q).select(db.svcmon.id, db.svcmon.svc_id, db.svcmon.node_id).first()
         if row is None:
-            raise Exception("service instance %s does not exist" % str(id))
+            raise HTTP(404, "service instance %s does not exist" % str(id))
 
         nodename = get_nodename(row.node_id)
         svcname = get_svcname(row.svc_id)
@@ -432,11 +432,11 @@ class rest_delete_services_instances(rest_delete_handler):
             s = vars["id"]
             q = db.svcmon.id == vars["id"]
         if q is None:
-            raise Exception("'svc_id+node_id' or 'id' keys must be specified")
+            raise HTTP(400, "'svc_id+node_id' or 'id' keys must be specified")
         q = q_filter(q, svc_field=db.svcmon.svc_id)
         svc = db(q).select(db.svcmon.id).first()
         if svc is None:
-            raise Exception("service instance %s does not exist" % s)
+            raise HTTP(404, "service instance %s does not exist" % s)
         return rest_delete_service_instance().handler(svc.id)
 
 
@@ -1205,26 +1205,26 @@ class rest_put_service_disks(rest_put_handler):
         svc_id = get_svc_id(svc_id)
         svc_responsible(svc_id)
         if "action" not in vars:
-            raise Exception("The 'action' parameter is mandatory")
+            raise HTTP(400, "The 'action' parameter is mandatory")
         action = vars["action"]
         if action == "unprovision":
             if "disk_id" not in vars:
-                raise Exception("The 'disk_id' parameter is mandatory")
+                raise HTTP(400, "The 'disk_id' parameter is mandatory")
             disk_id = vars["disk_id"]
             q = db.forms.form_name == "storage.array.disk.del"
             form = db(q).select().first()
             if form is None:
-                raise Exception("The 'storage.array.disk.del' form is not defined")
+                raise HTTP(500, "The 'storage.array.disk.del' form is not defined")
             q = db.diskinfo.disk_id == disk_id
             q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
             disk = db(q).select().first()
             if disk is None:
-                raise Exception("disk %s not found" % disk_id)
+                raise HTTP(404, "disk %s not found" % disk_id)
             q &= db.diskinfo.disk_id == db.svcdisks.disk_id
             q &= db.svcdisks.svc_id == svc_id
             disk = db(q).select().first()
             if disk is None:
-                raise Exception("service %s is not responsible of disk %s" % (svc_id, disk_id))
+                raise HTTP(403, "service %s is not responsible of disk %s" % (svc_id, disk_id))
             form_data = {
                 "array_id": disk.stor_array.id,
                 "disk_id": disk.diskinfo.disk_id,
@@ -1233,30 +1233,30 @@ class rest_put_service_disks(rest_put_handler):
             }
         elif action == "provision":
             if "size" not in vars:
-                raise Exception("The 'size' parameter is mandatory")
+                raise HTTP(400, "The 'size' parameter is mandatory")
             if "array_name" not in vars:
-                raise Exception("The 'array_name' parameter is mandatory")
+                raise HTTP(400, "The 'array_name' parameter is mandatory")
             if "diskgroup" not in vars:
-                raise Exception("The 'diskgroup' parameter is mandatory")
+                raise HTTP(400, "The 'diskgroup' parameter is mandatory")
             size = vars["size"]
             q = db.forms.form_name == "storage.svc.disk.add"
             form = db(q).select().first()
             if form is None:
-                raise Exception("The 'storage.array.disk.del' form is not defined")
+                raise HTTP(500, "The 'storage.array.disk.del' form is not defined")
             q = db.stor_array_dg.dg_name == vars["diskgroup"]
             q &= db.stor_array_dg.array_id == db.stor_array.id
             q &= db.stor_array.array_name == vars["array_name"]
             row = db(q).select().first()
             if row is None:
-                raise Exception("array diskgroup not found")
+                raise HTTP(404, "array diskgroup not found")
             q = db.services.svc_id == svc_id
             svc = db(q).select(db.services.svcname,db.services.svc_app).first()
             if svc is None:
-                raise Exception("service not found")
+                raise HTTP(404, "service not found")
             q = db.apps.app == svc.svc_app
             app = db(q).select(db.apps.id,db.apps.app).first()
             if app is None:
-                raise Exception("service app not found")
+                raise HTTP(404, "service app not found")
             form_data = {
                 "size": size,
                 "svcname": svc.svcname,

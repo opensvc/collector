@@ -74,7 +74,7 @@ def lib_docker_repository_id(id):
         row = db(q).select().first()
         if row is not None:
             return row.id
-    raise Exception("docker repository '%s' does not exist" % str(id))
+    raise HTTP(404, "docker repository '%s' does not exist" % str(id))
 
 def lib_docker_registry_id(id):
     try:
@@ -85,7 +85,7 @@ def lib_docker_registry_id(id):
         row = db(q).select().first()
         if row is not None:
             return row.id
-    raise Exception("docker registry '%s' does not exist" % str(id))
+    raise HTTP(404, "docker registry '%s' does not exist" % str(id))
 
 def get_docker_repository(id, acl=True):
     q = db.docker_repositories.id == int(id)
@@ -93,7 +93,7 @@ def get_docker_repository(id, acl=True):
         q &= docker_repositories_acls_query()
     r = db(q).select().first()
     if r is None:
-        raise Exception("docker repository '%s' not found" % str(id))
+        raise HTTP(404, "docker repository '%s' not found" % str(id))
     return r
 
 def get_docker_registry(id):
@@ -103,7 +103,7 @@ def get_docker_registry(id):
         q = db.docker_registries.service == id
     r = db(q).select().first()
     if r is None:
-        raise Exception("docker registry '%s' not found" % str(id))
+        raise HTTP(404, "docker registry '%s' not found" % str(id))
     return r
 
 def docker_repositories_acls_query(action="pull"):

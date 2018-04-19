@@ -10,7 +10,7 @@ def form_responsible(id):
     q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
     form = db(q).select(db.forms.id).first()
     if form is None:
-        raise Exception("Form %s not found or you are not responsible" % str(id))
+        raise HTTP(404, "Form %s not found or you are not responsible" % str(id))
 
 def form_published(id):
     if "Manager" in user_groups():
@@ -20,7 +20,7 @@ def form_published(id):
     q &= db.forms_team_publication.group_id.belongs(user_group_ids())
     form = db(q).select(db.forms.id).first()
     if form is None:
-        raise Exception("Form %s not found or not published to you" % str(id))
+        raise HTTP(404, "Form %s not found or not published to you" % str(id))
 
 def mangle_form_data(data):
     for i, row in enumerate(data):
@@ -57,7 +57,7 @@ class rest_post_form(rest_post_handler):
         q = db.forms.id == id
         form = db(q).select().first()
         if form is None:
-            raise Exception("Form %s not found"%str(id))
+            raise HTTP(404, "Form %s not found"%str(id))
 
         if "form_definition" in vars:
             try:
@@ -109,7 +109,7 @@ class rest_post_forms(rest_post_handler):
         check_privilege("FormsManager")
 
         if "form_name" not in vars:
-            raise Exception("Key 'form_name' is mandatory")
+            raise HTTP(400, "Key 'form_name' is mandatory")
         form_name = vars.get("form_name")
 
         vars["form_created"] = datetime.datetime.now()
@@ -272,12 +272,12 @@ class rest_delete_forms_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "form_id" in vars:
-            raise Exception("The 'form_id' key is mandatory")
+            raise HTTP(400, "The 'form_id' key is mandatory")
         form_id = vars.get("form_id")
         del(vars["form_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -340,12 +340,12 @@ class rest_post_forms_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "form_id" in vars:
-            raise Exception("The 'form_id' key is mandatory")
+            raise HTTP(400, "The 'form_id' key is mandatory")
         form_id = vars.get("form_id")
         del(vars["form_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -509,12 +509,12 @@ class rest_delete_forms_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "form_id" in vars:
-            raise Exception("The 'form_id' key is mandatory")
+            raise HTTP(400, "The 'form_id' key is mandatory")
         form_id = vars.get("form_id")
         del(vars["form_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -577,12 +577,12 @@ class rest_post_forms_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "form_id" in vars:
-            raise Exception("The 'form_id' key is mandatory")
+            raise HTTP(400, "The 'form_id' key is mandatory")
         form_id = vars.get("form_id")
         del(vars["form_id"])
 
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         group_id = vars.get("group_id")
         del(vars["group_id"])
 
@@ -651,12 +651,12 @@ class rest_put_form(rest_put_handler):
             form = db(q).select(db.forms.ALL, cacheable=True).first()
 
         if form is None:
-            raise Exception("the requested form does not exist or you don't have permission to use it")
+            raise HTTP(404, "the requested form does not exist or you don't have permission to use it")
 
         try:
             form_data = json.loads(data)
         except ValueError:
-            raise Exception("unparsable form data: " + str(data))
+            raise HTTP(400, "unparsable form data: " + str(data))
 
         return form_submit(form, _d=form_data, prev_wfid=prev_wfid)
 
@@ -685,7 +685,7 @@ class rest_delete_form(rest_delete_handler):
         q = db.forms.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Form %s not found"%str(id))
+            raise HTTP(404, "Form %s not found"%str(id))
 
         form_id = db(q).delete()
         table_modified("forms")
@@ -724,7 +724,7 @@ class rest_delete_forms(rest_delete_handler):
 
     def handler(self, **vars):
         if not 'id' in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
 
         form_id = vars["id"]
         del(vars["id"])
@@ -781,7 +781,7 @@ class rest_get_form_output_result(rest_get_handler):
         )
         row = db(q).select().first()
         if row is None:
-            raise Exception("results not found")
+            raise HTTP(404, "results not found")
         return json.loads(row.results)
 
 #

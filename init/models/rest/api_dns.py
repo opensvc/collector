@@ -21,7 +21,7 @@ class rest_put_dns_domain_sync(rest_put_handler):
         domain = dbdns(q).select().first()
 
         if domain is None:
-            raise Exception("domain %s not found" % domain_id)
+            raise HTTP(404, "domain %s not found" % domain_id)
         dname = domain.name
 
         q = dbdns.records.name == dname
@@ -29,12 +29,12 @@ class rest_put_dns_domain_sync(rest_put_handler):
         rows = dbdns(q).select()
 
         if len(rows) != 1:
-            raise Exception("no single SOA found for domain %s"%dname)
+            raise HTTP(500, "no single SOA found for domain %s"%dname)
 
         l = rows[0].content.split()
 
         if len(l) < 3:
-            raise Exception("SOA record content has less than 3 fields for domain %s"%dname)
+            raise HTTP(500, "SOA record content has less than 3 fields for domain %s"%dname)
 
         new = int(l[2]) + 1
         l[2] = str(new)
@@ -191,7 +191,7 @@ class rest_post_dns_domains(rest_post_handler):
     def handler(self, **vars):
         check_privilege("DnsManager")
         if len(vars) == 0:
-            raise Exception("Insufficient data")
+            raise HTTP(400, "Insufficient data")
         q = dbdns.domains.id > 0
         for v in vars:
             q &= dbdns.domains[v] == vars[v]
@@ -271,7 +271,7 @@ class rest_post_dns_records(rest_post_handler):
     def handler(self, **vars):
         check_privilege("DnsOperator")
         if len(vars) == 0:
-            raise Exception("Insufficient data")
+            raise HTTP(400, "Insufficient data")
         vars["change_date"] = int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
         q = dbdns.records.id > 0
         for v in vars:
@@ -315,14 +315,14 @@ class rest_post_dns_services_records(rest_post_handler):
 
     def handler(self, **vars):
         if not auth_is_svc():
-            raise Exception("Only authenticated services can use this handler")
+            raise HTTP(403, "Only authenticated services can use this handler")
 
         instance_name = vars.get("name")
         content = vars.get("content")
         ttl = vars.get("ttl")
 
         if content is None:
-            raise Exception("The 'content' key is mandatory")
+            raise HTTP(400, "The 'content' key is mandatory")
 
         ret = create_service_dns_record(
             instance_name=instance_name,
@@ -394,7 +394,7 @@ class rest_delete_dns_domains(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         return rest_delete_dns_domain().handler(vars["id"])
 
 #
@@ -460,7 +460,7 @@ class rest_delete_dns_records(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         return rest_delete_dns_record().handler(vars["id"])
 
 #

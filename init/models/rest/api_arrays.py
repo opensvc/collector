@@ -192,18 +192,18 @@ class rest_post_array_diskgroup_quota(rest_post_handler):
         q = db.stor_array_dg_quota.id == quota_id
         quota = db(q).select().first()
         if quota is None:
-            raise Exception("quota %s not found" % str(quota_id))
+            raise HTTP(404, "quota %s not found" % str(quota_id))
 
         if "app_id" in vars:
             q = db.apps.id == vars["app_id"]
             app = db(q).select().first()
             if app is None:
-                raise Exception("app %s not found" % str(vars["app_id"]))
+                raise HTTP(404, "app %s not found" % str(vars["app_id"]))
         elif "app" in vars:
             q = db.apps.app == vars["app"]
             app = db(q).select().first()
             if app is None:
-                raise Exception("app %s not found" % str(vars["app"]))
+                raise HTTP(404, "app %s not found" % str(vars["app"]))
             del(vars["app"])
             vars["app_id"] = app.id
         else:
@@ -213,7 +213,7 @@ class rest_post_array_diskgroup_quota(rest_post_handler):
         q = db.stor_array_dg.id == dg_id
         dg = db(q).select().first()
         if dg is None:
-            raise Exception("dg %s not found" % str(dg_id))
+            raise HTTP(404, "dg %s not found" % str(dg_id))
 
         q = db.stor_array_dg_quota.id == quota_id
         db(q).update(**vars)
@@ -250,26 +250,26 @@ class rest_post_array_diskgroup_quotas(rest_post_handler):
         check_privilege("StorageManager")
 
         if not "quota" in vars:
-            raise Exception("The 'quota' key is mandatory")
+            raise HTTP(400, "The 'quota' key is mandatory")
 
         if "app_id" in vars:
             q = db.apps.id == vars["app_id"]
             app = db(q).select().first()
             if app is None:
-                raise Exception("app %s not found" % str(vars["app_id"]))
+                raise HTTP(404, "app %s not found" % str(vars["app_id"]))
         elif "app" in vars:
             q = db.apps.app == vars["app"]
             app = db(q).select().first()
             if app is None:
-                raise Exception("app %s not found" % str(vars["app"]))
+                raise HTTP(404, "app %s not found" % str(vars["app"]))
             del(vars["app"])
         else:
-            raise Exception("Either 'app' or 'app_id' is mandatory")
+            raise HTTP(400, "Either 'app' or 'app_id' is mandatory")
 
         q = db.stor_array_dg.id == dg_id
         dg = db(q).select().first()
         if dg is None:
-            raise Exception("dg %s not found" % str(dg_id))
+            raise HTTP(404, "dg %s not found" % str(dg_id))
 
         q = db.stor_array_dg_quota.dg_id == dg_id
         q &= db.stor_array_dg_quota.app_id == app.id
@@ -314,7 +314,7 @@ class rest_delete_array_diskgroup_quotas(rest_delete_handler):
 
     def handler(self, array_id, dg_id, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         quota_id = vars.get("id")
         del(vars["id"])
         return rest_delete_array_diskgroup_quota().handler(array_id, dg_id, quota_id, **vars)
@@ -341,7 +341,7 @@ class rest_delete_array_diskgroup_quota(rest_delete_handler):
         q = db.stor_array_dg_quota.id == quota_id
         quota = db(q).select().first()
         if quota is None:
-            raise Exception("quota %s not found" % str(quota_id))
+            raise HTTP(404, "quota %s not found" % str(quota_id))
 
         q = db.apps.id == quota.app_id
         app = db(q).select().first()
@@ -412,7 +412,7 @@ class rest_post_array_proxy(rest_post_handler):
         q &= db.stor_array_proxy.node_id == node_id
         row = db(q).select().first()
         if row is not None:
-            raise Exception("node %s is already proxy for array %d" % (node_id, array_id))
+            raise HTTP(204, "node %s is already proxy for array %d" % (node_id, array_id))
         row_id = db.stor_array_proxy.insert(
             node_id=node_id,
             array_id=array_id,
@@ -447,7 +447,7 @@ class rest_post_array_proxies(rest_post_handler):
     def handler(self, array_id, **vars):
         check_privilege("StorageManager")
         if "node_id" not in vars:
-            raise Exception("The 'node_id' key is mandatory")
+            raise HTTP(400, "The 'node_id' key is mandatory")
         node_id = vars.get("node_id")
         del(vars["node_id"])
         return rest_post_array_proxy().handler(array_id, node_id, **vars)
@@ -474,7 +474,7 @@ class rest_delete_array_proxy(rest_delete_handler):
         q &= db.stor_array_proxy.node_id == node_id
         row = db(q).select().first()
         if row is None:
-            raise Exception("node %s is not proxy for array %d" % (node_id, array_id))
+            raise HTTP(204, "node %s is not proxy for array %d" % (node_id, array_id))
         db(q).delete()
         fmt = "node %(node_id)s unset as proxy for array %(array_id)s"
         d = dict(node_id=str(node_id), array_id=str(array_id))
@@ -506,7 +506,7 @@ class rest_delete_array_proxies(rest_delete_handler):
     def handler(self, array_id, **vars):
         check_privilege("StorageManager")
         if "node_id" not in vars:
-            raise Exception("The 'node_id' key is mandatory")
+            raise HTTP(400, "The 'node_id' key is mandatory")
         node_id = vars.get("node_id")
         del(vars["node_id"])
         return rest_delete_array_proxy().handler(array_id, node_id, **vars)
@@ -589,11 +589,11 @@ class rest_post_array(rest_post_handler):
         check_privilege("StorageManager")
         id = lib_array_id(id)
         if id is None:
-            return Exception("array id not found")
+            return HTTP(404, "array id not found")
         q = db.stor_array.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("array %s does not exist" % str(id))
+            raise HTTP(404, "array %s does not exist" % str(id))
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
         table_modified("stor_array")

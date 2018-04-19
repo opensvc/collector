@@ -202,7 +202,7 @@ class rest_post_tag(rest_post_handler):
         q = db.tags.tag_id == tag_id
         row = db(q).select().first()
         if row is None:
-            raise Exception("tag %s not found" % tag_id)
+            raise HTTP(404, "tag %s not found" % tag_id)
         db(q).update(**vars)
         _log('tag.change',
              'change tag %(tag_name)s: %(data)s',
@@ -237,7 +237,7 @@ class rest_post_tags(rest_post_handler):
     def handler(self, **vars):
         check_privilege("TagManager")
         if 'tag_name' not in vars:
-            raise Exception("the tag_name property is mandatory")
+            raise HTTP(400, "the tag_name property is mandatory")
         tag_name = vars['tag_name']
         q = db.tags.tag_name == tag_name
         row = db(q).select().first()
@@ -248,7 +248,7 @@ class rest_post_tags(rest_post_handler):
         db.tags.insert(**vars)
         row = db(q).select().first()
         if row is None or row.tag_name != tag_name:
-            raise Exception("tag name too long")
+            raise HTTP(400, "tag name too long")
         fmt = "tag '%(tag_name)s' created"
         d = dict(tag_name=tag_name)
         _log('tag.create', fmt, d)
@@ -304,7 +304,7 @@ class rest_delete_tags(rest_delete_handler):
 
     def handler(self, **vars):
         if "tag_id" not in vars:
-            raise Exception("The 'tag_id' key is mandatory")
+            raise HTTP(400, "The 'tag_id' key is mandatory")
 
         tag_id = vars.get("tag_id")
         del(vars["tag_id"])
@@ -566,9 +566,9 @@ class rest_post_tags_nodes(rest_post_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("the 'node_id' key is mandatory")
+            raise HTTP(400, "the 'node_id' key is mandatory")
         if "tag_id" not in vars:
-            raise Exception("the 'tag_id' key is mandatory")
+            raise HTTP(400, "the 'tag_id' key is mandatory")
         tag_attach_data = vars.get("tag_attach_data")
         return lib_tag_attach_node(vars["tag_id"], vars["node_id"], tag_attach_data=tag_attach_data)
 
@@ -594,9 +594,9 @@ class rest_delete_tags_nodes(rest_delete_handler):
 
     def handler(self, **vars):
         if "node_id" not in vars:
-            raise Exception("the 'node_id' key is mandatory")
+            raise HTTP(400, "the 'node_id' key is mandatory")
         if "tag_id" not in vars:
-            raise Exception("the 'tag_id' key is mandatory")
+            raise HTTP(400, "the 'tag_id' key is mandatory")
         return lib_tag_detach_node(vars["tag_id"], vars["node_id"])
 
 #
@@ -648,9 +648,9 @@ class rest_post_tags_services(rest_post_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("the 'svc_id' key is mandatory")
+            raise HTTP(400, "the 'svc_id' key is mandatory")
         if "tag_id" not in vars:
-            raise Exception("the 'tag_id' key is mandatory")
+            raise HTTP(400, "the 'tag_id' key is mandatory")
         tag_attach_data = vars.get("tag_attach_data")
         return lib_tag_attach_service(vars["tag_id"], vars["svc_id"], tag_attach_data=tag_attach_data)
 
@@ -676,8 +676,8 @@ class rest_delete_tags_services(rest_delete_handler):
 
     def handler(self, **vars):
         if "svc_id" not in vars:
-            raise Exception("the 'svc_id' key is mandatory")
+            raise HTTP(400, "the 'svc_id' key is mandatory")
         if "tag_id" not in vars:
-            raise Exception("the 'tag_id' key is mandatory")
+            raise HTTP(400, "the 'tag_id' key is mandatory")
         return lib_tag_detach_service(vars["tag_id"], vars["svc_id"])
 

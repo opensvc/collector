@@ -76,7 +76,7 @@ class rest_delete_resources(rest_delete_handler):
             id = vars["id"]
             del(vars["id"])
         else:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         return rest_delete_resource().handler(id)
 
 

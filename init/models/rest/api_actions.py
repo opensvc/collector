@@ -49,7 +49,7 @@ class rest_post_services_action(rest_post_handler):
           db.svcactions.status,
         ).first()
         if row is None:
-            raise Exception("log entry %s does not exist" % str(id))
+            raise HTTP(404, "log entry %s does not exist" % str(id))
         svc_responsible(row.svc_id)
 
         # purge data of unauthorized keys
@@ -98,7 +98,7 @@ class rest_post_services_actions(rest_post_handler):
 
     def handler(self, **vars):
         if 'id' not in vars:
-           raise Exception("The 'id' key must be specified")
+           raise HTTP(400, "The 'id' key must be specified")
         id = vars["id"]
         del(vars["id"])
         return rest_post_services_action().handler(id, **vars)

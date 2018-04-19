@@ -3,7 +3,7 @@ def get_tag_name(tag_id):
         q = db.tags.tag_id == tag_id
         tag_name = db(q).select().first().tag_name
     except Exception as e:
-        raise Exception({"error": "tag does not exist"})
+        raise HTTP(404, "tag does not exist")
     return tag_name
 
 def tag_allowed(node_id=None, svc_id=None, tag_name=None):
@@ -73,7 +73,7 @@ def lib_tag_detach_service(tag_id, svc_id):
 
 def lib_tag_attach_node(tag_id, node_id, tag_attach_data=None):
     if not node_id:
-        raise Exception("invalid node_id: '%s'" % str(node_id))
+        raise HTTP(400, "invalid node_id: '%s'" % str(node_id))
     node_responsible(node_id=node_id)
     tag_name = get_tag_name(tag_id)
     q = db.node_tags.tag_id == tag_id
@@ -108,7 +108,7 @@ def lib_tag_attach_node(tag_id, node_id, tag_attach_data=None):
 
 def lib_tag_attach_service(tag_id, svc_id, tag_attach_data=None):
     if not svc_id or len(svc_id) == 0:
-        raise Exception("invalid svc_id: '%s'" % str(svc_id))
+        raise HTTP(400, "invalid svc_id: '%s'" % str(svc_id))
     svc_responsible(svc_id)
     tag_name = get_tag_name(tag_id)
     q = db.svc_tags.tag_id == tag_id

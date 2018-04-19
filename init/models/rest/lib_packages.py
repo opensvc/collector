@@ -18,7 +18,7 @@ def lib_packages_diff(node_ids=[], svc_ids=[], encap=False):
     n = len(node_ids)
     if n < 2:
         if not encap:
-            raise Exception(T("At least two nodes should be selected"))
+            raise HTTP(400, T("At least two nodes should be selected"))
         else:
             return []
 

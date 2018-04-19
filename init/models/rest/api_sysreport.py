@@ -70,7 +70,7 @@ class rest_get_sysreport_timeline(rest_get_handler):
             nodes = vars.get("nodes[]")
             del(vars["nodes[]"])
         else:
-            raise Exception("The nodes parameter is mandatory")
+            raise HTTP(400, "The nodes parameter is mandatory")
         if type(nodes) != list:
             nodes = nodes.split(",")
         nodes = map(lambda x: get_node_id(x), nodes)
@@ -222,7 +222,7 @@ class rest_get_sysreport_nodediff(rest_get_handler):
             nodes = vars["nodes[]"]
             del(vars["nodes[]"])
         else:
-            raise Exception(T("The nodes parameter is mandatory"))
+            raise HTTP(400, T("The nodes parameter is mandatory"))
 
         nodes = map(lambda x: get_node_id(x), nodes)
 
@@ -346,7 +346,7 @@ class rest_post_sysreport_secure_patterns(rest_post_handler):
     def handler(self, **vars):
         check_privilege("Manager")
         if len(vars) == 0 or "pattern" not in vars:
-            raise Exception(T("Insufficient data"))
+            raise HTTP(400, T("Insufficient data"))
         q = db.sysrep_secure.id > 0
         for v in vars:
             q &= db.sysrep_secure[v] == vars[v]
@@ -509,32 +509,32 @@ class rest_post_sysreport_authorizations(rest_post_handler):
             try:
                 _group_id = int(vars["group_id"])
             except:
-                raise Exception(T("Group id %(g)s is not integer", dict(g=vars["group_id"])))
+                raise HTTP(400, T("Group id %(g)s is not integer", dict(g=vars["group_id"])))
             _group_name = group_role(_group_id)
             if _group_name is None:
-                raise Exception(T("Group %(g)s does not exist", dict(vars["group_id"])))
+                raise HTTP(404, T("Group %(g)s does not exist", dict(vars["group_id"])))
         elif "group_name" in vars:
             _group_id = lib_group_id(vars["group_name"])
             if _group_id is None:
-                raise Exception(T("Group %(g)s does not exist", dict(g=vars["group_name"])))
+                raise HTTP(404, T("Group %(g)s does not exist", dict(g=vars["group_name"])))
             _group_name = vars["group_name"]
         else:
-            raise Exception(T("nor group_id nor group_name found in post data"))
+            raise HTTP(400, T("nor group_id nor group_name found in post data"))
 
 
         if "fset_id" in vars:
             try:
                 _fset_id = int(vars["fset_id"])
             except:
-                raise Exception(T("Fset id %(f)s is not integer", dict(f=vars["fset_id"])))
+                raise HTTP(400, T("Fset id %(f)s is not integer", dict(f=vars["fset_id"])))
             _fset_name = lib_fset_name(_fset_id)
         elif "fset_name" in vars:
             _fset_id = lib_fset_id(vars["fset_name"])
             if _fset_id is None:
-                raise Exception(T("Filterset %(f)s does not exist", dict(f=vars["fset_name"])))
+                raise HTTP(404, T("Filterset %(f)s does not exist", dict(f=vars["fset_name"])))
             _fset_name = vars["fset_name"]
         else:
-            raise Exception(T("nor fset_id nor fset_name found in post data"))
+            raise HTTP(400, T("nor fset_id nor fset_name found in post data"))
 
         s = "-".join((_group_name, _fset_name, vars["pattern"]))
 

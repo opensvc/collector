@@ -198,9 +198,9 @@ class rest_post_network_release(rest_post_handler):
                 content=ipaddr,
             )
         elif auth_is_node():
-            raise Exception("Ip release for nodes is not implemented")
+            raise HTTP(404, "Ip release for nodes is not implemented")
         else:
-            raise Exception("Ip release for users is not implemented")
+            raise HTTP(404, "Ip release for users is not implemented")
         return ret
 
 #
@@ -409,9 +409,9 @@ class rest_delete_networks_segments(rest_delete_handler):
 
     def handler(self, **vars):
         if "net_id" not in vars:
-            raise Exception("the 'net_id' parameter is required")
+            raise HTTP(400, "the 'net_id' parameter is required")
         if "seg_id" not in vars:
-            raise Exception("the 'seg_id' parameter is required")
+            raise HTTP(400, "the 'seg_id' parameter is required")
         return rest_delete_network_segment().handler(vars["net_id"], vars["seg_id"])
 
 #
@@ -440,12 +440,12 @@ class rest_delete_network_segment(rest_delete_handler):
         q = db.networks.id == net_id
         net = db(q).select().first()
         if net is None:
-            raise Exception("Network %s not found" % net_id)
+            raise HTTP(404, "Network %s not found" % net_id)
 
         q = db.network_segments.id == seg_id
         seg = db(q).select().first()
         if seg is None:
-            raise Exception("Network segment %s not found" % seg_id)
+            raise HTTP(404, "Network segment %s not found" % seg_id)
         db(q).delete()
 
         q = db.network_segment_responsibles.seg_id == seg_id
@@ -490,12 +490,12 @@ class rest_post_network_segments(rest_post_handler):
         vars["net_id"] = net_id
         for i in ["seg_begin", "seg_end"]:
             if i not in vars:
-                raise Exception("missing '%s' parameter" % i)
+                raise HTTP(400, "missing '%s' parameter" % i)
 
         q = db.networks.id == net_id
         row = db(q).select().first()
         if row is None:
-            raise Exception("Network %s not found" % net_id)
+            raise HTTP(404, "Network %s not found" % net_id)
 
         self.validate_range(net_id, vars)
         seg_id = db.network_segments.insert(**vars)
@@ -526,9 +526,9 @@ class rest_post_network_segments(rest_post_handler):
         _end = self.ip2long(end)
         for row in rows:
             if _begin >= row[0] and _begin <= row[1]:
-                raise Exception("Range begin conflicts with an existing segment")
+                raise HTTP(409, "Range begin conflicts with an existing segment")
             if _end >= row[0] and _end <= row[1]:
-                raise Exception("Range end conflicts with an existing segment")
+                raise HTTP(409, "Range end conflicts with an existing segment")
 
 #
 class rest_post_network_segment(rest_post_handler):
@@ -659,7 +659,7 @@ class rest_delete_networks(rest_delete_handler):
 
     def handler(self, **vars):
         if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+            raise HTTP(400, "The 'id' key is mandatory")
         id = vars["id"]
         del(vars["id"])
         return rest_delete_network().handler(id, **vars)

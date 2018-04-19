@@ -60,11 +60,11 @@ class rest_post_wikis(rest_post_handler):
 
     def handler(self, **vars):
         if 'name' not in vars:
-            raise Exception("the name property is mandatory")
+            raise HTTP(400, "the name property is mandatory")
         name = vars['name']
 
         if 'body' not in vars:
-            raise Exception("the body property is mandatory")
+            raise HTTP(400, "the body property is mandatory")
         body = vars['body']
 
         id = db.wiki_pages.insert(
