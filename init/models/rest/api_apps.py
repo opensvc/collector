@@ -13,7 +13,7 @@ def app_responsible(app_id):
     if "Manager" in user_groups():
         return
     if app_id not in user_app_ids():
-        raise Exception("You are not responsible for this app")
+        raise HTTP(403, "You are not responsible for this app")
 
 #
 class rest_get_app_am_i_responsible(rest_get_handler):
@@ -133,7 +133,7 @@ class rest_post_apps(rest_post_handler):
 
         check_privilege("AppManager")
         if len(vars) == 0 or "app" not in vars:
-            raise Exception("Insufficient data: %s" % str(vars))
+            raise HTTP(400, "Insufficient data: %s" % str(vars))
         check_quota_app()
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
@@ -180,14 +180,20 @@ class rest_post_app(rest_post_handler):
         check_privilege("AppManager")
         id = lib_app_id(id)
         if id is None:
-            return Exception("app code not found")
+            return HTTP(404, "app code not found")
         app_responsible(id)
         q = db.apps.id == id
         row = db(q).select().first()
         if row is None:
-            raise Exception("app %s does not exist" % str(id))
+            raise HTTP(404, "app %s does not exist" % str(id))
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
+        if "app" in vars and row.app != vars["app"]:
+            # update nodes and services app
+            q = db.nodes.app == row.app
+            db(q).update(app=vars["app"])
+            q = db.services.svc_app == row.app
+            db(q).update(svc_app=vars["app"])
         table_modified("apps")
         fmt = 'app %(app)s changed: %(data)s'
         d = dict(app=row.app, data=beautify_change(row, vars))
@@ -224,7 +230,7 @@ class rest_delete_apps(rest_delete_handler):
         elif "app" in vars:
             app_id = vars["app"]
         else:
-            raise Exception("Either the 'id' or 'app' key is mandatory")
+            raise HTTP(400, "Either the 'id' or 'app' key is mandatory")
         return rest_delete_app().handler(app_id)
 
 #
@@ -257,6 +263,12 @@ class rest_delete_app(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             return dict(info="app code %s does not exist" % str(id))
+        qn = db.nodes.app == row.app
+        nn = db(qn).count()
+        qs = db.services.svc_app == row.app
+        ns = db(qs).count()
+        if nn + ns > 0:
+            raise HTTP(409, "this app code cannot be deleted. used by %d nodes and %d services" % (nn, ns))
         db(q).delete()
         table_modified("apps")
         ws_send('apps_change', {'id': row.id})
@@ -378,9 +390,9 @@ class rest_post_apps_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if not "app_id" in vars:
-            raise Exception("The 'app_id' key is mandatory")
+            raise HTTP(400, "The 'app_id' key is mandatory")
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_post_app_responsible().handler(vars["app_id"], vars["group_id"])
 
 class rest_post_app_responsible(rest_post_handler):
@@ -402,7 +414,7 @@ class rest_post_app_responsible(rest_post_handler):
         check_privilege("AppManager")
         app_id = lib_app_id(app_id)
         if app_id is None:
-            raise Exception("app code not found")
+            raise HTTP(404, "app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         group = lib_org_group(group_id)
@@ -411,7 +423,7 @@ class rest_post_app_responsible(rest_post_handler):
         q &= db.apps_responsibles.group_id == group_id
         row = db(q).select().first()
         if row is not None:
-            raise Exception("group %s is already responsible for app %s" % (group.role, app.app))
+            raise HTTP(204, "group %s is already responsible for app %s" % (group.role, app.app))
 
         id = db.apps_responsibles.insert(app_id=app_id, group_id=group_id)
 
@@ -449,9 +461,9 @@ class rest_delete_apps_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if not "app_id" in vars:
-            raise Exception("The 'app_id' key is mandatory")
+            raise HTTP(400, "The 'app_id' key is mandatory")
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_delete_app_responsible().handler(vars["app_id"], vars["group_id"])
 
 class rest_delete_app_responsible(rest_delete_handler):
@@ -473,7 +485,7 @@ class rest_delete_app_responsible(rest_delete_handler):
         check_privilege("AppManager")
         app_id = lib_app_id(app_id)
         if app_id is None:
-            raise Exception("app code not found")
+            raise HTTP(404, "app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
@@ -481,14 +493,14 @@ class rest_delete_app_responsible(rest_delete_handler):
         except:
             group_id = lib_group_id(group_id)
         if group_id is None:
-            raise Exception("group not found")
+            raise HTTP(404, "group not found")
         group = db(db.auth_group.id==group_id).select().first()
 
         q = db.apps_responsibles.app_id == app_id
         q &= db.apps_responsibles.group_id == group_id
         row = db(q).select().first()
         if row is None:
-            raise Exception("group %s is already not responsible for app %s" % (group.role, app.app))
+            raise HTTP(204, "group %s is already not responsible for app %s" % (group.role, app.app))
 
         db(q).delete()
 
@@ -547,9 +559,9 @@ class rest_post_apps_publications(rest_post_handler):
 
     def handler(self, **vars):
         if not "app_id" in vars:
-            raise Exception("The 'app_id' key is mandatory")
+            raise HTTP(400, "The 'app_id' key is mandatory")
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_post_app_publication().handler(vars["app_id"], vars["group_id"])
 
 class rest_post_app_publication(rest_post_handler):
@@ -571,7 +583,7 @@ class rest_post_app_publication(rest_post_handler):
         check_privilege("AppManager")
         app_id = lib_app_id(app_id)
         if app_id is None:
-            raise Exception("app code not found")
+            raise HTTP(404, "app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         group = lib_org_group(group_id)
@@ -580,7 +592,7 @@ class rest_post_app_publication(rest_post_handler):
         q &= db.apps_publications.group_id == group_id
         row = db(q).select().first()
         if row is not None:
-            raise Exception("app %s is already unpublished to group %s" % (app.app, group.role))
+            raise HTTP(204, "app %s is already unpublished to group %s" % (app.app, group.role))
 
         id = db.apps_publications.insert(app_id=app_id, group_id=group_id)
 
@@ -617,9 +629,9 @@ class rest_delete_apps_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if not "app_id" in vars:
-            raise Exception("The 'app_id' key is mandatory")
+            raise HTTP(400, "The 'app_id' key is mandatory")
         if not "group_id" in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_delete_app_publication().handler(vars["app_id"], vars["group_id"])
 
 class rest_delete_app_publication(rest_delete_handler):
@@ -641,7 +653,7 @@ class rest_delete_app_publication(rest_delete_handler):
         check_privilege("AppManager")
         app_id = lib_app_id(app_id)
         if app_id is None:
-            raise Exception("app code not found")
+            raise HTTP(404, "app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
@@ -649,14 +661,14 @@ class rest_delete_app_publication(rest_delete_handler):
         except:
             group_id = lib_group_id(group_id)
         if group_id is None:
-            raise Exception("group not found")
+            raise HTTP(404, "group not found")
         group = db(db.auth_group.id==group_id).select().first()
 
         q = db.apps_publications.app_id == app_id
         q &= db.apps_publications.group_id == group_id
         row = db(q).select().first()
         if row is None:
-            raise Exception("app %s is already unpublished to group %s" % (app.app, group.role))
+            raise HTTP(204, "app %s is already unpublished to group %s" % (app.app, group.role))
 
         db(q).delete()
 

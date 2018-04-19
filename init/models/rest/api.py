@@ -356,6 +356,8 @@ Available properties are: ``%(props)s``:green.
                 continue
             try:
                 r = rest_handler.handle(self, *args, **entry)
+            except HTTP as e:
+                r = dict(error=str(e)+": "+e.body)
             except Exception as e:
                 r = dict(error=str(e))
             for key in ("info", "error", "data"):
@@ -407,6 +409,10 @@ class rest_post_handler(rest_handler):
             try:
                 r = self.update_one_handler.handler(e.get(self.update_one_param), **vars)
                 result["data"] += r["data"] if "data" in r else r
+            except HTTP as e:
+                d = dict(error=str(e)+": "+e.body)
+                d[self.update_one_param] = e[self.update_one_param]
+                result["data"] += [d]
             except Exception as ex:
                 d = {"error": str(ex)}
                 d[self.update_one_param] = e[self.update_one_param]

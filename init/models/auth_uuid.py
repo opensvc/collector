@@ -90,6 +90,13 @@ def create_svc(node_id, cluster_id, svcname):
     node = get_node(node_id)
     if node is None:
         return
+
+    # verify the node.app is valid
+    q = db.apps.app = node.app
+    app = db(q).select().first()
+    if app is None:
+        return
+
     data = {
       "svcname": svcname,
       "svc_app": node.app,
