@@ -92,7 +92,7 @@ def create_svc(node_id, cluster_id, svcname):
         return
 
     # verify the node.app is valid
-    q = db.apps.app = node.app
+    q = db.apps.app == node.app
     app = db(q).select().first()
     if app is None:
         return
