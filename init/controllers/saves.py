@@ -207,6 +207,8 @@ def ajax_saves_charts():
                saves
                left join nodes on
                saves.node_id = nodes.node_id
+               left join services on
+               saves.svc_id = services.svc_id
              where
                %(q)s
           """%dict(q=q)
@@ -224,6 +226,8 @@ def ajax_saves_charts():
                      saves
                      left join nodes on
                      saves.node_id = nodes.node_id
+                     left join services on
+                     saves.svc_id = services.svc_id
                    where
                      %(q)s
                  ) t
