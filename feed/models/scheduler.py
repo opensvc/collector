@@ -4640,6 +4640,8 @@ def ping_instance(svc, peer, now):
 
 def ping_peer(peer, now):
     changed = set()
+    if peer is None:
+        return changed
     q = db.svcmon.node_id == peer.node_id
     q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_updated=now)
@@ -4877,8 +4879,9 @@ def merge_daemon_status(node_id, changes):
         )
         return set(["services"])
 
+    # populate the nodes cache
     for nodename, ndata in data["nodes"].items():
-        peer = get_cluster_node(nodename)
+        get_cluster_node(nodename)
 
     for svcname, sdata in data["services"].items():
         peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
@@ -4893,6 +4896,7 @@ def merge_daemon_status(node_id, changes):
             changed |= svc_log_update(svc.svc_id, sdata["avail"], deferred=True)
             changed |= update_service(svc, sdata)
 
+        monstatus = set()
         for nodename, ndata in data["nodes"].items():
             peer = get_cluster_node(nodename)
             if peer is None:
@@ -4906,6 +4910,7 @@ def merge_daemon_status(node_id, changes):
             except KeyError:
                 continue
 
+            monstatus.add(idata.get("monitor", {}).get("status"))
             print "  update service", svcname, svc.svc_id, "instance on node", nodename
             encap = idata.get("encap")
             if isinstance(encap, bool) or encap is None or len(encap) == 0:
@@ -4918,13 +4923,29 @@ def merge_daemon_status(node_id, changes):
             changed |= update_instance_resources(svc, peer, "", idata["resources"])
             changed |= svcmon_log_update(peer.node_id, svc.svc_id, idata, deferred=True)
 
-        changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
-        changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
-        update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
-        update_dash_flex_instances_started(svc.svc_id)
-        update_dash_flex_cpu(svc.svc_id)
-        # TODO
-        # provisioned alerts
+        print svcname, monstatus
+        if monstatus == set(["idle"]):
+            changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
+            changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
+            update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
+            update_dash_flex_instances_started(svc.svc_id)
+            update_dash_flex_cpu(svc.svc_id)
+            # TODO
+            # provisioned alerts
+
+    # purge deleted instances
+    if peer_node_ids:
+        q = db.svcmon.node_id.belongs(peer_node_ids)
+        q &= db.svcmon.svc_id == db.services.svc_id
+        if len(data["services"]) > 0:
+            q &= ~db.services.svcname.belongs(data["services"])
+        for instance in db(q).select(db.svcmon.svc_id, db.svcmon.node_id):
+            print " purge instance:", instance.svc_id+"@"+instance.node_id
+            for t in ["svcmon", "dashboard", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
+                q = db.svcmon.node_id == instance.node_id
+                q &= db.svcmon.svc_id == instance.svc_id
+                if db(q).delete():
+                    changed.add(t)
 
     print " tables changed:", ",".join(changed)
     for table_name in changed:
