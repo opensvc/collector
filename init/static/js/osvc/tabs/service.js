@@ -446,7 +446,11 @@ function service_properties(divid, options)
 				if (!(key in data)) {
 					continue
 				}
-				o.div.find("#"+key).text(data[key])
+				var val = data[key]
+				if (val == null) {
+					val = ""
+				}
+				o.div.find("#"+key).text(val)
 			}
 
 			// HA formatter
