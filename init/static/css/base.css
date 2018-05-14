@@ -2908,6 +2908,9 @@ div.designer {
 	padding: 1rem;
 	flex: 1;
 }
+.cainfo > .white_float {
+	z-index: initial;
+}
 .catree {
 	overflow-x: auto;
 	overflow-y: auto;
