@@ -13,7 +13,7 @@ def node_app_id(node_id=None):
 def node_cluster_id(node_id):
     try:
         return get_node(node_id).cluster_id
-    except:
+    except Exception as exc:
         return ""
 
 def node_svc(node_id, svcname):
@@ -72,6 +72,34 @@ def node_svc(node_id, svcname):
     )
 
     if len(rows) >= 1:
+        return rows.first()
+
+    #
+    # last chance: maybe an orphan service was created (without cluster_id)
+    # in the app namespace
+    #
+    q = db.services.svcname == svcname
+    q &= db.services.cluster_id == ""
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
+    rows = db(q).select(
+        db.services.svcname,
+        db.services.svc_id,
+        db.services.svc_app,
+        db.services.svc_env,
+        db.services.svc_availstatus,
+        db.services.svc_status,
+        groupby=db.services.svc_id
+    )
+    if len(rows) > 1:
+        raise Exception("multiple orphan services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster 'empty' responsibility zone: %(svc_ids)s" % dict(
+          svcname=svcname,
+          node_id=node_id,
+          svc_ids=', '.join([r.svc_id for r in rows]),
+        ))
+
+    if len(rows) == 1:
         return rows.first()
 
     if len(rows) == 0:
