@@ -283,7 +283,7 @@ def update_asset_sync(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_asset_sync(vars, vals, auth):
-    _update_asset(vars, vals, auth)
+    __update_asset(vars, vals, auth)
 
 @service.xmlrpc
 def res_action_batch(vars, vals, auth):

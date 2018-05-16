@@ -676,6 +676,9 @@ def get_hw_obs_dates(obs_name):
 
 def _update_asset(auth):
     vars, vals = json.loads(rconn.hget(R_ASSET_HASH, json.dumps([auth])))
+    __update_asset(vars, vals, auth)
+
+def __update_asset(vars, vals, auth):
     node_id = auth_to_node_id(auth)
     vars.append("node_id")
     vals.append(node_id)
