@@ -16,5 +16,7 @@ redis_queues = [
   "checks",
   "svcconf",
   "svcactions",
+  "daemon_status",
+  "daemon_ping",
 ]
 

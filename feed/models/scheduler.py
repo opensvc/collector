@@ -265,7 +265,8 @@ def update_virtual_asset(node_id, svc_id):
     sql += " and app in ('%(app1)s', '%(app2)s')" % dict(app1=svc.services.svc_app, app2=node.app)
     db.executesql(sql)
 
-def _update_service(vars, vals, auth):
+def _update_service(svcname, auth):
+    vars, vals = json.loads(rconn.hget(R_SVCCONF_HASH, json.dumps([svcname, auth])))
     if 'updated' not in vars:
         vars += ['updated']
         vals += [datetime.datetime.now()]
@@ -344,7 +345,7 @@ def _update_service(vars, vals, auth):
                ]
         generic_insert('svcmon', vars, vals)
 
-def _push_checks(vars, vals, auth):
+def _push_checks(auth):
     """
         chk_svcname
         chk_type
@@ -353,6 +354,7 @@ def _push_checks(vars, vals, auth):
         chk_updated
     """
 
+    vars, vals = json.loads(rconn.hget(R_CHECKS_HASH, json.dumps([auth])))
     n = len(vals)
     node_id = auth_to_node_id(auth)
     vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="chk_nodename")
@@ -672,7 +674,8 @@ def get_hw_obs_dates(obs_name):
         return None, None
     return o.obs_warn_date, o.obs_alert_date
 
-def _update_asset(vars, vals, auth):
+def _update_asset(auth):
+    vars, vals = json.loads(rconn.hget(R_ASSET_HASH, json.dumps([auth])))
     node_id = auth_to_node_id(auth)
     vars.append("node_id")
     vals.append(node_id)
@@ -919,7 +922,8 @@ def _register_disk(vars, vals, auth):
     vars, vals = add_app_id_in_data(vars, vals)
     generic_insert('svcdisks', vars, vals)
 
-def _insert_pkg(vars, vals, auth):
+def _insert_pkg(auth):
+    vars, vals = json.loads(rconn.hget(R_PACKAGES_HASH, json.dumps([auth])))
     now = datetime.datetime.now()
     if "pkg_updated" not in vars:
         vars.append("pkg_updated")
@@ -946,7 +950,8 @@ def delete_old_patches(threshold, node_id):
     db(q).delete()
     db.commit()
 
-def _insert_patch(vars, vals, auth):
+def _insert_patch(auth):
+    vars, vals = json.loads(rconn.hget(R_PATCHES_HASH, json.dumps([auth])))
     now = datetime.datetime.now()
     vars.append("patch_updated")
     for i, val in enumerate(vals):
@@ -4692,9 +4697,21 @@ def merge_daemon_ping(node_id):
                 node_ids[nodename] = None
             else:
                 node_ids[nodename] = _node
+                if cluster_id and _node.cluster_id != cluster_id:
+                    q = db.nodes.node_id == _node.node_id
+                    db(q).update(cluster_id=cluster_id)
             return node_ids[nodename]
 
     data = json.loads(data)
+    if not isinstance(data, dict):
+        print " purge unexpected daemon status format data"
+        rconn.hdel(R_DAEMON_STATUS_HASH, node_id)
+        return
+
+    cluster_id = data.get("cluster_id", "")
+    if cluster_id and node and node.cluster_id != cluster_id:
+        q = db.nodes.node_id == node_id
+        db(q).update(cluster_id=cluster_id)
 
     for nodename, ndata in data["nodes"].items():
         peer = get_cluster_node(nodename)
@@ -4713,7 +4730,13 @@ def merge_daemon_ping(node_id):
         table_modified(table_name)
         ws_send(table_name+'_change')
 
-def merge_daemon_status(node_id, changes):
+def merge_daemon_status(node_id):
+    changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
+    if changes:
+        changes = json.loads(changes)
+    else:
+        changes = []
+    rconn.hdel(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     print "daemon status", node_id, changes
     now = datetime.datetime.now()
     data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
@@ -4723,7 +4746,11 @@ def merge_daemon_status(node_id, changes):
         return
 
     data = json.loads(data)
+    cluster_id = data.get("cluster_id", "")
     node = get_node(node_id)
+    if cluster_id and node and node.cluster_id != cluster_id:
+        q = db.nodes.node_id == node_id
+        db(q).update(cluster_id=cluster_id)
     node_ids = {
         node.nodename: node,
     }
@@ -4739,6 +4766,9 @@ def merge_daemon_status(node_id, changes):
                 node_ids[nodename] = None
             else:
                 node_ids[nodename] = _node
+                if cluster_id and _node.cluster_id != cluster_id:
+                    q = db.nodes.node_id == _node.node_id
+                    db(q).update(cluster_id=cluster_id)
             return node_ids[nodename]
 
     def update_container_node_fields(svc, peer, container_id, idata):

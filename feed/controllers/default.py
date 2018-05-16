@@ -15,15 +15,21 @@ import logging
 from applications.init.modules import timeseries
 
 R_DAEMON_STATUS_HASH = "osvc:h:daemon_status"
+R_DAEMON_STATUS_CHANGES_HASH = "osvc:h:daemon_status_changes"
 R_DAEMON_STATUS = "osvc:q:daemon_status"
 R_DAEMON_PING = "osvc:q:daemon_ping"
+R_PACKAGES_HASH = "osvc:h:packages"
 R_PACKAGES = "osvc:q:packages"
+R_PATCHES_HASH = "osvc:h:patches"
 R_PATCHES = "osvc:q:patches"
 R_SVCMON_UPDATE = "osvc:q:svcmon_update"
 R_SYSREPORT = "osvc:q:sysreport"
+R_ASSET_HASH = "osvc:h:asset"
 R_ASSET = "osvc:q:asset"
+R_SVCCONF_HASH = "osvc:h:svcconf"
 R_SVCCONF = "osvc:q:svcconf"
 R_GENERIC = "osvc:q:generic"
+R_CHECKS_HASH = "osvc:h:checks"
 R_CHECKS = "osvc:q:checks"
 R_UPDATE_DASH_NETDEV_ERRORS = "osvc:q:update_dash_netdev_errors"
 R_SVCMON = "osvc:q:svcmon"
@@ -236,7 +242,10 @@ def update_service(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_service(vars, vals, auth):
-    rconn.rpush(R_SVCCONF, json.dumps([vars, vals, auth]))
+    key = json.dumps([vals[0], auth])
+    rconn.hset(R_SVCCONF_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_SVCCONF, 0, key)
+    rconn.lpush(R_SVCCONF, key)
 
 @service.xmlrpc
 def push_checks(vars, vals, auth):
@@ -244,7 +253,10 @@ def push_checks(vars, vals, auth):
 
 @auth_uuid
 def rpc_push_checks(vars, vals, auth):
-    rconn.rpush(R_CHECKS, json.dumps([vars, vals, auth]))
+    key = json.dumps([auth])
+    rconn.hset(R_CHECKS_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_CHECKS, 0, key)
+    rconn.lpush(R_CHECKS, key)
 
 @service.xmlrpc
 def insert_generic(data, auth):
@@ -260,7 +272,10 @@ def update_asset(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_asset(vars, vals, auth):
-    rconn.rpush(R_ASSET, json.dumps([vars, vals, auth]))
+    key = json.dumps([auth])
+    rconn.hset(R_ASSET_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_ASSET, 0, key)
+    rconn.lpush(R_ASSET, key)
 
 @service.xmlrpc
 def update_asset_sync(vars, vals, auth):
@@ -575,7 +590,10 @@ def insert_pkg(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_pkg(vars, vals, auth):
-    rconn.rpush(R_PACKAGES, json.dumps([vars, vals, auth]))
+    key = json.dumps([auth])
+    rconn.hset(R_PACKAGES_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_PACKAGES, 0, key)
+    rconn.lpush(R_PACKAGES, key)
 
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
@@ -583,7 +601,10 @@ def insert_patch(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_patch(vars, vals, auth):
-    rconn.rpush(R_PATCHES, json.dumps([vars, vals, auth]))
+    key = json.dumps([auth])
+    rconn.hset(R_PATCHES_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_PATCHES, 0, key)
+    rconn.lpush(R_PATCHES, key)
 
 @service.xmlrpc
 def update_hds(symid, vars, vals, auth):
@@ -2160,6 +2181,7 @@ def daemon_ping(auth):
 def rpc_daemon_ping(auth):
     node_id = auth_to_node_id(auth)
     elem = json.dumps([node_id])
+    rconn.lrem(R_DAEMON_PING, 0, elem)
     rconn.rpush(R_DAEMON_PING, elem)
 
 @service.xmlrpc
@@ -2173,10 +2195,21 @@ def rpc_push_daemon_status(data, changes, auth):
     uuid to the set of keys pending merge into db.
     """
     node_id = auth_to_node_id(auth)
+
+    # store daemon status data
     rconn.hset(R_DAEMON_STATUS_HASH, node_id, data)
-    changes = json.loads(changes)
-    elem = json.dumps([node_id, changes])
-    rconn.rpush(R_DAEMON_STATUS, elem)
+
+    # merge changes with pending changes, and store
+    changes = set(json.loads(changes))
+    pending_changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
+    if pending_changes:
+        changes |= set(json.loads(pending_changes))
+    rconn.hset(R_DAEMON_STATUS_CHANGES_HASH, node_id, json.dumps(list(changes)))
+
+    # mark the node as needing attention from task_rq
+    key = json.dumps([node_id])
+    rconn.lrem(R_DAEMON_STATUS, 0, key)
+    rconn.rpush(R_DAEMON_STATUS, key)
 
 ##############################################################################
 #
