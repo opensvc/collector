@@ -2317,6 +2317,7 @@ def comp_get_svcmon_ruleset(svc_id, node_id):
         q &= db.svcmon.mon_vmname == db.nodes.nodename
         q &= db.nodes.node_id == node_id
         q &= db.svcmon.mon_containerstatus == "up"
+        q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
         row = db(q).select(db.svcmon.ALL, cacheable=True).first()
     if row is None:
         return {}
