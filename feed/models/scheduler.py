@@ -5039,7 +5039,6 @@ def merge_daemon_status(node_id):
             changed |= update_instance_resources(svc, peer, "", idata["resources"])
             changed |= svcmon_log_update(peer.node_id, svc.svc_id, idata, deferred=True)
 
-        print svcname, monstatus
         if monstatus == set(["idle"]):
             changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
             changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
@@ -5057,11 +5056,36 @@ def merge_daemon_status(node_id):
             q &= ~db.services.svcname.belongs(data["services"])
         for instance in db(q).select(db.svcmon.svc_id, db.svcmon.node_id):
             print " purge instance:", instance.svc_id+"@"+instance.node_id
-            for t in ["svcmon", "dashboard", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
-                q = db.svcmon.node_id == instance.node_id
-                q &= db.svcmon.svc_id == instance.svc_id
-                if db(q).delete():
+            for t in ["svcmon", "dashboard", "dashboard_events", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
+                sql = """delete from %s where svc_id="%s" and node_id="%s" """ % (t, instance.svc_id, instance.node_id)
+                if db.executesql(sql):
                     changed.add(t)
+
+    # purge services
+    sql = """select svc_tags.svc_id from
+              tags, services,
+              svc_tags left join svcmon on svc_tags.svc_id=svcmon.svc_id
+              where
+               services.svc_id=svc_tags.svc_id and
+               services.cluster_id="%s" and
+               tags.tag_id=svc_tags.tag_id and
+               tags.tag_name="@purge" and
+               svcmon.id is NULL
+          """ % cluster_id
+    for row in db.executesql(sql):
+        svc_id = row[0]
+        print " purge service (@purge tag attached and no instances left):", svc_id
+        for t in ["services", "svcactions", "drpservices", "svcmon_log", "resmon_log", "svcmon_log_ack", "checks_settings", "comp_log", "comp_log_daily", "comp_rulesets_services", "comp_modulesets_services", "log", "action_queue", "svc_tags", "form_output_results", "svcmon_log_last", "resmon_log_last"]:
+            sql = """delete from %s where svc_id="%s" """ % (t, svc_id)
+            db.executesql(sql)
+            try:
+                counter = db._adapter.cursor.rowcount
+            except:
+                counter =  None
+
+            print " ", t, counter
+            if counter:
+                changed.add(t)
 
     print " tables changed:", ",".join(changed)
     for table_name in changed:

@@ -235,10 +235,11 @@ class rest_post_tags(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("TagManager")
         if 'tag_name' not in vars:
             raise HTTP(400, "the tag_name property is mandatory")
         tag_name = vars['tag_name']
+        if tag_name not in ("@purge"):
+            check_privilege("TagManager")
         q = db.tags.tag_name == tag_name
         row = db(q).select().first()
         if row:
