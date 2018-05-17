@@ -18,7 +18,7 @@ def update_dash_compdiff_svc(svc_ids):
     deleted_svc_ids = set(svc_ids) - existing_svc_ids
     if len(deleted_svc_ids) > 0:
         q = db.dashboard.dash_type == "compliance differences in cluster"
-        q &= db.dashboard.svc_id.belongs(deleted_svc_id)
+        q &= db.dashboard.svc_id.belongs(deleted_svc_ids)
         db(q).delete()
 
     for svc_id in svc_ids:
