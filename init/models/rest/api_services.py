@@ -215,7 +215,7 @@ class rest_delete_service(rest_delete_handler):
         ws_send('services', {'svc_id': svc_id})
         _log('service.delete', 'delete service %(data)s', dict(data=svcname))
 
-        for t in ["services", "svcactions", "drpservices", "svcmon_log", "resmon_log", "svcmon_log_ack", "checks_settings", "comp_log", "comp_log_daily", "comp_rulesets_services", "comp_modulesets_services", "log", "action_queue", "svc_tags", "form_output_results", "svcmon_log_last", "resmon_log_last"]:
+        for t in ["services", "svcactions", "drpservices", "svcmon_log", "resmon_log", "svcmon_log_ack", "checks_settings", "comp_log", "comp_log_daily", "comp_rulesets_services", "comp_modulesets_services", "log", "action_queue", "svc_tags", "form_output_results", "svcmon_log_last", "resmon_log_last", "svcmon", "dashboard", "dashboard_events", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
             sql = """delete from %s where svc_id="%s" """ % (t, svc_id)
             db.executesql(sql)
             try:

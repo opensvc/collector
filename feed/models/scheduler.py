@@ -5058,7 +5058,12 @@ def merge_daemon_status(node_id):
             print " purge instance:", instance.svc_id+"@"+instance.node_id
             for t in ["svcmon", "dashboard", "dashboard_events", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
                 sql = """delete from %s where svc_id="%s" and node_id="%s" """ % (t, instance.svc_id, instance.node_id)
-                if db.executesql(sql):
+                db.executesql(sql)
+                try:
+                    counter = db._adapter.cursor.rowcount
+                except:
+                    counter =  None
+                if counter:
                     changed.add(t)
 
     # purge services
