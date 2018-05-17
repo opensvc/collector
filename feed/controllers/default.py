@@ -22,6 +22,8 @@ R_PACKAGES_HASH = "osvc:h:packages"
 R_PACKAGES = "osvc:q:packages"
 R_PATCHES_HASH = "osvc:h:patches"
 R_PATCHES = "osvc:q:patches"
+R_RESINFO_HASH = "osvc:h:resinfo"
+R_RESINFO = "osvc:q:resinfo"
 R_SVCMON_UPDATE = "osvc:q:svcmon_update"
 R_SYSREPORT = "osvc:q:sysreport"
 R_ASSET_HASH = "osvc:h:asset"
@@ -155,86 +157,23 @@ def update_appinfo(vars, vals, auth):
 @service.xmlrpc
 def update_resinfo(vars, vals, auth):
     """
-    'svcmgr push resinfo' data feeder.
+    'svcmgr push resinfo' asynchronous data feeder.
     """
     return rpc_update_resinfo(vars, vals, auth)
 
+@service.xmlrpc
+def update_resinfo_sync(vars, vals, auth):
+    """
+    'svcmgr push resinfo' synchronous data feeder.
+    """
+    return __update_resinfo(vars, vals, auth)
+
 @auth_uuid
 def rpc_update_resinfo(vars, vals, auth):
-    now = datetime.datetime.now()
-    now -= datetime.timedelta(microseconds=now.microsecond)
-    if len(vals) == 0:
-        return
-    h = {}
-    if "app_nodename" in vars:
-        node_k = "app_nodename"
-    else:
-        node_k = "res_nodename"
-    if "app_svcname" in vars:
-        svc_k = "app_svcname"
-    else:
-        svc_k = "res_svcname"
-    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname=node_k)
-    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname=svc_k)
-    updated_idx = None
-    for i, v in enumerate(vars):
-        if v == "app_launcher":
-            vars[i] = "rid"
-        elif v == "app_key":
-            vars[i] = "res_key"
-        elif v == "app_value":
-            vars[i] = "res_value"
-        elif v == "app_updated":
-            updated_idx = i
-            vars[i] = "updated"
-        elif v == "cluster_type":
-            vars[i] = "topology"
-    if not updated_idx:
-        vars.append("updated")
-        updated_idx = len(vars) - 1
-    for i, v in enumerate(vals):
-        vals[i].append(now)
-    for a,b in zip(vars, vals[0]):
-        h[a] = b
-    generic_insert('resinfo', vars, vals)
-    if "topology" in h and "flex" == h["topology"]:
-        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
-    else:
-        db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))
-    ws_send("resinfo_change")
-
-    i_key = vars.index('res_key')
-    i_val = vars.index('res_value')
-    i_node = vars.index('node_id')
-    i_svc = vars.index('svc_id')
-    i_rid = vars.index('rid')
-    key_blacklist = (
-        "restart",
-        "start",
-        "stop",
-        "check",
-        "info",
-        "mask",
-        "timeout",
-        "start_timeout",
-        "stop_timeout",
-        "check_timeout",
-        "info_timeout",
-    )
-    for _vals in vals:
-        if _vals[i_key] in key_blacklist:
-            continue
-        try:
-            n = float(_vals[i_val])
-        except:
-            continue
-        path = timeseries.wsp_path(
-            "nodes", _vals[i_node],
-            "services", _vals[i_svc],
-            "resources", _vals[i_rid],
-            "info", _vals[i_key],
-        )
-        timeseries.whisper_update(path, n, _vals[updated_idx])
+    key = json.dumps([vals[0][0], auth])
+    rconn.hset(R_RESINFO_HASH, key, json.dumps([vars, vals]))
+    rconn.lrem(R_RESINFO, 0, key)
+    rconn.lpush(R_RESINFO, key)
 
 @service.xmlrpc
 def update_service(vars, vals, auth):
@@ -242,7 +181,7 @@ def update_service(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_service(vars, vals, auth):
-    key = json.dumps([vals[0], auth])
+    key = json.dumps([vals[0][0], auth])
     rconn.hset(R_SVCCONF_HASH, key, json.dumps([vars, vals]))
     rconn.lrem(R_SVCCONF, 0, key)
     rconn.lpush(R_SVCCONF, key)
@@ -2255,6 +2194,8 @@ def _task_rq_generic(q):
         return merge_daemon_status
     elif q == R_DAEMON_PING:
         return merge_daemon_ping
+    elif q == R_RESINFO:
+        return _update_resinfo
     elif q == R_SVCCONF:
         return _update_service
     elif q == R_CHECKS:
@@ -2277,6 +2218,7 @@ def task_rq_generic():
         R_DAEMON_PING,
         R_DAEMON_STATUS,
         R_SVCMON_UPDATE,
+        R_RESINFO,
         R_SYSREPORT,
         R_PATCHES,
         R_PACKAGES,

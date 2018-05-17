@@ -136,18 +136,6 @@ def create_svc(node_id, cluster_id, svcname):
       "updated": datetime.datetime.now()
     }
     db.services.insert(**data)
-
-    # also make sure we have the svcmon entry for the requesting node
-    ret = db.svcmon.update_or_insert({
-            "svc_id": data["svc_id"],
-            "node_id": node_id,
-            "mon_vmname": "",
-        },
-        svc_id=data["svc_id"],
-        node_id=node_id,
-        mon_vmname="",
-        mon_updated=datetime.datetime.now(),
-    )
     return Storage(data)
 
 def node_responsibles(node_id):

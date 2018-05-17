@@ -266,6 +266,7 @@ def update_virtual_asset(node_id, svc_id):
     db.executesql(sql)
 
 def _update_service(svcname, auth):
+    print "update service: %s@%s" % (svcname, auth[1])
     vars, vals = json.loads(rconn.hget(R_SVCCONF_HASH, json.dumps([svcname, auth])))
     if 'updated' not in vars:
         vars += ['updated']
@@ -674,7 +675,89 @@ def get_hw_obs_dates(obs_name):
         return None, None
     return o.obs_warn_date, o.obs_alert_date
 
+def _update_resinfo(svcname, auth):
+    print "update resinfo: %s@%s" % (svcname, auth[1])
+    vars, vals = json.loads(rconn.hget(R_RESINFO_HASH, json.dumps([svcname, auth])))
+    __update_resinfo(vars, vals, auth)
+
+def __update_resinfo(vars, vals, auth):
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+    if len(vals) == 0:
+        return
+    h = {}
+    if "app_nodename" in vars:
+        node_k = "app_nodename"
+    else:
+        node_k = "res_nodename"
+    if "app_svcname" in vars:
+        svc_k = "app_svcname"
+    else:
+        svc_k = "res_svcname"
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname=node_k)
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname=svc_k)
+    updated_idx = None
+    for i, v in enumerate(vars):
+        if v == "app_launcher":
+            vars[i] = "rid"
+        elif v == "app_key":
+            vars[i] = "res_key"
+        elif v == "app_value":
+            vars[i] = "res_value"
+        elif v == "app_updated":
+            updated_idx = i
+            vars[i] = "updated"
+        elif v == "cluster_type":
+            vars[i] = "topology"
+    if not updated_idx:
+        vars.append("updated")
+        updated_idx = len(vars) - 1
+    for i, v in enumerate(vals):
+        vals[i].append(now)
+    for a,b in zip(vars, vals[0]):
+        h[a] = b
+    generic_insert('resinfo', vars, vals)
+    if "topology" in h and "flex" == h["topology"]:
+        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
+    else:
+        db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))
+    ws_send("resinfo_change")
+
+    i_key = vars.index('res_key')
+    i_val = vars.index('res_value')
+    i_node = vars.index('node_id')
+    i_svc = vars.index('svc_id')
+    i_rid = vars.index('rid')
+    key_blacklist = (
+        "restart",
+        "start",
+        "stop",
+        "check",
+        "info",
+        "mask",
+        "timeout",
+        "start_timeout",
+        "stop_timeout",
+        "check_timeout",
+        "info_timeout",
+    )
+    for _vals in vals:
+        if _vals[i_key] in key_blacklist:
+            continue
+        try:
+            n = float(_vals[i_val])
+        except:
+            continue
+        path = timeseries.wsp_path(
+            "nodes", _vals[i_node],
+            "services", _vals[i_svc],
+            "resources", _vals[i_rid],
+            "info", _vals[i_key],
+        )
+        timeseries.whisper_update(path, n, _vals[updated_idx])
+
 def _update_asset(auth):
+    print "update asset: %s" % auth[1]
     vars, vals = json.loads(rconn.hget(R_ASSET_HASH, json.dumps([auth])))
     __update_asset(vars, vals, auth)
 

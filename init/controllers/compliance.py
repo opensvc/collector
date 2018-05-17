@@ -2307,20 +2307,36 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
-def comp_get_svcmon_ruleset(svc_id, node_id):
-    q = db.svcmon.svc_id == svc_id
-    q &= db.svcmon.node_id == node_id
-    q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
-    row = db(q).select(cacheable=True).first()
-    if row is None:
+def comp_get_svcmon_ruleset(svc_id, node_id, slave=False):
+    if slave:
         q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.mon_vmname == db.nodes.nodename
         q &= db.nodes.node_id == node_id
         q &= db.svcmon.mon_containerstatus == "up"
         q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
         row = db(q).select(db.svcmon.ALL, cacheable=True).first()
-    if row is None:
-        return {}
+    else:
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
+        q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
+        row = db(q).select(cacheable=True).first()
+
+        if row is None:
+            # make sure we have the svcmon entry for the requesting node
+            ret = db.svcmon.update_or_insert({
+                    "svc_id": svc_id,
+                    "node_id": node_id,
+                    "mon_vmname": "",
+                },
+                svc_id=svc_id,
+                node_id=node_id,
+                mon_vmname="",
+                mon_updated=datetime.datetime.now(),
+            )
+            if ret:
+                q = db.svcmon.id == ret
+            row = db(q).select(cacheable=True).first()
+
     blacklist = [
         "id",
         "mon_containerpath",
@@ -2610,9 +2626,6 @@ def _comp_get_svc_ruleset(svc_id, node_id, slave=None, modulesets=[], var_class=
     if slave is None:
         slave = comp_slave(svc_id, node_id)
 
-    rset_relations = get_rset_relations()
-    rset_names = get_rset_names()
-
     # initialize ruleset with service variables
     ruleset = comp_get_service_ruleset(svc_id)
 
@@ -2620,7 +2633,10 @@ def _comp_get_svc_ruleset(svc_id, node_id, slave=None, modulesets=[], var_class=
     ruleset.update(comp_get_node_ruleset(node_id))
 
     # initialize ruleset with svcmon variables
-    ruleset.update(comp_get_svcmon_ruleset(svc_id, node_id))
+    ruleset.update(comp_get_svcmon_ruleset(svc_id, node_id, slave=slave))
+
+    rset_relations = get_rset_relations()
+    rset_names = get_rset_names()
 
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svc_id=svc_id, node_id=node_id)
