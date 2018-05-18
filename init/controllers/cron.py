@@ -69,7 +69,7 @@ def cron_scrub_resstatus():
     q = db.resmon.updated < limit
     rows = db(q).select(db.resmon.node_id, db.resmon.svc_id, db.resmon.rid)
     for row in rows:
-        resmon_log_update(row.node_id, row.svc_id, row.rid, "undef")
+        resmon_log_update(row.node_id, row.svc_id, row.rid, "undef", row.res_log)
 
 def cron_scrub_checks():
     thres = now - datetime.timedelta(days=2)
