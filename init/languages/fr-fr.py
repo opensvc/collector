@@ -2120,7 +2120,7 @@
 'You are not allowed to create or modify the ruleset %(rset)s': "Vous n'êtes pas autorisé à créer ou modifier le jeu de règles %(rset)s",
 'you are not allowed to delete the Manager group': 'il ne vous est pas permis de supprimer le groupe Manager',
 'You are not allowed to edit this form': "Vous n'êtes pas autorisé à changer ce formulaire",
-'You are not allowed to view this change': 'Vous n'êtes pas autorisé à visualiser ce changement',
+'You are not allowed to view this change': "Vous n'êtes pas autorisé à visualiser ce changement",
 'You are not authorized to access this function': "Vous n'êtes pas autorisé à accéder à cette fonction",
 'you are owner of no segment of this network': "vous n'êtes propriétaire d'aucun segment sur ce réseau",
 'You currently have no assigned request': "Vous n'avez aucune demande assignée actuellement",
