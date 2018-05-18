@@ -4312,7 +4312,7 @@ def update_dash_netdev_errors(node_id):
     b = now - datetime.timedelta(minutes=1440)
 
     metrics = ["rxerrps", "txerrps", "collps", "rxdropps", "rxdropps"]
-    devs = timeseries.find_sub("nodes", node_id, "netdev_err")
+    devs = timeseries.sub_find("nodes", node_id, "netdev_err")
     for dev in devs:
         errs = 0
         for metric in metrics:
