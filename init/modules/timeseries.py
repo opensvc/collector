@@ -144,11 +144,11 @@ def whisper_fetch(*args, **kwargs):
         return []
     if b is None:
         b = 0
-    if isinstance(b, (str, unicode)):
+    if not isinstance(b, int):
         b = to_tstamp(b)
     _args.append(b)
     if e is not None:
-        if isinstance(e, (str, unicode)):
+        if not isinstance(e, int):
             e = to_tstamp(e)
         _args.append(e)
     (start, end, step), values = whisper.fetch(*_args)
