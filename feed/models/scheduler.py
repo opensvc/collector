@@ -4324,7 +4324,7 @@ def update_dash_netdev_errors(node_id):
                 sql = """delete from checks_live
                          where
                           node_id="%(node_id)s" and
-                          chk_instance = "%(dev)s"
+                          chk_instance = "%(dev)s" and
                           chk_type = "netdev_err"
                       """ % dict(node_id=node_id, dev=dev)
                 db.executesql(sql)
@@ -4347,7 +4347,7 @@ def update_dash_netdev_errors(node_id):
                        chk_updated="%(now)s",
                        chk_instance="%(dev)s"
                   """%dict(node_id=node_id,
-                           now=now,
+                           now=now.strftime("%Y-%m-%d %H:%M:%S"),
                            dev=dev,
                            errs=int(row['errs']))
             db.executesql(sql)
@@ -4359,7 +4359,7 @@ def update_dash_netdev_errors(node_id):
                chk_updated < "%(now)s" and
                node_id="%(node_id)s"
           """%dict(node_id=node_id,
-                   now=now,
+                   now=now.strftime("%Y-%m-%d %H:%M:%S"),
                   )
     db.executesql(sql)
     db.commit()
