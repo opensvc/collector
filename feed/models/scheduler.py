@@ -4816,6 +4816,124 @@ def merge_daemon_ping(node_id):
         table_modified(table_name)
         ws_send(table_name+'_change')
 
+def _push_status(svcname, data, auth):
+        data = json.loads(data)
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        r_vars = [
+            "svcname",
+            "nodename",
+            "vmname",
+            "rid",
+            "res_type",
+            "res_desc",
+            "res_status",
+            "res_monitor",
+            "res_optional",
+            "res_disable",
+            "updated",
+            "res_log",
+        ]
+        r_vals = []
+
+        def fmt_r_vals(rid, rdata, erid=None):
+            if erid:
+                vmname = data.get("resources", {}).get(erid, {}).get("hostname", "")
+            else:
+                vmname = ""
+            return [
+                svcname,
+                auth[1],
+                vmname,
+                rid,
+                rdata.get("type", ""),
+                rdata.get("label", ""),
+                rdata.get("status", "undef"),
+                rdata.get("monitor", "undef"),
+                rdata.get("optional", "undef"),
+                rdata.get("disable", "undef"),
+                now,
+                "\n".join(rdata.get("log", [])),
+            ]
+
+        for rid, rdata in data.get("resources", {}).items():
+            r_vals += [fmt_r_vals(rid, rdata)]
+        for erid, edata in data.get("encap", {}).items():
+            for rid, rdata in edata.get("resources", {}).items():
+                r_vals += [fmt_r_vals(rid, rdata, erid=erid)]
+
+        g_vars = [
+            "mon_svcname",
+            "mon_svctype",
+            "mon_nodname",
+            "mon_vmname",
+            "mon_vmtype",
+            "mon_nodtype",
+            "mon_ipstatus",
+            "mon_diskstatus",
+            "mon_syncstatus",
+            "mon_containerstatus",
+            "mon_fsstatus",
+            "mon_sharestatus",
+            "mon_appstatus",
+            "mon_availstatus",
+            "mon_overallstatus",
+            "mon_updated",
+            "mon_prinodes",
+            "mon_frozen",
+        ]
+        g_vals = []
+        if data.get("encap", []):
+            gfrozen = data.get("frozen", False)
+            for rid, edata in data.get("encap", {}).items():
+                efrozen = edata.get("frozen", False)
+                if edata.get("frozen"):
+                    frozen = int(data.get("frozen")) + 2
+                else:
+                    frozen = int(data.get("frozen"))
+
+                g_vals += [[
+                    svcname,
+                    data.get("env", "TST"),
+                    auth[1],
+                    edata.get("hostname", ""),
+                    data.get(rid, {}).get("type", "").replace("container.", ""),
+                    "",
+                    edata.get("status_group", {}).get("ip", "undef"),
+                    edata.get("status_group", {}).get("disk", "undef"),
+                    edata.get("status_group", {}).get("sync", "undef"),
+                    edata.get("status_group", {}).get("container", "undef"),
+                    edata.get("status_group", {}).get("fs", "undef"),
+                    edata.get("status_group", {}).get("share", "undef"),
+                    edata.get("status_group", {}).get("app", "undef"),
+                    edata.get("avail", "undef"),
+                    edata.get("overall", "undef"),
+                    now,
+                    "",
+                    frozen,
+                ]]
+        else:
+            g_vals += [[
+                svcname,
+                data.get("env", "TST"),
+                auth[1],
+                "",
+                "",
+                "",
+                data.get("status_group", {}).get("ip", "undef"),
+                data.get("status_group", {}).get("disk", "undef"),
+                data.get("status_group", {}).get("sync", "undef"),
+                data.get("status_group", {}).get("container", "undef"),
+                data.get("status_group", {}).get("fs", "undef"),
+                data.get("status_group", {}).get("share", "undef"),
+                data.get("status_group", {}).get("app", "undef"),
+                data.get("avail", "undef"),
+                data.get("overall", "undef"),
+                now,
+                "",
+                int(data.get("frozen", False)),
+            ]]
+        _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth)
+
 def merge_daemon_status(node_id):
     changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     if changes:

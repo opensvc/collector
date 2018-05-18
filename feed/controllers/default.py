@@ -2107,6 +2107,10 @@ def rpc_sysreport_lstree(auth):
     tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
     return map(lambda d: d['fpath'], tree_data)
 
+@service.xmlrpc
+def push_status(svcname, data, auth):
+    return _push_status(svcname, data, auth)
+
 ##############################################################################
 #
 # OpenSVC Daemon feeders
