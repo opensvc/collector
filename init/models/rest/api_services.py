@@ -211,8 +211,6 @@ class rest_delete_service(rest_delete_handler):
         svc_responsible(row.svc_id)
         svcname = get_svcname(svc_id)
 
-        db(q).delete()
-        ws_send('services', {'svc_id': svc_id})
         _log('service.delete', 'delete service %(data)s', dict(data=svcname))
 
         for t in ["services", "svcactions", "drpservices", "svcmon_log", "resmon_log", "svcmon_log_ack", "checks_settings", "comp_log", "comp_log_daily", "comp_rulesets_services", "comp_modulesets_services", "log", "action_queue", "svc_tags", "form_output_results", "svcmon_log_last", "resmon_log_last", "svcmon", "dashboard", "dashboard_events", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
@@ -221,7 +219,7 @@ class rest_delete_service(rest_delete_handler):
             try:
                 counter = db._adapter.cursor.rowcount
             except:
-                counter =  None
+                counter = None
             if counter:
                 ws_send(t+'_change', {'svc_id': svc_id})
 
