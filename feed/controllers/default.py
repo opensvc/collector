@@ -2194,11 +2194,7 @@ def task_rq_storage():
     task_rq(R_STORAGE, lambda q: _task_rq_storage)
 
 def _task_rq_generic(q):
-    if q == R_DAEMON_STATUS:
-        return merge_daemon_status
-    elif q == R_DAEMON_PING:
-        return merge_daemon_ping
-    elif q == R_RESINFO:
+    if q == R_RESINFO:
         return _update_resinfo
     elif q == R_SVCCONF:
         return _update_service
@@ -2239,5 +2235,17 @@ def task_rq_svcactions():
     task_rq(R_SVCACTIONS, lambda q: _action_wrapper)
 
 def task_rq_svcmon():
-    task_rq(R_SVCMON, lambda q: _svcmon_update_combo)
+    task_rq([
+        R_DAEMON_PING,
+        R_DAEMON_STATUS,
+        R_SVCMON,
+    ], lambda q: _task_rq_svcmon(q))
+
+def _task_rq_svcmon(q):
+    if q == R_DAEMON_STATUS:
+        return merge_daemon_status
+    elif q == R_DAEMON_PING:
+        return merge_daemon_ping
+    elif q == R_SVCMON:
+        return _svcmon_update_combo
 
