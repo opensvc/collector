@@ -4778,7 +4778,7 @@ def merge_daemon_ping(node_id):
             return node_ids[nodename]
         except KeyError:
             q = app_q & (db.nodes.nodename == nodename)
-            _node = db(q).select(db.nodes.node_id).first()
+            _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id).first()
             if _node is None:
                 node_ids[nodename] = None
             else:
