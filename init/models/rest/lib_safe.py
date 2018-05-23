@@ -136,6 +136,8 @@ def lib_safe_file_upload(id, name=None, file=None):
     uploader = auth.user_id
     uploaded_from = request.env.REMOTE_ADDR
     uploaded_date = datetime.datetime.now()
+    if name is None:
+        name = row.name
 
     file.file.seek(0, os.SEEK_END)
     size = file.file.tell()
