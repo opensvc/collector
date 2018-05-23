@@ -2215,17 +2215,14 @@ def _task_rq_generic(q):
 
 def task_rq_generic():
     task_rq([
-        R_DAEMON_PING,
-        R_DAEMON_STATUS,
-        R_SVCMON_UPDATE,
+        R_ASSET,
+        R_SVCCONF,
+        R_CHECKS,
         R_RESINFO,
         R_SYSREPORT,
-        R_PATCHES,
         R_PACKAGES,
-        R_ASSET,
+        R_PATCHES,
         R_GENERIC,
-        R_CHECKS,
-        R_SVCCONF
     ], lambda q: _task_rq_generic(q))
 
 def task_rq_dashboard():
@@ -2239,6 +2236,7 @@ def task_rq_svcmon():
         R_DAEMON_PING,
         R_DAEMON_STATUS,
         R_SVCMON,
+        R_SVCMON_UPDATE,
     ], lambda q: _task_rq_svcmon(q))
 
 def _task_rq_svcmon(q):
