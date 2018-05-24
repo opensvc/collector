@@ -6699,10 +6699,8 @@ alter table resmon modify column svc_id char(36) charset ascii default '';
 alter table comp_rulesets_services modify column svc_id char(36) charset ascii default '';
 alter table comp_modulesets_services modify column svc_id char(36) charset ascii default '';
 
-alter table nodes add column cluster_id binary(36) default '';
-alter table services add column cluster_id binary(36) default '';
-alter table nodes modify column cluster_id char(36) charset ascii default '';
-alter table services modify column cluster_id char(36) charset ascii default '';
+alter table nodes add column cluster_id char(36) charset ascii default '';
+alter table services add column cluster_id char(36) charset ascii default '';
 
 alter table nodes add key k_cluster_id (cluster_id);
 alter table services add key k_cluster_id (cluster_id);
@@ -6783,7 +6781,7 @@ update services set cluster_id="" where hex(cluster_id)="00000000000000000000000
 CREATE TABLE `safe_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `safe_id` int(11) NOT NULL,
-  `uuid` varchar(512) NOT NULL,
+  `uuid` varchar(512) charset ascii NOT NULL,
   `archived` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`safe_id`, `uuid`)
