@@ -25,11 +25,13 @@ def node_svc(node_id, svcname):
     svcname = svcname.strip("'")
     if svcname == "" or svcname is None:
         return
+    responsibles = node_responsibles(node_id)
+
     q = db.services.svcname == svcname
     q &= db.services.cluster_id == cluster_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
+    q &= db.apps_responsibles.group_id.belongs(responsibles)
     rows = db(q).select(
         db.services.svcname,
         db.services.svc_id,
@@ -49,6 +51,35 @@ def node_svc(node_id, svcname):
 
     if len(rows) == 1:
         return rows.first()
+
+    # encap service
+    q = db.nodes.node_id == node_id
+    q &= db.svcmon.mon_vmname == db.nodes.nodename
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.services.svcname == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id.belongs(responsibles)
+
+    rows = db(q).select(
+        db.services.svcname,
+        db.services.svc_id,
+        db.services.svc_app,
+        db.services.svc_env,
+        db.services.svc_availstatus,
+        db.services.svc_status,
+        groupby=db.services.svc_id,
+    )
+    if len(rows) > 1:
+        raise Exception("multiple services found matching the service name '%(svcname)s' in the encap node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
+          svcname=svcname,
+          node_id=node_id,
+          svc_ids=', '.join([r.svc_id for r in rows]),
+        ))
+
+    if len(rows) == 1:
+        return rows.first()
+
 
     #
     # no service was found in the node's responsability zone.
@@ -82,7 +113,7 @@ def node_svc(node_id, svcname):
     q &= db.services.cluster_id == ""
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
+    q &= db.apps_responsibles.group_id.belongs(responsibles)
     rows = db(q).select(
         db.services.svcname,
         db.services.svc_id,
