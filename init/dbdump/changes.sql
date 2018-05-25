@@ -6789,3 +6789,6 @@ CREATE TABLE `safe_log` (
   UNIQUE KEY `uk` (`safe_id`, `uuid`)
 );
 
+alter table node_hw modify hw_description varchar(512);
+alter table nodes modify bios_version varchar(64);
+
