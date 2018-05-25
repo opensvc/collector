@@ -441,29 +441,6 @@ def alerts_apps_without_responsible():
          level="warning"
     )
 
-def alerts_services_not_updated():
-    """ Alert if service is not updated for 48h
-    """
-    age = 2
-    sql = """insert ignore
-             into log
-               select NULL,
-                      "service.config",
-                      "scheduler",
-                      "service config not updated for more than %(age)d days (%%(date)s)",
-                      concat('{"date": "', updated, '"}'),
-                      now(),
-                      svc_id,
-                      0,
-                      0,
-                      md5(concat("service.config.notupdated",svcname,updated)),
-                      "warning",
-                      NULL
-               from services
-               where updated<date_sub(now(), interval %(age)d day)"""%dict(age=age)
-    return db.executesql(sql)
-    db.commit()
-
 def alerts_svcmon_not_updated():
     """ Alert if svcmon is not updated for 2h
     """
@@ -796,8 +773,6 @@ def purge_alerts_comp_diff():
 def cron_alerts_daily():
     print "alerts_apps_without_responsible"
     alerts_apps_without_responsible()
-    print "alerts_services_not_updated"
-    alerts_services_not_updated()
     print "alerts_failed_actions_not_acked"
     alerts_failed_actions_not_acked()
     print "refresh_b_action_errors"
