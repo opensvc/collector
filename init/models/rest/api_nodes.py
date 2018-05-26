@@ -936,7 +936,7 @@ class rest_post_nodes(rest_post_handler):
 
     def handler(self, **vars):
         if 'nodename' not in vars and 'node_id' not in vars:
-            raise HTTP(400, "The 'nodename' or 'id' property must be set in the POST data")
+            raise HTTP(400, "The 'nodename' or 'node_id' property must be set in the POST data: %s" % str(vars))
 
         try:
             _vars = {}

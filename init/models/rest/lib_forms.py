@@ -458,16 +458,17 @@ def output_rest(output, form_definition, _d=None, results=None):
     if type(vars) == str:
         raise Exception("The mangler must not return a str")
 
-    # find the rest handler and execute the call
-    handler = get_handler(action, url)
+    if not args[0].startswith("http"):
+        # find the rest handler and execute the call
+        handler = get_handler(action, url)
 
-    for k in handler.props_blacklist:
-        if k in vars:
-            del(vars[k])
+        for k in handler.props_blacklist:
+            if k in vars:
+                del(vars[k])
 
     # keep only keys specified by "Keys", if defined
-    if len(output.get("Keys", [])) > 0:
-        retain_keys = output.get("Keys")
+    retain_keys = output.get("Keys")
+    if retain_keys and isinstance(retain_keys, list):
         for k in list(vars.keys()):
             if k not in retain_keys:
                 del(vars[k])
@@ -487,10 +488,26 @@ def output_rest(output, form_definition, _d=None, results=None):
         raise Exception("Timed out waiting for a result")
 
     def _run_handler(args, vars, url):
+        if args[0].startswith("http"):
+            return handle_external(args, vars)
         if type(vars) == list:
             return handler.handle_list(vars, url, {})
         else:
             return handler.handle(*args, **vars)
+
+    def handle_external(args, vars):
+        args.insert(1, "")
+        url = "/".join(args)
+        import requests
+        if action == "GET":
+            result = requests.get(url, data=vars)
+        elif action == "POST":
+            result = requests.post(url, data=vars)
+        elif action == "DELETE":
+            result = requests.delete(url, data=vars)
+        elif action == "PUT":
+            result = requests.put(url, data=vars)
+        return result.json()
 
     if output.get("LogRequestData", True) == True:
         results["request_data"][output_id] = vars
