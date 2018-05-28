@@ -247,6 +247,7 @@ class Storage(object):
         data = self.get(path, params={
             "meta": 0,
             "limit": 0,
+            "filters": "nodes.node_id !empty",
             "props": "nodes.nodename,nodes.node_id",
         })
         if len(data["data"]) == 0:
