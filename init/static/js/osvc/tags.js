@@ -1771,6 +1771,7 @@ function array_proxies(options) {
 		services_osvcgetrest("/arrays/%1/proxies", [options.array_id], {
 			"orderby": "nodes.nodename",
 			"props": "nodes.node_id,nodes.nodename",
+			"filters": "nodes.node_id !empty",
 			"limit": "0"
 		}, callback, callback_err)
 	}
