@@ -40,7 +40,7 @@ class Driver(object):
             cmd += ["--srp", self.storage.request_data["dg_name"]]
         if "slo" in self.storage.request_data and self.storage.request_data["slo"] != "":
             cmd += ["--slo", self.storage.request_data["slo"]]
-        if "srdf" in self.storage.request_data and self.storage.request_data["srdf"] == "Yes":
+        if "srdf" in self.storage.request_data and self.storage.request_data["srdf"]:
             cmd += ["--srdf"]
         if "rdfg" in self.storage.request_data:
             cmd += ["--rdfg", self.storage.request_data["rdfg"]]
