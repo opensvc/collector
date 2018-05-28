@@ -798,6 +798,9 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
     try:
         results = __form_submit(form_id, _d=_d, prev_wfid=prev_wfid, results=results, authdump=authdump)
     except Exception as exc:
+        if "server has gone away" in str(exc):
+            # let task_rq manage reconnect
+            raise
         results["status"] = "COMPLETED"
         if "Lost connection" not in str(exc):
             results["returncode"] += 1
