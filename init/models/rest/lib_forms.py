@@ -693,7 +693,7 @@ def validate_input_data(form_definition, data, _input):
     else:
         vals = val
 
-    if _input.get("Candidates"):
+    if _input.get("Candidates") and _input.get("StrictCandidates"):
         candidate_vals = []
         for candidate in _input.get("Candidates"):
             if isinstance(candidate, dict) and "Value" in candidate:
