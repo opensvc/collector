@@ -2321,21 +2321,8 @@ def comp_get_svcmon_ruleset(svc_id, node_id, slave=False):
         q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
         row = db(q).select(cacheable=True).first()
 
-        if row is None:
-            # make sure we have the svcmon entry for the requesting node
-            ret = db.svcmon.update_or_insert({
-                    "svc_id": svc_id,
-                    "node_id": node_id,
-                    "mon_vmname": "",
-                },
-                svc_id=svc_id,
-                node_id=node_id,
-                mon_vmname="",
-                mon_updated=datetime.datetime.now(),
-            )
-            if ret:
-                q = db.svcmon.id == ret
-            row = db(q).select(cacheable=True).first()
+    if row is None:
+        return {}
 
     blacklist = [
         "id",
