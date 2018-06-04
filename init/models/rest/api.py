@@ -830,10 +830,14 @@ def prepare_data(
                 count_col = db[table][prop].count()
             else:
                 count_col = cols[0].count()
-            if groupby:
-                total = len(db(q).select(count_col, groupby=groupby, left=left))
-            else:
-                total = db(q).select(count_col, left=left).first()._extra[count_col]
+            try:
+                if groupby:
+                    total = len(db(q).select(count_col, groupby=groupby, left=left))
+                else:
+                    total = db(q).select(count_col, left=left).first()._extra[count_col]
+            except TypeError as exc:
+                # raised when pydal smart query is bogus
+                return dict(error="query error: %s" % str(exc))
 
         limit = int(limit)
         offset = int(offset)
@@ -844,7 +848,8 @@ def prepare_data(
         else:
             limitby = (offset, offset + limit)
 
-        data = db(q).select(
+        try:
+            data = db(q).select(
                        *cols,
                        cacheable=True,
                        left=left,
@@ -852,6 +857,9 @@ def prepare_data(
                        orderby=orderby,
                        limitby=limitby
                      ).as_list()
+        except TypeError as exc:
+            # raised when pydal smart query is bogus
+            return dict(error="query error: %s" % str(exc))
     else:
         return dict(error="failed to prepare data: missing parameter")
 

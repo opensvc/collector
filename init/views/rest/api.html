@@ -7,10 +7,12 @@ def json(value, default=custom_json):
     # http://timelessrepo.com/json-isnt-a-javascript-subset
     return json_parser.dumps(value, indent='\t', default=default).replace(ur'\u2028', '\\u2028').replace(ur'\2029', '\\u2029')
 
-try:
-    response.write(json(response._vars),escape=False)
-    response.headers['Content-Type']='application/json'
-except Exception as e:
-    raise HTTP(405,'no json: %s'%str(e))
+if response.status == 200:
+    try:
+        response.write(json(response._vars),escape=False)
+        response.headers['Content-Type']='application/json'
+    except Exception as e:
+        raise HTTP(405,'no json: %s'%str(e))
+    pass
 pass
 }}

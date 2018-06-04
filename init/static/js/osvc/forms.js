@@ -1493,6 +1493,10 @@ function form(divid, options) {
 	function rest_init(input, d, content, fn_callback) {
 		var args = prepare_args(input, d.Args)
 		var fn = subst_refs(input, d.Function)
+		if (fn.match(/^\//) && fn.match(/\/\//)) {
+			console.log("missing data in rest path")
+			return
+		}
 		if (fn.match(/\/undefined\//) || fn.match(/\/$/) || fn.match(/#/)) {
 			console.log("cancel rest get on", fn, ": missing parameters")
 			return
@@ -1515,6 +1519,8 @@ function form(divid, options) {
 				var data = jd.data
 			}
 			fn_callback(input, d, args, data, content)
+		}, function(){
+			// ignore errors (due to incomplete form data)
 		})
 	}
 
