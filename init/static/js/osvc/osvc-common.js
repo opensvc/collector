@@ -374,6 +374,7 @@ function flash() {
 	}
 
 	o.open = function() {
+		o.div.css({"height": "auto"})
 		o.div.stop().slideDown(function(){
 			osvc.body_scroll.disable()
 		})
