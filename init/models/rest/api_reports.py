@@ -729,7 +729,7 @@ class rest_get_reports_chart_samples(rest_get_handler):
                 if fpath is None:
                     continue
                 fpaths = [fpath]
-                metric_id = int(hashlib.md5().hexdigest(), 16)
+                metric_id = int(hashlib.md5(fpath).hexdigest(), 16)
                 definition['Metrics'][i]["metric_id"] = metric_id
                 if definition['Metrics'][i].get("label") is None:
                     definition['Metrics'][i]["label"] = metric_path
