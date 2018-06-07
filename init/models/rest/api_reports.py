@@ -718,12 +718,27 @@ class rest_get_reports_chart_samples(rest_get_handler):
             "chart_definition": definition,
             "data": [],
         }
-        for m in definition['Metrics']:
-            metric_ids.append(m['metric_id'])
-            for fpath in timeseries.wsp_find("metrics", m['metric_id'], "fsets", fset_id):
+        import hashlib
+        for i, m in enumerate(definition['Metrics']):
+            metric_id = m.get('metric_id')
+            metric_path = m.get('metric_path')
+            if metric_id:
+                fpaths = timeseries.wsp_find("metrics", metric_id, "fsets", fset_id)
+            elif metric_path:
+                fpath = timeseries.wsp_path(metric_path.lstrip("/"))
+                if fpath is None:
+                    continue
+                fpaths = [fpath]
+                metric_id = int(hashlib.md5().hexdigest(), 16)
+                definition['Metrics'][i]["metric_id"] = metric_id
+                if definition['Metrics'][i].get("label") is None:
+                    definition['Metrics'][i]["label"] = metric_path
+            else:
+                raise HTTP(400, "metric defines neither metric_id nor metric_path")
+            for fpath in fpaths:
                 lead = True
                 instance = os.path.basename(fpath)[:-4]
-                if instance == "None":
+                if metric_path or instance == "None":
                     instance = None
                 for timestr, value in timeseries.whisper_fetch(fpath):
                     if lead and value is None:
@@ -733,14 +748,14 @@ class rest_get_reports_chart_samples(rest_get_handler):
                             "date": timestr,
                             "value": None,
                             "instance": instance,
-                            "metric_id": m['metric_id'],
+                            "metric_id": metric_id,
                         })
                         lead = False
                     data["data"].append({
                         "date": timestr,
                         "value": value,
                         "instance": instance,
-                        "metric_id": m['metric_id'],
+                        "metric_id": metric_id,
                     })
         return data
 
