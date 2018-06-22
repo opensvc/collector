@@ -99,7 +99,7 @@ class rest_get_resource(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.resmon.id == id
-        q = q_filter(q, svc_field=db.resmon.id)
+        q = q_filter(q, svc_field=db.resmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
