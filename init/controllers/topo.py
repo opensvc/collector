@@ -810,17 +810,17 @@ def json_topo_data():
 
     _svc_ids = request.vars.get("svc_ids[]", [])
     if type(_svc_ids) != list:
-        svc_ids |= set([_svc_ids])
+        _svc_ids = [_svc_ids]
     if len(_svc_ids) > 0:
-        q = db.services.svc_id.belongs(svc_ids)
+        q = db.services.svc_id.belongs(_svc_ids)
         q = q_filter(q, app_field=db.services.svc_app)
         svc_ids |= set([r.svc_id for r in db(q).select(db.services.svc_id)])
 
     _node_ids = request.vars.get("node_ids[]", [])
     if type(_node_ids) != list:
-        node_ids |= set([_node_ids])
+        _node_ids |= [_node_ids]
     if len(node_ids) > 0:
-        q = db.nodes.node_id.belongs(node_ids)
+        q = db.nodes.node_id.belongs(_node_ids)
         q = q_filter(q, app_field=db.nodes.app)
         node_ids = [r.node_id for r in db(q).select(db.nodes.node_id)]
 
