@@ -6790,3 +6790,7 @@ CREATE TABLE `safe_log` (
 alter table node_hw modify hw_description varchar(512);
 alter table nodes modify bios_version varchar(64);
 
+#
+alter table svcactions add key begin (begin);
+alter table svcactions add key errcount (svc_id,node_id,begin);
+
