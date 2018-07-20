@@ -818,8 +818,8 @@ def json_topo_data():
 
     _node_ids = request.vars.get("node_ids[]", [])
     if type(_node_ids) != list:
-        _node_ids |= [_node_ids]
-    if len(node_ids) > 0:
+        _node_ids = [_node_ids]
+    if len(_node_ids) > 0:
         q = db.nodes.node_id.belongs(_node_ids)
         q = q_filter(q, app_field=db.nodes.app)
         node_ids = [r.node_id for r in db(q).select(db.nodes.node_id)]

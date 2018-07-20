@@ -1,7 +1,7 @@
 {
 	"avail_tab": {
 		"show resources": "Afficher les ressources",
-		"hide resources": "Masquer les resources"
+		"hide resources": "Masquer les ressources"
 	},
 	"alert_info": {
 		"timeline": "Historique"
@@ -363,8 +363,8 @@
 		"number_of_occurence": "__count__ occurence",
 		"number_of_occurence_plural": "__count__ occurences",
 		"unique_matching_values": "__count__ valeurs distinctes correspondantes",
-		"second": "__count__ segonde",
-		"seconds_plural": "__count__ segondes",
+		"second": "__count__ seconde",
+		"seconds_plural": "__count__ secondes",
 		"minute": "__count__ minute",
 		"minute_plural": "__count__ minutes",
 		"hour": "__count__ heure",
