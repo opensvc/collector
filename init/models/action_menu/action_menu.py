@@ -2,6 +2,7 @@ config = local_import('config', reload=True)
 
 remote_cmd_prepend = config_get("remote_cmd_prepend", [])
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                  '-o', 'CheckHostIP=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'ConnectTimeout=5',
                   '-o', 'PasswordAuthentication=no']
