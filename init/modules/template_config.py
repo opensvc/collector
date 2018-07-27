@@ -106,10 +106,6 @@ billing_method = "agents"
 nodejs = "/usr/bin/nodejs"
 vm2 = "/usr/local/bin/vm2"
 
-# actiond
-actiond_workers = 5
-remote_command_prepend = []
-
 #
 # DataCore SAN symphony config
 #
@@ -174,4 +170,24 @@ xmpp_port = 5223
 
 slack = True
 slack_webhook_url = "https://hooks.slack.com/services/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"
+
+# actiond
+actiond_workers = 5
+
+# a prefix added to the ssh command
+remote_command_prepend = []
+
+# only defined to ease the declaration of 'remote_cmd_ssh'
+cmd_ssh = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                  '-o', 'CheckHostIP=no',
+                  '-o', 'ForwardX11=no',
+                  '-o', 'ConnectTimeout=5',
+                  '-o', 'PasswordAuthentication=no']
+
+# use this command for remote actions via ssh instead of the default one. per-os.
+remote_cmd_ssh = {
+    "Linux": cmd_ssh,
+    "SunOS": cmd_ssh,
+}
+
 
