@@ -44,9 +44,9 @@ def get_network_id(id):
              inet_aton("%(ip)s") >= inet_aton(network)""" % dict(ip=id)
     rows = db.executesql(sql)
     if len(rows) == 0:
-        raise Exception("%s not found in any known network"%id)
+        raise HTTP(404, "%s not found in any known network"%id)
     if len(rows) > 1:
-        raise Exception("%s found in multiple networks"%id)
+        raise HTTP(409, "%s found in multiple networks"%id)
     return rows[0][0]
 
 
