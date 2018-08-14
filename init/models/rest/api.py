@@ -381,16 +381,31 @@ class rest_post_handler(rest_handler):
             try:
                 data = json.loads(request.body.read())
             except:
-                return rest_handler.handle(self, *args, **vars)
+                try:
+                    return rest_handler.handle(self, *args, **vars)
+                except HTTP as e:
+                    return dict(error=str(e)+": "+e.body)
+                except Exception as e:
+                    return dict(error=str(e))
             if type(data) == list:
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
-                return rest_handler.handle(self, *args, **data)
+                try:
+                    return rest_handler.handle(self, *args, **data)
+                except HTTP as e:
+                    return dict(error=str(e)+": "+e.body)
+                except Exception as e:
+                    return dict(error=str(e))
         if "filters" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
         if "query" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
-        return rest_handler.handle(self, *args, **vars)
+        try:
+            return rest_handler.handle(self, *args, **vars)
+        except HTTP as e:
+            return dict(error=str(e)+": "+e.body)
+        except Exception as e:
+            return dict(error=str(e))
 
     def handle_multi_update(self, *args, **vars):
         _vars = {
