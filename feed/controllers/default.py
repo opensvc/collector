@@ -2103,8 +2103,8 @@ def sysreport_lstree(auth):
 
 @auth_uuid
 def rpc_sysreport_lstree(auth):
-    from applications.init.modules import sysreport
-    tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
+    from applications.init.modules import gittrack
+    tree_data = gittrack.gittrack().lstree_data("HEAD", auth[1])
     return map(lambda d: d['fpath'], tree_data)
 
 @service.xmlrpc
