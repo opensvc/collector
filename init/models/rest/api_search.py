@@ -37,50 +37,134 @@ class rest_get_search(rest_get_handler):
         if substring is None:
             return dict(data=data)
         substring = "%" + substring.lower().replace("osvc_comp_", "") + "%"
-        if otype is None or otype == "fset":
-            data["filtersets"] = lib_search_fset(substring, limit)
-        if otype is None or otype == "array":
-            data["arrays"] = lib_search_arrays(substring, limit)
-        if otype is None or otype == "disk":
-            data["disks"] = lib_search_disk(substring, limit)
-        if otype is None or otype == "app":
-            data["apps"] = lib_search_app(substring, limit)
-        if otype is None or otype == "svc":
-            data["services"] = lib_search_service(substring, limit)
-        if otype is None or otype == "vm":
-            data["vms"] = lib_search_vm(substring, limit)
-        if otype is None or otype == "ip":
-            data["ips"] = lib_search_ip(substring, limit)
-        if otype is None or otype == "node":
-            data["nodes"] = lib_search_node(substring, limit)
-        if otype is None or otype == "user":
-            data["users"] = lib_search_user(substring, limit)
-        if otype is None or otype == "group":
-            data["groups"] = lib_search_group(substring, limit)
-        if otype is None or otype == "priv":
-            data["privileges"] = lib_search_priv(substring, limit)
-        if otype is None or otype == "tag":
-            data["tags"] = lib_search_tag(substring, limit)
-        if otype is None or otype == "safe":
-            data["safe_files"] = lib_search_safe_file(substring, limit)
-        if otype is None or otype == "form":
-            data["forms"] = lib_search_form(substring, limit)
-        if otype is None or otype == "chart":
-            data["charts"] = lib_search_chart(substring, limit)
-        if otype is None or otype == "metric":
-            data["metrics"] = lib_search_metric(substring, limit)
-        if otype is None or otype == "report":
-            data["reports"] = lib_search_report(substring, limit)
-        if otype is None or otype == "modset":
-            data["modulesets"] = lib_search_modulesets(substring, limit)
-        if otype is None or otype == "rset":
-            data["rulesets"] = lib_search_rulesets(substring, limit)
-        if otype is None or otype == "prov":
-            data["prov_templates"] = lib_search_prov_templates(substring, limit)
-        if otype is None or otype == "docker":
-            data["docker_registries"] = lib_search_docker_registries(substring, limit)
-            data["docker_repositories"] = lib_search_docker_repositories(substring, limit)
-        if otype is None or otype == "var":
-            data["variables"] = lib_search_variables(substring, limit)
+        searches = [
+            {
+                "key": "filtersets",
+                "fn": lib_search_fset,
+                "otype": "fset",
+            },
+            {
+                "key": "arrays",
+                "fn": lib_search_arrays,
+                "otype": "array",
+            },
+            {
+                "key": "disks",
+                "fn": lib_search_disk,
+                "otype": "disk",
+            },
+            {
+                "key": "apps",
+                "fn": lib_search_app,
+                "otype": "app",
+            },
+            {
+                "key": "services",
+                "fn": lib_search_service,
+                "otype": "svc",
+            },
+            {
+                "key": "vms",
+                "fn": lib_search_vm,
+                "otype": "vm",
+            },
+            {
+                "key": "ips",
+                "fn": lib_search_ip,
+                "otype": "ip",
+            },
+            {
+                "key": "nodes",
+                "fn": lib_search_node,
+                "otype": "node",
+            },
+            {
+                "key": "users",
+                "fn": lib_search_user,
+                "otype": "user",
+            },
+            {
+                "key": "groups",
+                "fn": lib_search_group,
+                "otype": "group",
+            },
+            {
+                "key": "privileges",
+                "fn": lib_search_priv,
+                "otype": "priv",
+            },
+            {
+                "key": "tags",
+                "fn": lib_search_tag,
+                "otype": "tag",
+            },
+            {
+                "key": "safe_files",
+                "fn": lib_search_safe_file,
+                "otype": "safe",
+            },
+            {
+                "key": "forms",
+                "fn": lib_search_form,
+                "otype": "form",
+            },
+            {
+                "key": "charts",
+                "fn": lib_search_chart,
+                "otype": "chart",
+            },
+            {
+                "key": "metrics",
+                "fn": lib_search_metric,
+                "otype": "metric",
+            },
+            {
+                "key": "reports",
+                "fn": lib_search_report,
+                "otype": "report",
+            },
+            {
+                "key": "modulesets",
+                "fn": lib_search_modulesets,
+                "otype": "modset",
+            },
+            {
+                "key": "rulesets",
+                "fn": lib_search_rulesets,
+                "otype": "rset",
+            },
+            {
+                "key": "prov_templates",
+                "fn": lib_search_prov_templates,
+                "otype": "prov",
+            },
+            {
+                "key": "docker_registries",
+                "fn": lib_search_docker_registries,
+                "otype": "docker",
+            },
+            {
+                "key": "docker_repositories",
+                "fn": lib_search_docker_repositories,
+                "otype": "docker",
+            },
+            {
+                "key": "variables",
+                "fn": lib_search_variables,
+                "otype": "var",
+            },
+        ]
+        for search in searches:
+            if otype is None or otype == search["otype"]:
+                try:
+                    data[search["key"]] = search["fn"](substring, limit)
+                except Exception as exc:
+                    data[search["key"]] = {
+                        "total": 0,
+                        "data": [],
+                        "fmt": {},
+                        "elapsed": 0,
+                        "error": str(exc),
+                    }
         return dict(data=data)
 
