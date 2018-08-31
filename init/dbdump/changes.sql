@@ -6794,3 +6794,5 @@ alter table nodes modify bios_version varchar(64);
 alter table svcactions add key begin (begin);
 alter table svcactions add key errcount (svc_id,node_id,begin);
 
+drop view v_action_queue ; create view v_action_queue as select n.nodename, s.svcname, a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id left join nodes n on a.node_id=n.node_id left join services s on a.svc_id!="" and a.svc_id=s.svc_id;
+
