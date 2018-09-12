@@ -717,10 +717,7 @@ def __update_resinfo(vars, vals, auth):
     for a,b in zip(vars, vals[0]):
         h[a] = b
     generic_insert('resinfo', vars, vals)
-    if "topology" in h and "flex" == h["topology"]:
-        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
-    else:
-        db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))
+    db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
     ws_send("resinfo_change")
 
     i_key = vars.index('res_key')
