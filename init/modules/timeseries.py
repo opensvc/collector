@@ -215,7 +215,7 @@ def whisper_update_list_no_sub(head, vars, vals, group="", discard=None, datecol
             except ValueError:
                 continue
             datapoints.append((tstamp, _val))
-        print("insert %d values in %s" % (len(datapoints), wsp))
+        #print("insert %d values in %s" % (len(datapoints), wsp))
         whisper.update_many(wsp, datapoints)
 
 
