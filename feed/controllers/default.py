@@ -2210,8 +2210,6 @@ def _task_rq_generic(q):
         return _insert_patch
     elif q == R_SYSREPORT:
         return task_send_sysreport
-    elif q == R_SVCMON_UPDATE:
-        return _svcmon_update
 
 def task_rq_generic():
     task_rq([
@@ -2246,4 +2244,6 @@ def _task_rq_svcmon(q):
         return merge_daemon_ping
     elif q == R_SVCMON:
         return _svcmon_update_combo
+    elif q == R_SVCMON_UPDATE:
+        return _svcmon_update
 
