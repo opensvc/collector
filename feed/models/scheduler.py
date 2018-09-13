@@ -4939,7 +4939,7 @@ def merge_daemon_status(node_id):
         changes = []
     rconn.hdel(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     print "daemon status", node_id, changes
-    now = datetime.datetime.now()
+    now = datetime.datetime.now().replace(microsecond=0)
     data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
     changed = set()
 
@@ -5094,6 +5094,11 @@ def merge_daemon_status(node_id):
             )
             _changed.add("resmon")
             _changed |= resmon_log_update(peer.node_id, svc.svc_id, rid, rdata['status'], res_log, deferred=True)
+
+        q = db.resmon.node_id == peer.node_id
+        q &= db.resmon.svc_id == svc.svc_id
+        q &= db.resmon.updated < now
+        db(q).delete()
         return _changed
 
     def update_service(svc, sdata):
