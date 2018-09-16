@@ -4880,13 +4880,10 @@ def _push_status(svcname, data, auth):
         ]
         g_vals = []
         if data.get("encap", []):
-            gfrozen = data.get("frozen", False)
+            gfrozen = 1 if data.get("frozen", False) else 0
             for rid, edata in data.get("encap", {}).items():
-                efrozen = edata.get("frozen", False)
-                if edata.get("frozen"):
-                    frozen = int(data.get("frozen")) + 2
-                else:
-                    frozen = int(data.get("frozen"))
+                efrozen = 1 if edata.get("frozen", False) else 0
+                frozen = gfrozen + 2 * efrozen
 
                 g_vals += [[
                     svcname,
