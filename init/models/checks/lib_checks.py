@@ -103,7 +103,7 @@ def update_thresholds_from_filters(rows):
               gen_filtersets f
              where
               cl.chk_type=cf.chk_type and
-              (cl.chk_instance=cf.chk_instance or
+              (cl.chk_instance regexp cf.chk_instance or
                cl.chk_instance='' or
                cl.chk_instance is null) and
               cf.fset_id=f.id
@@ -160,7 +160,7 @@ def update_thresholds_from_filters_one_source(rows):
              where
               cl.id in (%(ids)s) and
               cl.chk_type=cf.chk_type and
-              (cl.chk_instance=cf.chk_instance or
+              (cl.chk_instance regexp cf.chk_instance or
                cl.chk_instance='' or
                cl.chk_instance is null) and
               cf.fset_id=f.id
@@ -171,6 +171,7 @@ def update_thresholds_from_filters_one_source(rows):
     return rest
 
 def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_names=None, get_vals=False):
+    import re
     node_id, svc_id = source
 
     # filter out those not matching the node_id/svc_id
@@ -202,9 +203,11 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_na
     vals = []
     for row in rows:
         i = row['chk_type'], row['chk_instance']
-        if i not in fsets:
+        match = [key for key in fsets if key[0]==i[0] and re.search(key[1], i[1])]
+        if not match:
             rest.append(row)
             continue
+        i = match[-1]
         vals.append([row['node_id'],
                      row['svc_id'],
                      row['chk_type'],
