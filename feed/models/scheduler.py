@@ -4768,13 +4768,16 @@ def merge_daemon_ping(node_id):
     node_ids = {
         node.nodename: node,
     }
-    app_q = db.nodes.app == node.app
+    if cluster_id:
+        nodes_filter_q = db.nodes.cluster_id == cluster_id
+    else:
+        nodes_filter_q = db.nodes.app == node.app
 
     def get_cluster_node(nodename):
         try:
             return node_ids[nodename]
         except KeyError:
-            q = app_q & (db.nodes.nodename == nodename)
+            q = nodes_filter_q & (db.nodes.nodename == nodename)
             _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id).first()
             if _node is None:
                 node_ids[nodename] = None
@@ -4802,10 +4805,16 @@ def merge_daemon_ping(node_id):
 
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
     for svcname in data["services"].keys():
+        svc = None
         for peer_node_id in peer_node_ids:
-            svc = node_svc(peer_node_id, svcname)
+            try:
+                svc = node_svc(peer_node_id, svcname)
+            except:
+                continue
             if svc:
                 break
+        if svc is None:
+            continue
         changed |= ping_svc(svc, now)
 
     print " tables changed:", ",".join(changed)
@@ -4952,13 +4961,16 @@ def merge_daemon_status(node_id):
     node_ids = {
         node.nodename: node,
     }
-    app_q = db.nodes.app == node.app
+    if cluster_id:
+        nodes_filter_q = db.nodes.cluster_id == cluster_id
+    else:
+        nodes_filter_q = db.nodes.app == node.app
 
     def get_cluster_node(nodename):
         try:
             return node_ids[nodename]
         except KeyError:
-            q = app_q & (db.nodes.nodename == nodename)
+            q = nodes_filter_q & (db.nodes.nodename == nodename)
             _node = db(q).select().first()
             if _node is None:
                 node_ids[nodename] = None
@@ -5116,12 +5128,20 @@ def merge_daemon_status(node_id):
     for nodename, ndata in data["nodes"].items():
         get_cluster_node(nodename)
 
+    peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
+
     for svcname, sdata in data["services"].items():
-        peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
+        svc = None
         for peer_node_id in peer_node_ids:
-            svc = node_svc(peer_node_id, svcname)
+            try:
+                svc = node_svc(peer_node_id, svcname)
+            except:
+                # service dups
+                continue
             if svc:
                 break
+        if svc is None:
+            continue
         if changes is not None and svcname not in changes and not svc.svc_availstatus == "undef":
             ping_svc(svc, now)
         else:
@@ -5136,8 +5156,11 @@ def merge_daemon_status(node_id):
                 print "  skip instance on unknwon peer", nodename
                 continue
             if changes is not None and svcname+"@"+nodename not in changes and not svc.svc_availstatus == "undef":
-                ping_instance(svc, peer, now)
-                continue
+                pi_changed = ping_instance(svc, peer, now)
+                if "svcmon" in pi_changed:
+                    # the instance already existed, and the updated tstamp has been refreshed
+                    # skip the inserts/updates
+                    continue
             try:
                 idata = ndata["services"]["status"][svcname]
             except KeyError:
