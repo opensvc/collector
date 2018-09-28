@@ -4768,6 +4768,17 @@ def merge_daemon_ping(node_id):
     node_ids = {
         node.nodename: node,
     }
+    data = json.loads(data)
+    if not isinstance(data, dict):
+        print " purge unexpected daemon status format data"
+        rconn.hdel(R_DAEMON_STATUS_HASH, node_id)
+        return
+
+    cluster_id = data.get("cluster_id", "")
+    if cluster_id and node and node.cluster_id != cluster_id:
+        q = db.nodes.node_id == node_id
+        db(q).update(cluster_id=cluster_id)
+
     if cluster_id:
         nodes_filter_q = db.nodes.cluster_id == cluster_id
     else:
@@ -4787,17 +4798,6 @@ def merge_daemon_ping(node_id):
                     q = db.nodes.node_id == _node.node_id
                     db(q).update(cluster_id=cluster_id)
             return node_ids[nodename]
-
-    data = json.loads(data)
-    if not isinstance(data, dict):
-        print " purge unexpected daemon status format data"
-        rconn.hdel(R_DAEMON_STATUS_HASH, node_id)
-        return
-
-    cluster_id = data.get("cluster_id", "")
-    if cluster_id and node and node.cluster_id != cluster_id:
-        q = db.nodes.node_id == node_id
-        db(q).update(cluster_id=cluster_id)
 
     for nodename, ndata in data["nodes"].items():
         peer = get_cluster_node(nodename)
