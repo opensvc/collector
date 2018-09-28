@@ -24,4 +24,13 @@ def purge_svc(svc_id):
     q = db.services.svc_id == svc_id
     db(q).delete()
 
+def delete_svc_from_table(t, svc_id):
+    sql = """delete from %s where svc_id="%s" """ % (t, svc_id)
+    db.executesql(sql)
+    try:
+        counter = db._adapter.cursor.rowcount
+    except:
+        counter = None
+    if counter:
+        ws_send(t+'_change', {'svc_id': svc_id})
 
