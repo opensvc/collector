@@ -167,6 +167,7 @@ def create_svc(node_id, cluster_id, svcname):
       "updated": datetime.datetime.now()
     }
     db.services.insert(**data)
+    db.commit()
     return Storage(data)
 
 def node_responsibles(node_id):
