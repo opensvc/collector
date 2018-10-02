@@ -712,11 +712,15 @@ def __update_resinfo(vars, vals, auth):
     if not updated_idx:
         vars.append("updated")
         updated_idx = len(vars) - 1
+    reflen = len(vars)
+    nvals = []
     for i, v in enumerate(vals):
         vals[i].append(now)
+        if len(vals) == reflen:
+            nvals.append(vals)
+    generic_insert('resinfo', vars, nvals)
     for a,b in zip(vars, vals[0]):
         h[a] = b
-    generic_insert('resinfo', vars, vals)
     db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
     ws_send("resinfo_change")
 
@@ -738,7 +742,7 @@ def __update_resinfo(vars, vals, auth):
         "check_timeout",
         "info_timeout",
     )
-    for _vals in vals:
+    for _vals in nvals:
         if _vals[i_key] in key_blacklist:
             continue
         try:
