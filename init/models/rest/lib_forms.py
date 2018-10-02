@@ -658,10 +658,22 @@ def update_results(results, reload_outputs=False):
         row = db(q).select().first()
         current = sjson.loads(row.results)
         results["outputs"].update(current["outputs"])
-    db(q).update(
-        results=sjson.dumps(results, default=datetime.datetime.isoformat)
-    )
-    db.commit()
+
+    def dbdo():
+        db(q).update(
+            results=sjson.dumps(results, default=datetime.datetime.isoformat)
+        )
+        db.commit()
+
+    try:
+        dbdo()
+    except Exception as exc:
+        s = str(exc).lower()
+        if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
+            db._adapter.close()
+            db._adapter.reconnect()
+            dbdo()
+        raise
     ws_send("form_output_results_change", {"results_id": results["results_id"]})
 
 def validate_data(form_definition, data):
@@ -798,7 +810,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
     try:
         results = __form_submit(form_id, _d=_d, prev_wfid=prev_wfid, results=results, authdump=authdump)
     except Exception as exc:
-        if "server has gone away" in str(exc):
+        if "server has gone away" in str(exc).lower():
             # let task_rq manage reconnect
             raise
         results["status"] = "COMPLETED"
