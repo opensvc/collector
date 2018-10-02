@@ -21,7 +21,8 @@ def task_rq(rqueues, getfn, app="feed"):
             log.error(str(l))
 
     def error_handler(e):
-        s = str(e)
+        s = str(e).lower()
+        log.error("error handler: %s", s)
         if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
             db_disconnect_handler()
         else:
