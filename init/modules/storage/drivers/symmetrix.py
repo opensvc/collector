@@ -23,7 +23,7 @@ class Driver(object):
         try:
             return json.loads(ret["data"][0]["stdout"])
         except ValueError:
-            Error("unexpected add disk output format: %s" % ret)
+            raise Error("unexpected add disk output format: %s" % ret)
 
 
     def add_disk(self):
@@ -49,7 +49,7 @@ class Driver(object):
         try:
             return json.loads(ret["data"][0]["stdout"])
         except ValueError:
-            Error("unexpected add disk output format: %s" % ret)
+            raise Error("unexpected add disk output format: %s" % ret)
 
     def resize_disk(self):
         if "disk_devid" not in self.storage.request_data:
