@@ -176,6 +176,13 @@ var am_svc_agent_leafs = [
 		'action': 'giveback'
 	},
 	{
+		'title': 'Switch',
+		'class': 'action_switch_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'switch'
+	},
+	{
 		'title': 'Abort',
 		'class': 'icon fa-ban',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
