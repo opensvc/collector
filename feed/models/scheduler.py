@@ -681,10 +681,10 @@ def _update_resinfo(svcname, auth):
     __update_resinfo(vars, vals, auth)
 
 def __update_resinfo(vars, vals, auth):
-    now = datetime.datetime.now()
-    now -= datetime.timedelta(microseconds=now.microsecond)
     if len(vals) == 0:
         return
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
     h = {}
     if "app_nodename" in vars:
         node_k = "app_nodename"
@@ -716,10 +716,12 @@ def __update_resinfo(vars, vals, auth):
     nvals = []
     for i, v in enumerate(vals):
         vals[i].append(now)
-        if len(vals) == reflen:
-            nvals.append(vals)
+        if len(v) == reflen:
+            nvals.append(v)
     generic_insert('resinfo', vars, nvals)
-    for a,b in zip(vars, vals[0]):
+    if len(nvals) == 0:
+        return
+    for a,b in zip(vars, nvals[0]):
         h[a] = b
     db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
     ws_send("resinfo_change")
