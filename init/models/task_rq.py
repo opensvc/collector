@@ -9,29 +9,28 @@ def enqueue_async_task(fn, args=[], kwargs={}):
 def task_rq(rqueues, getfn, app="feed"):
     import socket
 
-    def db_disconnect_handler():
+    log = logging.getLogger("web2py.app.%s.task_rq" % app)
+    db.executesql("set wait_timeout=1200")
+
+    def reconnect():
         try:
+            db.executesql("select 1")
+        except Exception as exc:
             db._adapter.close()
             db._adapter.reconnect()
-            log.info("reconnected db")
-            fn(*args)
-            db.commit()
-        except Exception as _e:
-            log.error(_e, exc_info=True)
-            log.error(str(l))
+            db.executesql("select 1")
+            log.info("db reconnected")
 
-    def error_handler(e):
-        s = str(e).lower()
-        log.error("error handler: %s", s)
-        if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
-            db_disconnect_handler()
-        else:
-            log.error(e, exc_info=True)
-            log.error(str(l))
-
-    log = logging.getLogger("web2py.app.%s.task_rq" % app)
     l = None
     while True:
+        try:
+            reconnect()
+        except KeyboardInterrupt:
+            log.info("keyboard interrupt")
+            break
+        except Exception as exc:
+            log.warning("db is not usable: %s", exc)
+            time.sleep(1)
         try:
             l = rconn.blpop(rqueues, timeout=20)
             if l is None:
@@ -61,8 +60,10 @@ def task_rq(rqueues, getfn, app="feed"):
         except KeyboardInterrupt:
             log.info("keyboard interrupt")
             break
-        except socket.error:
-            db_disconnect_handler()
+        except socket.error as exc:
+            log.error("%s", exc)
+            time.sleep(1)
         except Exception as exc:
-            error_handler(exc)
+            log.error(exc, exc_info=True)
+            log.error(str(exc))
 
