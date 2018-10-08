@@ -653,10 +653,13 @@ class rest_put_form(rest_put_handler):
         if form is None:
             raise HTTP(404, "the requested form does not exist or you don't have permission to use it")
 
-        try:
-            form_data = json.loads(data)
-        except ValueError:
-            raise HTTP(400, "unparsable form data: " + str(data))
+        if isinstance(data, (str, unicode)):
+            try:
+                form_data = json.loads(data)
+            except ValueError:
+                raise HTTP(400, "unparsable form data: " + str(data))
+        else:
+            form_data = data
 
         return form_submit(form, _d=form_data, prev_wfid=prev_wfid)
 
