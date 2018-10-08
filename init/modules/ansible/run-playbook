@@ -1,0 +1,138 @@
+#!/usr/bin/python
+
+"""
+This script is called from the playbook runner collector forms.
+
+Example:
+
+Desc: |
+  My example playbook
+Css: fa fa-play
+Async: true
+Vertical: true
+
+Outputs:
+  -
+    Id: workflow
+    Type: json
+    Format: dict
+    Dest: workflow
+    NextForms:
+  -
+    Id: run
+    Dest: script
+    Path: /opt/web2py/applications/init/modules/ansible/run-playbook
+    Type: json
+    Format: dict
+
+Inputs:
+  -
+    Id: fset_id
+    Label: Filterset
+    DisplayModeLabel: fset
+    LabelCss: fset
+    Mandatory: true
+    Help: The filterset used to produce the nodes list.
+    Function: /filtersets
+    Format: "#fset_name"
+    Value: "#id"
+    Keys:
+      - "ansible_command = ansible-playbook -i hosts_inventory opensvc.yml"
+      - "cwd = Playbooks/opensvc"
+      - "proxy = ansible@ansible-prod1"
+    Args:
+      - "meta = 0"
+      - "limit = 0"
+      - "props = id,fset_name"
+      - "orderby = fset_name"
+    StrictCandidates: true
+    DisableAutoDefault: true
+    
+  -
+    Id: nodes
+    Label: Nodes
+    DisplayModeLabel: nodes
+    LabelCss: node16
+    Help: The nodes to run the playbook on.
+    Type: checklist
+    Function: "/filtersets/#fset_id/nodes"
+    Format: "#nodename"
+    Value: "#nodename"
+    CheckOnLoad: all
+    Args:
+      - "meta = 0"
+      - "limit = 0"
+      - "props = nodename"
+      - "orderby = nodename"
+     
+"""
+
+from __future__ import print_function
+from subprocess import Popen, PIPE
+import sys
+import os
+import json
+
+class Error(Exception):
+    pass
+
+class AnsiblePlaybook(object):
+    def validate_data(self, data):
+        if "proxy" not in data:
+            raise Error("The 'proxy' key is mandatory in request data")
+        if "nodes" not in data:
+            raise Error("The 'nodes' key is mandatory in request data")
+        if not isinstance(data["nodes"], list):
+            raise Error("The 'nodes' key value must be a list")
+        if len(data["nodes"]) < 1:
+            raise Error("At least one target node must be selected")
+        if "ansible_command" not in data:
+            raise Error("The 'ansible_command' key is mandatory in request data")
+
+    def main(self):
+        """
+        argv1: the json-formatted form data.
+
+        argv2: the id of the form output this script is run for.
+
+        argv3: the results structure containing a reference to where to store
+               out own results and where to access the results of the previous
+               form outputs.
+        """
+        data = json.loads(sys.argv[1])
+        self.output_id = sys.argv[2]
+        self.results = json.loads(sys.argv[3])
+
+        if self.results and "returncode" in self.results and self.results["returncode"] != 0:
+            raise Error("Abort because of previous errors")
+
+        if isinstance(data, dict):
+            self._main(data)
+        elif isinstance(data, list):
+            for _data in data:
+                self._main(_data)
+        else:
+            raise Error("Unsupported request data format (not dict nor list)")
+
+    def _main(self, data):
+        self.validate_data(data)
+        cmd = [
+            "ssh", data["proxy"],
+            "cd %(cwd)s ; %(ansible_command)s -e machines=%(nodes)s" % dict(
+                cwd=data.get("cwd", "~"),
+                ansible_command=data.get("ansible_command"),
+                nodes=":".join(data.get("nodes")),
+            )
+        ]
+        print(" ".join(cmd))
+        proc = Popen(cmd)
+        proc.communicate()
+
+if __name__ == "__main__":
+    try:
+        obj = AnsiblePlaybook()
+        obj.main()
+    except Error as exc:
+        print(exc, file=sys.stderr)
+        sys.exit(1)
+
