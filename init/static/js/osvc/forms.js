@@ -1290,7 +1290,9 @@ function form(divid, options) {
 		})
 
 		// ck value can be a string, ex: id from a rest get are strings
-		str_content = content.map(function(el){return ""+el})
+		str_content = content.map(function(el) {
+			return ""+el
+		})
 
 		for (var i=0; i<data.length; i++) {
 			var _d = data[i]
@@ -1895,7 +1897,7 @@ function form(divid, options) {
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
 		cell.bind("change", function() {
-			var input = table.find("[iid="+d.Id+"]").find("input,textarea,.form_input_info")
+			var input = table.find("[iid="+d.Id+"]").find("input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
 				return
 			}
