@@ -37,7 +37,7 @@ Inputs:
     Format: "#fset_name"
     Value: "#id"
     Keys:
-      - "ansible_command = ansible-playbook -i hosts_inventory opensvc.yml"
+      - "ansible_command = ansible-playbook -i hosts_inventory -e machines={nodes} opensvc.yml"
       - "cwd = Playbooks/opensvc"
       - "proxy = ansible@ansible-prod1"
     Args:
@@ -116,15 +116,11 @@ class AnsiblePlaybook(object):
 
     def _main(self, data):
         self.validate_data(data)
-        cmd = [
-            "ssh", data["proxy"],
-            "cd %(cwd)s ; %(ansible_command)s -e machines=%(nodes)s" % dict(
-                cwd=data.get("cwd", "~"),
-                ansible_command=data.get("ansible_command"),
-                nodes=":".join(data.get("nodes")),
-            )
-        ]
-        print(" ".join(cmd))
+        chdir_cmd = "cd %s" % data.get("cwd", "~")
+        ansib_cmd = data.get("ansible_command").replace("{nodes}", ":".join(data["nodes"]))
+        remot_cmd = " ; ".join([chdir_cmd, ansib_cmd])
+        cmd = ["ssh", data["proxy"], remot_cmd]
+        print("ssh %s \"%s\"" % (data["proxy"], remot_cmd))
         proc = Popen(cmd)
         proc.communicate()
 
