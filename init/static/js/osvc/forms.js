@@ -2097,9 +2097,9 @@ function form(divid, options) {
 				if (option_data) {
 					for (var j=0; j<d.Keys.length; j++) {
 						var key_def = d.Keys[j]
-						var l = key_def.split("=")
-						var keyname = l[0].replace(/^\s+/, "").replace(/\s+$/, "")
-						var keyval = l[1].replace(/^\s+/, "").replace(/\s+$/, "")
+						var idx = key_def.indexOf("=")
+						var keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
+						var keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
 						data[keyname] = subst_refs_from_data(option_data, keyval)
 					}
 				}
