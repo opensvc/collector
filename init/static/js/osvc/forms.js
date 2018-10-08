@@ -2094,13 +2094,17 @@ function form(divid, options) {
 
 			if (d.Keys) {
 				var option_data = o.get_option_data(td)
-				if (option_data) {
-					for (var j=0; j<d.Keys.length; j++) {
-						var key_def = d.Keys[j]
-						var idx = key_def.indexOf("=")
-						var keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
-						var keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
-						data[keyname] = subst_refs_from_data(option_data, keyval)
+				for (var j=0; j<d.Keys.length; j++) {
+					var key_def = d.Keys[j]
+					var idx = key_def.indexOf("=")
+					var keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
+					var keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
+					if (keyval.match(/#/)) {
+						if (option_data) {
+							data[keyname] = subst_refs_from_data(option_data, keyval)
+						}
+					} else {
+						data[keyname] = keyval
 					}
 				}
 			}
