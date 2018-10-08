@@ -232,10 +232,14 @@ class rest_get_user_nodes(rest_get_table_handler):
           tables=["nodes"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, id, **vars):
         q = allowed_user_ids_q()
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.nodes.node_id, fset_id=fset_id)
         q &= user_id_q(id)
         q &= db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.auth_membership.group_id
@@ -262,10 +266,14 @@ class rest_get_user_services(rest_get_table_handler):
           groupby=db.services.id,
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, id, **vars):
         q = allowed_user_ids_q()
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, svc_field=db.services.svc_id, fset_id=fset_id)
         q &= user_id_q(id)
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
