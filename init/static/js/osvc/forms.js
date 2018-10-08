@@ -1287,6 +1287,7 @@ function form(divid, options) {
 		master_cb.bind("change", function() {
 			var state = $(this).prop("checked")
 			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
+			o.update_submit()
 		})
 
 		// ck value can be a string, ex: id from a rest get are strings
@@ -1329,6 +1330,9 @@ function form(divid, options) {
 			if (d.ReadOnly) {
 				cb.prop("disabled", true)
 			}
+			cb.bind("change", function() {
+				o.update_submit()
+			})
 		}
 	}
 
@@ -1903,6 +1907,7 @@ function form(divid, options) {
 			}
 			console.log("fn:", key, "->", d.Id)
 			fn_init(input, d)
+			o.update_submit()
 		})
 	}
 
