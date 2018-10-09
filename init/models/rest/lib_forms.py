@@ -693,7 +693,7 @@ def validate_input_data(form_definition, data, _input):
 
     if val is None:
         if _input.get("Mandatory", False):
-            raise Exception("Missing value for mandatory input '%s'" % input_id)
+            raise HTTP(400, "Missing value for mandatory input '%s'" % input_id)
         return
 
     #
@@ -705,6 +705,22 @@ def validate_input_data(form_definition, data, _input):
     else:
         vals = val
 
+    #
+    # Validate input keys
+    #
+    key_defs = _input.get("Keys", [])
+    for key_def in key_defs:
+        key, val = key_def.split("=", 1)
+        key = key.strip()
+        val = form_dereference(val.strip(), data)
+        if key not in data:
+            raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
+        if val != data[key]:
+            raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(val), input_id))
+
+    #
+    # Validate strict candidates in static input
+    #
     if _input.get("Candidates") and _input.get("StrictCandidates"):
         candidate_vals = []
         for candidate in _input.get("Candidates"):
@@ -714,8 +730,11 @@ def validate_input_data(form_definition, data, _input):
                 candidate_vals.append(candidate)
         for val in vals:
             if val not in candidate_vals:
-                raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
-    
+                raise HTTP(400, "Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+
+    #
+    # Validate dynamic input
+    #
     key = _input.get("Value")
     fn = _input.get("Function")
     if fn is not None and key is not None:
@@ -732,15 +751,17 @@ def validate_input_data(form_definition, data, _input):
                 kwargs[kwarg] = form_dereference(_val, data)
             candidates = handler.handle(*args, **kwargs)["data"]
             key = key.lstrip("#")
+            try:
+                candidates = [form_get_val(candidate, key) for candidate in candidates]
+            except ValueError:
+                raise HTTP(500, "Key '%s' not in candidates" % key)
             for val in vals:
-                for candidate in candidates:
-                    try:
-                        candidate_val = form_get_val(candidate, key)
-                    except ValueError:
-                        raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
-                    if val == val or str(val) == val or unicode(candidate_val) == val:
-                        return
-                raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
+                try:
+                    val = int(val)
+                except ValueError:
+                    pass
+                if val not in candidates and str(val) not in candidates and unicode(val) not in candidates:
+                    raise HTTP(400, "Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
 
 def form_dereference(s, data, prefix=""):
     for key in sorted(data.keys(), reverse=True):
