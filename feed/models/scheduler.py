@@ -5015,6 +5015,19 @@ def merge_daemon_status(node_id):
     def update_instance(svc, peer, container_id, idata):
         _changed = set()
 
+        if not idata.get("resources", {}):
+            # scaler or wrapper, for example
+            q = db.svcmon.node_id == peer.node_id
+            q &= db.svcmon.svc_id == svc.svc_id
+            db(q).delete()
+            try:
+                counter = db._adapter.cursor.rowcount
+            except:
+                counter =  None
+            if counter:
+                _changed.add("svcmon")
+            return _changed
+
         def gstatus(group, _data):
             try:
                 return _data["status_group"].get(group, "n/a")
