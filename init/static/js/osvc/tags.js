@@ -1800,6 +1800,29 @@ function array_proxies(options) {
 	return tags(options)
 }
 
+function service_nodes(options) {
+	options.tag_name = "nodename"
+	options.flash_id_prefix = "node"
+	options.id = "node_id"
+	options.bgcolor = osvc.colors.node
+	options.icon = osvc.icons.node
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services/%1/nodes", [options.svc_id], {
+			"orderby": "nodes.nodename",
+			"props": "nodes.node_id,nodes.nodename",
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		callback({"data": false})
+	}
+	options.ondblclick = function(divid, data) {
+		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
+	}
+	return tags(options)
+}
+
 function tag_nodes(options) {
 	options.tag_name = "nodename"
 	options.flash_id_prefix = "node"
@@ -1830,7 +1853,7 @@ function tag_nodes(options) {
 		services_osvcdeleterest("/tags/%1/nodes/%2", [options.tag_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		callback({"data": []})
+		callback({"data": false})
 	}
 	options.ondblclick = function(divid, data) {
 		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
@@ -1884,7 +1907,7 @@ function tag_services(options) {
 		services_osvcdeleterest("/tags/%1/services/%2", [options.tag_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		callback({"data": []})
+		callback({"data": false})
 	}
 	options.ondblclick = function(divid, data) {
 		service_tabs(divid, {"svc_id": data.id, "svcname": data.name})

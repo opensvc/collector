@@ -502,6 +502,13 @@ function service_properties(divid, options)
 				"am_data": am_data
 			})
 
+			// nodes
+			o.div.find("#svc_nodes").empty()
+			service_nodes({
+				"svc_id": o.options.svc_id,
+				"tid": o.div.find("#svc_nodes")
+			})
+
 			// status
 			o.decorator_status(o.div.find("#svc_status"), data.svc_status_updated)
 			o.decorator_status(o.div.find("#svc_availstatus"), data.svc_status_updated)
