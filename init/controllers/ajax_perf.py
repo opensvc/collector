@@ -8,6 +8,17 @@ def call():
     session.forget(response)
     return service()
 
+
+def stats_fetch(nodes, relpath, **kwargs):
+    if "," in nodes:
+        nodes = nodes.split(",")
+    elif not isinstance(nodes, list):
+        nodes = [nodes]
+    paths = []
+    for node in nodes:
+        paths.append(["nodes", node] + relpath)
+    return timeseries.whisper_xfetch(paths, **kwargs)
+
 @auth.requires_login()
 def perf_stats_svc_cpu(node, b, e):
     container = request.vars.container
@@ -62,6 +73,8 @@ def perf_stats_svc_cap_cpu(node, b, e):
 
 @auth.requires_login()
 def perf_stats_svc_data_mem_normalize(node, b, e):
+    if "," in node:
+        return
     container = request.vars.container
     sql = """select mem_bytes from nodes
              where
@@ -93,6 +106,8 @@ def perf_stats_svc_data_mem_normalize(node, b, e):
 
 @auth.requires_login()
 def perf_stats_svc_data_cpu_normalize(node, b, e):
+    if "," in node:
+        return
     container = request.vars.container
     col = 'cpu'
 
@@ -336,12 +351,13 @@ def json_cpu():
         "irq",
         "soft",
         "guest",
+        "idle",
     ]
     data = {}
     for metric in metrics:
         if node is None:
             return {}
-        _data = timeseries.whisper_fetch("nodes", node, "cpu", "all", metric, b=b, e=e)
+        _data = stats_fetch(node, ["cpu", "all", metric], b=b, e=e)
         if len(_data) > 0:
             data[metric] = _data
     return data
@@ -370,7 +386,7 @@ def json_mem():
     for metric in metrics:
         if node is None:
             return {}
-        _data = timeseries.whisper_fetch("nodes", node, "mem_u", metric, b=b, e=e)
+        _data = stats_fetch(node, ["mem_u", metric], b=b, e=e)
         if len(_data) > 0:
             data[metric] = _data
     return data
@@ -393,7 +409,7 @@ def json_swap():
     for metric in metrics:
         if node is None:
             return {}
-        _data = timeseries.whisper_fetch("nodes", node, "swap", metric, b=b, e=e)
+        _data = stats_fetch(node, ["swap", metric], b=b, e=e)
         if len(_data) > 0:
             data[metric] = _data
     return data
@@ -416,7 +432,7 @@ def json_proc():
     for metric in metrics:
         if node is None:
             return {}
-        _data = timeseries.whisper_fetch("nodes", node, "proc", metric, b=b, e=e)
+        _data = stats_fetch(node, ["proc", metric], b=b, e=e)
         if len(_data) > 0:
             data[metric] = _data
     return data
@@ -438,7 +454,7 @@ def json_block():
     for metric in metrics:
         if node is None:
             return {}
-        _data = timeseries.whisper_fetch("nodes", node, "block", metric, b=b, e=e)
+        _data = stats_fetch(node, ["block", metric], b=b, e=e)
         if len(_data) > 0:
             data[metric] = _data
     return data

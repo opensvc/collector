@@ -22,7 +22,8 @@ formats = [
 time_format = "%Y-%m-%d %H:%M:%S"
 
 here_d = os.path.dirname(__file__)
-store_d = os.path.join(here_d, '..', "uploads", "stats")
+store_d = os.path.join(here_d, "..", "uploads", "stats")
+temp_d = os.path.join(store_d, "temp")
 
 def wsp_delete(*args):
     if '..' in args:
@@ -135,6 +136,64 @@ def whisper_fetch_avg_min_max(*args, **kwargs):
         return 0, 0, 0
     return total/count, _min, _max
 
+def whisper_xfetch(paths, **kwargs):
+    """
+    args: a list of paths [["nodes", "aa", "cpu"], ...]
+    kwargs:
+
+    * b: begin
+    * e: end
+    * agg: average|sum|max|min
+    """
+    if not paths:
+        return []
+    data = whisper_fetch(*paths[0], **kwargs)
+    count = len(paths)
+    if count == 1:
+        return data
+    agg = kwargs.get("agg", "sum")
+
+    def sum(x, y):
+        if x is None and y is None:
+            return
+        if x is None:
+            return y
+        if y is None:
+            return x
+        return x + y
+
+    def min(x, y):
+        if x is None and y is None:
+            return
+        if x is None:
+            return y
+        if y is None:
+            return x
+        return x if x < y else y
+
+    def max(x, y):
+        if x is None and y is None:
+            return
+        if x is None:
+            return y
+        if y is None:
+            return x
+        return x if x > y else y
+
+    average = sum
+    fn = locals()[agg]
+    for path in paths[1:]:
+        _data = whisper_fetch(*path, **kwargs)
+        for i, (a, b) in enumerate(zip(data, _data)):
+            if a[0] != b[0]:
+                print("discard unaligned:", a, b)
+                continue
+            data[i] = [a[0], fn(a[1], b[1])]
+    if agg == "average":
+        for i, a in enumerate(data):
+            data[i][1] /= count
+    return data
+
 def whisper_fetch(*args, **kwargs):
     b = kwargs.get("b")
     e = kwargs.get("e")
@@ -144,11 +203,11 @@ def whisper_fetch(*args, **kwargs):
         return []
     if b is None:
         b = 0
-    if not isinstance(b, int):
+    if not isinstance(b, (int, float)):
         b = to_tstamp(b)
     _args.append(b)
     if e is not None:
-        if not isinstance(e, int):
+        if not isinstance(e, (int, float)):
             e = to_tstamp(e)
         _args.append(e)
     (start, end, step), values = whisper.fetch(*_args)
@@ -256,10 +315,12 @@ if __name__ == "__main__":
 #    whisper_fetch("nodes/%s" % node_id, "cpu", "all", "idle", b="2017-12-09 13:41", e="2017-12-10 13:41")
     whisper_create("/tmp/foo1")
     whisper_create("/tmp/fooo", ["1d:3y"], 0.5)
-    """
     node_id = "a3d3634b-51d1-4ce7-a844-6daa6cc49280"
     print(sub_find("nodes/%s" % node_id, "fs_u", prefix="/"))
     print(wsp_find("nodes/%s" % node_id, "cpu"))
     print(sub_find("nodes/%s" % node_id, "cpu"))
     wsp_delete("nodes", "41667c07-9197-408f-9487-08ca540410f0")
+    """
+    for ts, val in whisper_xfetch([["nodes", "a3d3634b-51d1-4ce7-a844-6daa6cc49280", "cpu", "all", "idle"], ["nodes", "71aac843-e598-4948-accb-301f29978e6f", "cpu", "all", "idle"]], b=time.time()-3600):
+        print("%s %s" % (ts, val))
 

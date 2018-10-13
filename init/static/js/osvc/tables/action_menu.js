@@ -292,6 +292,12 @@ function table_action_menu_init_data(t) {
 							"max": 20
 						},
 						{
+							"title": "action_menu.nodes_agg_perf",
+							"class": "chart16",
+							"fn": "tool_aggprf",
+							"min": 1
+						},
+						{
 							"title": "action_menu.obsolescence",
 							"class": "chart16",
 							"fn": "tool_obsolescence",
@@ -2255,6 +2261,38 @@ function tool_grpprf(t, e) {
 				"node_id": nodes,
 				"view": "/init/static/views/nodes_stats.html",
 				"controller": "/init/stats",
+			})
+		}
+	})
+}
+
+//
+// tool: aggprf
+//
+function tool_aggprf(t, e) {
+	var entry = $(e.target)
+	var cache_id = entry.attr("cache_id")
+	var data = t.action_menu_data_cache[cache_id]
+	if (data.length==0) {
+		return ""
+	}
+	var nodes = new Array()
+	for (i=0;i<data.length;i++) {
+		nodes.push(data[i]['node_id'])
+	}
+	osvc.flash.show({
+		id: "aggprf-"+nodes.join(""),
+		cl: "icon chart16",
+		text: i18n.t("action_menu.node_perf"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			node_stats(d.attr("id"), {
+				"node_id": nodes,
+				"view": "/init/static/views/node_stats.html",
+				"controller": "/init/ajax_perf",
 			})
 		}
 	})

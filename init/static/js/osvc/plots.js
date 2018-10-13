@@ -735,9 +735,7 @@ function prepare_data(options) {
 	for (candidate in options.candidates) {
 		if (candidate in data) {
 			keep.push(candidate)
-			series.push({
-				"label": options.candidates[candidate]["label"]
-			})
+			series.push(options.candidates[candidate])
 		}
 	}
 
@@ -821,6 +819,13 @@ function stats_cpu(url, id) {
 		},
 		"guest": {
 			"label": "guest"
+		},
+		"idle": {
+			"label": "total",
+			"color": "#aaaaaa",
+			"shadow": false,
+			"fill": false
+			//"fillAlpha": 0.1
 		}
 	}
 
