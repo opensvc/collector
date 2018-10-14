@@ -2283,7 +2283,7 @@ function tool_aggprf(t, e) {
 	osvc.flash.show({
 		id: "aggprf-"+nodes.join(""),
 		cl: "icon chart16",
-		text: i18n.t("action_menu.node_perf"),
+		text: i18n.t("action_menu.nodes_agg_perf"),
 		bgcolor: osvc.colors.link,
 		fn: function(id){
 			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
