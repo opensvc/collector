@@ -4,6 +4,7 @@ import whisper
 import datetime
 import time
 import fnmatch
+from collections import OrderedDict
 
 default_retentions = [
     whisper.parseRetentionDef("1m:30m"),
@@ -147,10 +148,10 @@ def whisper_xfetch(paths, **kwargs):
     """
     if not paths:
         return []
-    data = whisper_fetch(*paths[0], **kwargs)
+    _data = whisper_fetch(*paths[0], **kwargs)
     count = len(paths)
     if count == 1:
-        return data
+        return _data
     agg = kwargs.get("agg", "sum")
 
     def sum(x, y):
@@ -182,17 +183,25 @@ def whisper_xfetch(paths, **kwargs):
 
     average = sum
     fn = locals()[agg]
-    for path in paths[1:]:
+    data = OrderedDict()
+    counts = dict()
+    for path in paths:
         _data = whisper_fetch(*path, **kwargs)
-        for i, (a, b) in enumerate(zip(data, _data)):
-            if a[0] != b[0]:
-                print("discard unaligned:", a, b)
-                continue
-            data[i] = [a[0], fn(a[1], b[1])]
+        for ts, val in _data:
+            cur = data.get(ts)
+            if cur is None:
+                data[ts] = val
+                counts[ts] = 1 if val is not None else 0
+            elif val is None:
+                pass
+            else:
+                data[ts] = fn(cur, val)
+                counts[ts] += 1
     if agg == "average":
-        for i, a in enumerate(data):
-            data[i][1] /= count
-    return data
+        for ts, val in data.items():
+            if data[ts] and counts.get(ts):
+                data[ts] /= counts[ts]
+    return [[ts, val] for ts, val in data.items()]
 
 def whisper_fetch(*args, **kwargs):
     b = kwargs.get("b")
@@ -321,6 +330,8 @@ if __name__ == "__main__":
     print(sub_find("nodes/%s" % node_id, "cpu"))
     wsp_delete("nodes", "41667c07-9197-408f-9487-08ca540410f0")
     """
-    for ts, val in whisper_xfetch([["nodes", "a3d3634b-51d1-4ce7-a844-6daa6cc49280", "cpu", "all", "idle"], ["nodes", "71aac843-e598-4948-accb-301f29978e6f", "cpu", "all", "idle"]], b=time.time()-3600):
+    import glob
+    paths = [["nodes", os.path.basename(path), "cpu", "all", "idle"] for path in glob.glob(os.path.join(store_d, "nodes", "*"))]
+    for ts, val in whisper_xfetch(paths, b=time.time()-72000):
         print("%s %s" % (ts, val))
 
