@@ -16,8 +16,16 @@ class Driver(object):
             "--size", self.storage.request_data["size"]
         ] + mappings
         ret = self.storage.proxy_action(" ".join(cmd))
+
+        # discard heading garbage
         try:
-            data = json.loads(ret["data"][0]["stdout"])
+            idx = ret["data"][0]["stdout"].index("{")
+            out = ret["data"][0]["stdout"][idx:]
+        except IndexError:
+            Error("unexpected add disk output format: %s" % ret)
+
+        try:
+            data = json.loads(out)
             return data
         except ValueError:
             Error("unexpected add disk output format: %s" % ret)
