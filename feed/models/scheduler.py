@@ -4895,9 +4895,9 @@ def _push_status(svcname, data, auth):
         ]
         g_vals = []
         if data.get("encap", []):
-            gfrozen = 1 if data.get("frozen", False) else 0
+            gfrozen = 1 if data.get("frozen") else 0
             for rid, edata in data.get("encap", {}).items():
-                efrozen = 1 if edata.get("frozen", False) else 0
+                efrozen = 1 if edata.get("frozen") else 0
                 frozen = gfrozen + 2 * efrozen
 
                 g_vals += [[
@@ -4939,7 +4939,7 @@ def _push_status(svcname, data, auth):
                 data.get("overall", "undef"),
                 now,
                 "",
-                int(data.get("frozen", False)),
+                1 if data.get("frozen") else 0,
             ]]
         _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth)
 
@@ -5059,9 +5059,9 @@ def merge_daemon_status(node_id):
             # 3: global frozen + encap frozen
             #
             if cdata.get("frozen"):
-                data["frozen"] = int(idata["frozen"]) + 2
+                data["frozen"] = 1 if idata.get("frozen") else 0 + 2
             else:
-                data["frozen"] = int(idata["frozen"])
+                data["frozen"] = 1 if idata.get("frozen") else 0
 
         db.svcmon.update_or_insert({
                 "node_id": peer.node_id,
@@ -5081,7 +5081,7 @@ def merge_daemon_status(node_id):
             mon_containerstatus=gstatus("container", data),
             mon_appstatus=gstatus("app", data),
             mon_syncstatus=gstatus("sync", data),
-            mon_frozen=int(data["frozen"]),
+            mon_frozen=1 if data.get("frozen") else 0,
             mon_vmtype=ctype,
             mon_updated=now,
         )
