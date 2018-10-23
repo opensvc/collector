@@ -55,6 +55,11 @@ try:
 except:
     actiond_workers = 10
 
+try:
+    notification_timeout = config.notification_timeout
+except:
+    notification_timeout = 5
+
 lockfile = __file__+'.lock'
 
 def actiond_lock(lockfile):
@@ -126,12 +131,14 @@ def get_queued():
     ids = []
     nids = []
     invalid_ids = []
+    unreachable_ids = []
 
     while (1):
         row = cursor.fetchone()
         if row is None:
             break
 
+        dq_time = time.time()
         nodename = row[3]
 
         if 'opensvc@localhost' in row[1] or \
@@ -141,15 +148,34 @@ def get_queued():
 
         if row[2] == "pull":
             port = row[5]
-            try:
-                notify_node(nodename, port)
-                nids.append(str(row[0]))
-            except Exception as exc:
-                print("notify", nodename, port, "error:", exc)
-                pass
+            notified = False
+            while time.time() - dq_time < notification_timeout:
+                try:
+                    notify_node(nodename, port)
+                    nids.append(str(row[0]))
+                    notified = True
+                    break
+                except Exception as exc:
+                    print("notify", nodename, port, "error:", exc)
+                    time.sleep(1)
+            if not notified:
+                unreachable_ids.append(str(row[0]))
         else:
             cmds.append((row[0], row[1], row[6]))
             ids.append(str(row[0]))
+
+    if len(unreachable_ids) > 0:
+        now = str(datetime.datetime.now())
+        sql = """update action_queue set
+                   status='T',
+                   date_dequeued='%s',
+                   ret=1,
+                   stdout="",
+                   stderr="unreachable"
+                 where id in (%s)
+              """%(now, ','.join(unreachable_ids))
+        cursor.execute(sql)
+        conn.commit()
 
     if len(invalid_ids) > 0:
         now = str(datetime.datetime.now())
