@@ -17,10 +17,14 @@ def send_sysreport_delete(deleted, sysreport_d, node_id):
     node_d = os.path.join(sysreport_d, node_id)
     for fpath in deleted:
         if fpath.startswith("/"):
-            fpath = "file" + fpath
-        fpath = os.path.join(node_d, fpath)
-        print fpath
-        os.unlink(fpath)
+            relpath = "file" + fpath
+        else:
+            relpath = fpath
+        fpath = os.path.join(node_d, relpath)
+        try:
+            os.unlink(fpath)
+        except Exception:
+            pass
     return True
 
 def send_sysreport_archive(fname, binary, sysreport_d, node_id):
