@@ -280,12 +280,14 @@ input.aci, input.aci:focus {
 	background-image: url('../images/cornertop8.png');
 	background-position: 0 0;
 	background-repeat: no-repeat;
+	background-color: rgba(186,200,200,0.2);
 	cursor: pointer;
 }
 .corner:hover {
 	background-image: url('../images/corner8.png');
 	background-position: 0 100%;
 	background-repeat: no-repeat;
+	background-color: rgba(186,200,200,0.2);
 	cursor: pointer;
 }
 
