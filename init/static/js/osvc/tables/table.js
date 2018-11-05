@@ -2312,12 +2312,12 @@ function table_init(opts) {
 		if (!t.options.events || (t.options.events.length == 0)) {
 			return
 		}
-		if (!t.live_enabled()) {
-			return
-		}
 		console.log("register table", t.id, t.options.events.join(","), "event handler")
 		wsh[t.id] = function(data) {
 			if (t.options.events.indexOf(data["event"]) < 0) {
+				return
+			}
+			if (!t.live_enabled()) {
 				return
 			}
 			t.refresh()
