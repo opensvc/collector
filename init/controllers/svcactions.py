@@ -126,8 +126,9 @@ def ajax_actions():
     t = table_actions(table_id, 'ajax_actions')
 
     o = ~db.svcactions.id
-    q = db.svcactions.node_id == db.nodes.node_id
-    q &= db.svcactions.svc_id == db.services.svc_id
+    l1 = db.nodes.on(db.svcactions.node_id == db.nodes.node_id)
+    l2 = db.services.on(db.svcactions.svc_id == db.services.svc_id)
+    q = db.svcactions.id > 0
     q = q_filter(q, app_field=db.services.svc_app)
     q = apply_filters_id(q, db.svcactions.node_id, db.svcactions.svc_id)
     for f in t.cols:
@@ -136,15 +137,18 @@ def ajax_actions():
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_orderby = o
+        t.csv_limit = 15000
+        t.csv_left = (l1,l2)
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
+        t.csv_left = (l1,l2)
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.svcactions.id.count(), left=(l1,l2)).first()(db.svcactions.id.count())
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=True)
+        t.object_list = db(q).select(*cols, left=(l1,l2), limitby=limitby, orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
