@@ -2313,7 +2313,7 @@ function table_init(opts) {
 			return
 		}
 		console.log("register table", t.id, t.options.events.join(","), "event handler")
-		wsh[t.id] = function(data) {
+		wsh[t.id] = function(data) {
 			if (t.options.events.indexOf(data["event"]) < 0) {
 				return
 			}
