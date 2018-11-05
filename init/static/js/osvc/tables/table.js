@@ -249,6 +249,7 @@ function table_init(opts) {
 		"delay": 2000,
 		"live_max_perpage": 50,
 		"detached_decorate_cells": true,
+		"histogram_trigger_max_line": 100000,
 		"request_vars": {}
 	}
 
@@ -1136,6 +1137,13 @@ function table_init(opts) {
 				}
 			}
 
+			var dest = input.siblings("[id^="+t.id+"_fc_]")
+			var pie = input.siblings("[id^="+t.id+"_fp_]")
+			if (t.options.pager.total > t.options.histogram_trigger_max_line) {
+				dest.empty()
+				pie.empty()
+				return
+			}
 			clearTimeout(t.refresh_timer)
 			t.refresh_timer = setTimeout(function validate(){
 				if (xhr) {
@@ -1143,8 +1151,6 @@ function table_init(opts) {
 				}
 				var data = t.prepare_request_data({"col_values": col})
 				//data[input.attr('id')] = input.val()
-				var dest = input.siblings("[id^="+t.id+"_fc_]")
-				var pie = input.siblings("[id^="+t.id+"_fp_]")
 				pie.height(0)
 				xhr = $.ajax({
 					type: "GET",
