@@ -85,8 +85,13 @@ def ajax_metrics_admin_col_values():
         q &= db.metrics.id.belongs(metric_published_ids())
     for f in t.cols:
         q = _where(q, 'metrics', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.metrics.id.count(),
+        orderby=~db.metrics.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_metrics_admin():
@@ -166,8 +171,13 @@ def ajax_charts_admin_col_values():
         q &= db.charts.id.belongs(chart_published_ids())
     for f in t.cols:
         q = _where(q, 'charts', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.charts.id.count(),
+        orderby=~db.charts.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_charts_admin():
@@ -248,8 +258,13 @@ def ajax_reports_admin_col_values():
         q &= db.reports.id.belongs(report_published_ids())
     for f in t.cols:
         q = _where(q, 'reports', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.reports.id.count(),
+        orderby=~db.reports.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_reports_admin():

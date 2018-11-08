@@ -24,8 +24,13 @@ def ajax_networks_col_values():
     q = q_filter(group_field=db.networks.team_responsible)
     for f in t.cols:
         q = _where(q, 'networks', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.networks.id.count(),
+        orderby=~db.networks.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_networks():
@@ -178,8 +183,13 @@ def ajax_network_segments_col_values():
     q &= db.networks.id == db.network_segments.net_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.network_segments.id.count(),
+        orderby=~db.network_segments.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_network_segments():

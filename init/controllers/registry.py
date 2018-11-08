@@ -387,8 +387,11 @@ def ajax_registries_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
 
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.docker_tags.id.count(),
+                                 orderby=~db.docker_tags.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_registries():

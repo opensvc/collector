@@ -105,8 +105,14 @@ def ajax_filtersets_col_values():
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.v_gen_filtersets.id.count(),
+        orderby=~db.v_gen_filtersets.id.count(),
+        groupby=o,
+        cacheable=True,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_filtersets():
@@ -156,8 +162,14 @@ def ajax_filters_col_values():
     q = db.gen_filters.id > 0
     for f in t.cols:
         q = _where(q, 'gen_filters', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.gen_filters.id.count(),
+        orderby=~db.gen_filters.id.count(),
+        groupby=o,
+        cacheable=True,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_filters():

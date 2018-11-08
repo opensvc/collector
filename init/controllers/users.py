@@ -79,8 +79,11 @@ def ajax_users_col_values():
     t.object_list = db(q).select(orderby=o, groupby=o)
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.v_users.id.count(),
+                                 orderby=~db.v_users.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_users():

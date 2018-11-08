@@ -168,8 +168,13 @@ def ajax_nodenetworks_col_values():
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     q = apply_filters_id(q, node_field=db.v_nodenetworks.node_id)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.v_nodenetworks.id.count(),
+        orderby=~db.v_nodenetworks.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_nodenetworks():

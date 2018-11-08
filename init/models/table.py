@@ -82,6 +82,9 @@ class HtmlTable(object):
         self.csv_left = None
         self.csv_limit = 20000
 
+        # col values
+        self.col_values_limit = 50
+
     def setup_pager(self, n=0, max_perpage=500):
         """ pass n=-1 to display a simple pager
             to use when computing the total records number is too costly
@@ -138,8 +141,25 @@ class HtmlTable(object):
                 h[s] = 1
             else:
                 h[s] += 1
+        return self.json_response({c: h})
+
+    def col_values_cloud_grouped(self, c):
+        h = {}
+        total = len(self.object_list)
+        for o in self.object_list[:self.col_values_limit]:
+            s = self.colprops[c].get(o)
+            s = self.repr_val(s)
+            if "_extra" not in o:
+                continue
+            for key in o["_extra"]:
+                pass
+            h[s] = o["_extra"][key]
+        maxed = len(self.object_list) == self.col_values_limit
+        return self.json_response({c: h, "_maxed": maxed, "_total": total})
+
+    def json_response(self, data):
         response.headers['Content-Type'] = "application/json"
-        return json.dumps({"data": {c: h}}, use_decimal=True)
+        return json.dumps({"data": data}, use_decimal=True)
 
     def pager_info(self):
         d = {

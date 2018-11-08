@@ -117,8 +117,11 @@ def ajax_resmon_col_values():
     q = apply_filters_id(q, db.resmon.node_id, db.resmon.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.resmon.id.count(),
+                                 orderby=~db.resmon.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_resmon():

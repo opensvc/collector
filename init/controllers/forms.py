@@ -93,8 +93,13 @@ def ajax_workflows_col_values():
     q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
         q = _where(q, 'workflows', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.workflows.id.count(),
+        orderby=~db.workflows.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_workflows():
@@ -189,8 +194,13 @@ def ajax_forms_admin_col_values():
     q = db.v_forms.id > 0
     for f in t.cols:
         q = _where(q, 'v_forms', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.v_forms.id.count(),
+        orderby=~db.v_forms.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_forms_admin():

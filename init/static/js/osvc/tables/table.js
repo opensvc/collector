@@ -1167,11 +1167,12 @@ function table_init(opts) {
 					},
 					success: function(msg){
 						var data = msg["data"][col]
+						var total = msg["data"]["_total"]
 						dest.removeClass("icon spinner")
 						if (t.colprops[col] && t.colprops[col]._class && t.colprops[col]._class.match(/datetime/)) {
 							data = t.convert_cloud_dates(data)
 						}
-						t.format_values_cloud(dest, data, col)
+						t.format_values_cloud(dest, data, col, total)
 						t.format_values_pie(pie, data, col)
 					}
 				})
@@ -2361,7 +2362,7 @@ function table_init(opts) {
 		})
 	}
 
-	t.format_values_cloud = function(span, data, col) {
+	t.format_values_cloud = function(span, data, col, total) {
 		span.removeClass("spinner")
 
 		var keys = []
@@ -2375,10 +2376,13 @@ function table_init(opts) {
 			if (n < min) min = n
 		}
 		delta = max - min
+		if (!total) {
+			var total = keys.length
+		}
 
 		// header
 		var header = $("<h4></h4>")
-		header.text(i18n.t("table.unique_matching_values", {"count": keys.length}))
+		header.text(i18n.t("table.unique_matching_values", {"count": total}))
 		span.append(header)
 
 		// 'empty' might not be comparable with other keys type

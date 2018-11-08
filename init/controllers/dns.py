@@ -56,8 +56,13 @@ def ajax_dns_domains_col_values():
     q = dbdns.domains.id > 0
     for f in set(t.cols):
         q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
-    t.object_list = dbdns(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = dbdns(q).select(
+        o,
+        dbdns.domains.id.count(),
+        orderby=~dbdns.domains.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_dns_domains():
@@ -145,8 +150,13 @@ def ajax_dns_records_col_values():
     q = dbdns.records.id > 0
     for f in set(t.cols):
         q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
-    t.object_list = dbdns(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = dbdns(q).select(
+        o,
+        dbdns.records.id.count(),
+        orderby=~dbdns.records.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_dns_records():

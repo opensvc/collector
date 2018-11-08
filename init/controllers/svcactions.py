@@ -109,16 +109,21 @@ def ajax_actions_col_values():
     t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.svcactions.node_id == db.nodes.node_id
-    q &= db.svcactions.svc_id == db.services.svc_id
+    l1 = db.nodes.on(db.svcactions.node_id == db.nodes.node_id)
+    l2 = db.services.on(db.svcactions.svc_id == db.services.svc_id)
+    q = db.svcactions.id > 0
     q = q_filter(q, app_field=db.services.svc_app)
     q = apply_filters_id(q, db.svcactions.node_id, db.svcactions.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(db[t.colprops[col].table][col],
-                                 orderby=o,
-                                 limitby=(0,10000))
-    return t.col_values_cloud_ungrouped(col)
+                                 db[t.colprops[col].table][col].count(),
+                                 orderby=~db[t.colprops[col].table][col].count(),
+                                 groupby=o,
+                                 left=(l1,l2),
+                                 )
+                                 #limitby=(0, t.col_values_limit))
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_actions():

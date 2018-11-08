@@ -189,6 +189,7 @@ def ajax_dashboard_col_values():
     else:
         o = db.dashboard[t.colprops[col].filter_redirect]
         s = [db.dashboard.dash_fmt, db.dashboard.dash_dict]
+    s += [db.dashboard.id.count()]
     q = db.dashboard.id > 0
     l1 = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
     l2 = db.services.on(db.dashboard.svc_id==db.services.svc_id)
@@ -198,8 +199,11 @@ def ajax_dashboard_col_values():
     f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
     q = apply_filters_id(q, db.dashboard.node_id, db.dashboard.svc_id)
-    t.object_list = db(q).select(*s, orderby=o, left=(l1,l2))
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(*s,
+                                 orderby=~db.dashboard.id.count(),
+                                 groupby=o,
+                                 left=(l1,l2))
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_dashboard():

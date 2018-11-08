@@ -42,8 +42,11 @@ def ajax_services_col_values():
     q = apply_filters_id(q, svc_field=db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.services.id.count(),
+                                 orderby=~db.services.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_services():

@@ -111,8 +111,14 @@ def ajax_actions_col_values():
     q = q_filter(node_field=db.v_action_queue.node_id)
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.v_action_queue.id.count(),
+        orderby=~db.v_action_queue.id.count(),
+        groupby=o,
+        cacheable=True,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_actions():

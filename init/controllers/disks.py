@@ -116,8 +116,13 @@ def ajax_quota_col_values():
     q = q_filter(app_field=db.v_disk_quota.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.v_disk_quota.id.count(),
+        orderby=~db.v_disk_quota.id.count(),
+        groupby=o,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_quota():
@@ -223,8 +228,15 @@ def ajax_disks_col_values():
     q = apply_filters_id(q, db.svcdisks.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
-    t.object_list = db(q).select(o, cacheable=True, orderby=o, left=(l0,l1,l2,l3,l4))
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.svcdisks.id.count(),
+        orderby=~db.svcdisks.id.count(),
+        groupby=o,
+        left=(l0,l1,l2,l3,l4),
+        cacheable=True,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_disks():

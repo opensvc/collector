@@ -1088,8 +1088,13 @@ def ajax_comp_log_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters_id(q, db.comp_log.node_id)
-    t.object_list = db(q).select(o, orderby=o, left=l)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.comp_log.id.count(),
+                                 orderby=~db.comp_log.id.count(),
+                                 groupby=o,
+                                 left=l,
+                                 cacheable=True)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_comp_status_col_values():
@@ -1106,8 +1111,13 @@ def ajax_comp_status_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters_id(q, db.comp_status.node_id)
-    t.object_list = db(q).select(o, orderby=o, left=l, cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.comp_status.id.count(),
+                                 orderby=~db.comp_status.id.count(),
+                                 groupby=o,
+                                 left=l,
+                                 cacheable=True)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_comp_status():

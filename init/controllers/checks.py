@@ -113,8 +113,14 @@ def ajax_checks_col_values():
     o = db[t.colprops[col].table][col]
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=(l1,l2))
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        o,
+        db.checks_live.id.count(),
+        orderby=~db.checks_live.id.count(),
+        groupby=o,
+        left=(l1,l2),
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_checks():

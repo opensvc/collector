@@ -214,9 +214,14 @@ def ajax_svcmon_col_values():
     q = apply_filters_id(q, db.v_svcmon.node_id, db.v_svcmon.svc_id)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    t.object_list = db(q).select(db.v_svcmon[col], orderby=o,
-                                 cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(
+        db.v_svcmon[col],
+        db.v_svcmon.id.count(),
+        orderby=~db.v_svcmon.id.count(),
+        groupby=o,
+        cacheable=True,
+    )
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_svcmon():

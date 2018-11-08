@@ -56,8 +56,12 @@ def ajax_scheduler_tasks_col_values():
     q = None
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.scheduler_task.id.count(),
+                                 groupby=o,
+                                 orderby=~db.scheduler_task.id.count(),
+                                 left=l)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_scheduler_tasks():

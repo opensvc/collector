@@ -23,8 +23,11 @@ def ajax_tags_col_values():
     q = db.tags.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.tags.id.count(),
+                                 orderby=~db.tags.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_tags():
@@ -132,8 +135,11 @@ def ajax_tagattach_col_values():
     q &= (f1|f2)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.v_tags_full.id.count(),
+                                 orderby=~db.v_tags_full.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_tagattach():

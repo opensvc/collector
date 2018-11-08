@@ -86,8 +86,12 @@ def ajax_nodes_col_values():
     q = apply_filters_id(q, db.nodes.node_id, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.nodes.id.count(),
+                                 left=l,
+                                 groupby=o,
+                                 orderby=~db.nodes.id.count())
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_nodes():
@@ -202,8 +206,11 @@ def ajax_nodes_hardware_col_values():
     q = apply_filters_id(q, db.node_hw.node_id, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.node_hw.id.count(),
+                                 orderby=~db.node_hw.id.count(),
+                                 groupby=o, left=l)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_nodes_hardware():

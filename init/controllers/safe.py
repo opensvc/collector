@@ -76,8 +76,12 @@ def ajax_safe_col_values():
         q &= db.safe_team_publication.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=g, left=l)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.v_safe.id.count(),
+                                 orderby=~db.v_safe.id.count(),
+                                 groupby=o,
+                                 left=l)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_safe():

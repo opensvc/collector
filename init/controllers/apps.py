@@ -48,8 +48,11 @@ def ajax_apps_col_values():
     t.object_list = db(q).select(orderby=o, groupby=o)
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
-    return t.col_values_cloud_ungrouped(col)
+    t.object_list = db(q).select(o,
+                                 db.v_apps.id.count(),
+                                 orderby=~db.v_apps.id.count(),
+                                 groupby=o)
+    return t.col_values_cloud_grouped(col)
 
 @auth.requires_login()
 def ajax_apps():
