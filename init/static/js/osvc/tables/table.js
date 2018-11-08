@@ -1855,7 +1855,7 @@ function table_init(opts) {
 		if (t.folded()) {
 			return
 		}
-		if (t.delay_refresh || (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class))) {
+		if (t.delay_refresh || t.e_title.hasClass("table_refresh")) {
 			t.need_refresh = true
 			return
 		} else {
