@@ -198,7 +198,7 @@ def get_queued():
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
         conn.commit()
 
-    if len(ids)+len(nids)+len(invalid_ids) > 0:
+    if len(ids)+len(nids)+len(invalid_ids) + len(unreachable_ids) > 0:
         _websocket_send(event_msg(msg(conn)))
 
     cursor.close()
