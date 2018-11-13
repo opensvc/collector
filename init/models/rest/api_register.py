@@ -44,6 +44,15 @@ class rest_post_register(rest_post_handler):
 
         q = db.auth_node.node_id == node_id
         rows = db(q).select()
+        if len(rows) == 1:
+            _log("node.register",
+                 "node %(node)s registered again. resend uuid.",
+                 dict(node=node_id),
+                 node_id=node_id)
+            return dict(
+                data={"uuid": rows[0].uuid},
+                info="already registered, resend uuid.",
+            )
         if len(rows) != 0:
             _log("node.register",
                  "node %(node)s double registration attempt",
