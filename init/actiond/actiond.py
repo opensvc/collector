@@ -191,11 +191,11 @@ def get_queued():
         conn.commit()
 
     if len(nids) > 0:
-        cursor.execute("update action_queue set status='N' where id in (%s)"%(','.join(nids)))
+        cursor.execute("update action_queue set status='N' where id in (%s) and status='W'"%(','.join(nids)))
         conn.commit()
 
     if len(ids) > 0:
-        cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
+        cursor.execute("update action_queue set status='Q' where id in (%s) and status='W'"%(','.join(ids)))
         conn.commit()
 
     if len(ids)+len(nids)+len(invalid_ids) + len(unreachable_ids) > 0:

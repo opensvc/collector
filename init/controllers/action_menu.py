@@ -25,7 +25,7 @@ def json_action():
         if n % 10 == 0:
             action_q_event()
 
-    start_actiond()
+    #start_actiond()
 
     if n > 0:
         action_q_event()
