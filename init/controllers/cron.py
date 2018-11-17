@@ -9,7 +9,7 @@ def refresh_b_action_errors():
     on m.svc_id=a.svc_id and m.node_id=a.node_id
     where
     a.status='err'
-    and (a.ack=0 or isnull(a.ack))
+    and isnull(a.ack)
     and a.end is not NULL
     group by m.svc_id, m.node_id
     """
@@ -527,7 +527,7 @@ def alerts_failed_actions_not_acked():
     age = 1
     sql = """select id, svc_id, node_id from svcactions where
                  status="err" and
-                 (ack=0 or ack is NULL) and
+                 ack is NULL and
                  begin<date_sub(now(), interval %(age)d day)"""%dict(age=age)
     rows = db.executesql(sql)
     ids = map(lambda x: str(x[0]), rows)
