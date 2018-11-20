@@ -41,6 +41,7 @@ objcols = {
 		'mem_banks',
 		'mem_slots',
 		'mem_bytes',
+		'node_frozen',
 		'listener_port',
 		'version',
 		'action_type',
@@ -2071,6 +2072,11 @@ colprops = {
 		"_class": "status",
 		"img": "svc",
 		"title": "Service overall status"
+	},
+	"node_frozen": {
+		"_class": "frozen",
+		"img": "svc",
+		"title": "Node frozen"
 	},
 	"svc_frozen": {
 		"_class": "frozen",

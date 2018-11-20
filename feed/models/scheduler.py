@@ -4799,7 +4799,7 @@ def merge_daemon_ping(node_id):
             return node_ids[nodename]
         except KeyError:
             q = nodes_filter_q & (db.nodes.nodename == nodename)
-            _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id).first()
+            _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id, db.nodes.node_frozen).first()
             if _node is None:
                 node_ids[nodename] = None
             else:
@@ -5149,7 +5149,19 @@ def merge_daemon_status(node_id):
 
     # populate the nodes cache
     for nodename, ndata in data["nodes"].items():
-        get_cluster_node(nodename)
+        peer = get_cluster_node(nodename)
+        if peer is None:
+            print "  skip instance on unknwon peer", nodename
+            continue
+        node_frozen = ndata.get("frozen", 0) > 0
+        if node_frozen != peer.node_frozen:
+            q = db.nodes.node_id == peer.node_id
+            db(q).update(
+                node_frozen=ndata.get("frozen", 0) > 0,
+                updated=now,
+            )
+            db.commit()
+            changed.add("nodes")
 
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
 

@@ -1774,6 +1774,7 @@ function table_nodes(divid, options) {
 			"loc_rack",
 			"mem_bytes",
 			"nodename",
+			"node_frozen",
 			"serial",
 			"status",
 			"team_responsible"

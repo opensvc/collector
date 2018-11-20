@@ -522,6 +522,7 @@ db.define_table('nodes',
     Field('os_obs_alert_date'),
     Field('notifications', 'boolean'),
     Field('snooze_till', 'datetime'),
+    Field('node_frozen', 'boolean'),
     migrate=False)
 
 db.define_table('v_users',

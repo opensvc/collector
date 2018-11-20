@@ -40,6 +40,7 @@ nodes_cols = [
     'mem_banks',
     'mem_slots',
     'mem_bytes',
+    'node_frozen',
     'listener_port',
     'version',
     'action_type',
@@ -213,6 +214,10 @@ nodes_colprops = {
             ),
     'snooze_till': HtmlTableColumn(
              field='snooze_till',
+             table = 'nodes',
+            ),
+    'node_frozen': HtmlTableColumn(
+             field='node_frozen',
              table = 'nodes',
             ),
     'version': HtmlTableColumn(

@@ -227,6 +227,7 @@ db.define_table('nodes',
     Field('os_obs_alert_date'),
     Field('hw_obs_warn_date'),
     Field('hw_obs_alert_date'),
+    Field('node_frozen', 'boolean'),
     migrate=False)
 
 db.define_table('disk_blacklist',

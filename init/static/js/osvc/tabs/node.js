@@ -267,7 +267,7 @@ function node_properties(divid, options)
 
 		var key
 		for (key in data) {
-			if (!data[key]) {
+			if (data[key] == null) {
 				continue
 			}
 			if (key == "mem_bytes") {
