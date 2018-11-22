@@ -3191,10 +3191,14 @@ pre.api_doc {
 .log_out {
 	border-left: 0.5em solid green;
 	padding-left: 1em;
+	font-family: monospace;
+	font-size: 90%;
 }
 .log_err {
 	border-left: 0.5em solid red;
 	padding-left: 1em;
+	font-family: monospace;
+	font-size: 90%;
 }
 .cursor-help {
 	cursor: help;
