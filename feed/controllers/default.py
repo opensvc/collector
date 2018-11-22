@@ -2126,6 +2126,9 @@ def daemon_ping(auth):
 def rpc_daemon_ping(auth):
     node_id = auth_to_node_id(auth)
     elem = json.dumps([node_id])
+    ret = rconn.hexists(R_DAEMON_STATUS_HASH, node_id)
+    if not ret:
+        return {"ret": 1, "info": "resync"}
     rconn.lrem(R_DAEMON_PING, 0, elem)
     rconn.rpush(R_DAEMON_PING, elem)
 
