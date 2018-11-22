@@ -127,23 +127,76 @@ def get_queued():
         return []
     cursor = conn.cursor()
     cursor.execute("SELECT a.id, a.command, a.action_type, a.connect_to, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.node_id=n.node_id where a.status='W'")
+    max_inflight = 10
     cmds = []
-    ids = []
-    nids = []
-    invalid_ids = []
-    unreachable_ids = []
+    data = {
+        "ids": [],
+        "nids": [],
+        "invalid_ids": [],
+        "unreachable_ids": [],
+    }
+    count = 0
+
+    def updates(data):
+        if len(data["unreachable_ids"]) > 0:
+            now = str(datetime.datetime.now())
+            sql = """update action_queue set
+                       status='T',
+                       date_dequeued='%s',
+                       ret=1,
+                       stdout="",
+                       stderr="unreachable"
+                     where id in (%s)
+                  """%(now, ','.join(data["unreachable_ids"]))
+            cursor.execute(sql)
+            conn.commit()
+
+        if len(data["invalid_ids"]) > 0:
+            now = str(datetime.datetime.now())
+            sql = """update action_queue set
+                       status='T',
+                       date_dequeued='%s',
+                       ret=1,
+                       stdout="",
+                       stderr="invalid"
+                     where id in (%s)
+                  """%(now, ','.join(data["invalid_ids"]))
+            cursor.execute(sql)
+            conn.commit()
+
+        if len(data["nids"]) > 0:
+            cursor.execute("update action_queue set status='N' where id in (%s) and status='W'"%(','.join(data["nids"])))
+            conn.commit()
+
+        if len(data["ids"]) > 0:
+            cursor.execute("update action_queue set status='Q' where id in (%s) and status='W'"%(','.join(data["ids"])))
+            conn.commit()
+
+        if len(data["ids"])+len(data["nids"])+len(data["invalid_ids"]) + len(data["unreachable_ids"]) > 0:
+            _websocket_send(event_msg(msg(conn)))
+
+        return {
+            "ids": [],
+            "nids": [],
+            "invalid_ids": [],
+            "unreachable_ids": [],
+        }
 
     while (1):
         row = cursor.fetchone()
         if row is None:
             break
 
+        count += 1
+        if count > max_inflight:
+            data = updates(data)
+
         dq_time = time.time()
         nodename = row[3]
 
         if 'opensvc@localhost' in row[1] or \
            'opensvc@localhost.localdomain' in row[1]:
-            invalid_ids.append(str(row[0]))
+            data["invalid_ids"].append(str(row[0]))
             continue
 
         if row[2] == "pull":
@@ -152,55 +205,19 @@ def get_queued():
             while time.time() - dq_time < notification_timeout:
                 try:
                     notify_node(nodename, port)
-                    nids.append(str(row[0]))
+                    data["nids"].append(str(row[0]))
                     notified = True
                     break
                 except Exception as exc:
                     print("notify", nodename, port, "error:", exc)
                     time.sleep(1)
             if not notified:
-                unreachable_ids.append(str(row[0]))
+                data["unreachable_ids"].append(str(row[0]))
         else:
             cmds.append((row[0], row[1], row[6]))
-            ids.append(str(row[0]))
+            data["ids"].append(str(row[0]))
 
-    if len(unreachable_ids) > 0:
-        now = str(datetime.datetime.now())
-        sql = """update action_queue set
-                   status='T',
-                   date_dequeued='%s',
-                   ret=1,
-                   stdout="",
-                   stderr="unreachable"
-                 where id in (%s)
-              """%(now, ','.join(unreachable_ids))
-        cursor.execute(sql)
-        conn.commit()
-
-    if len(invalid_ids) > 0:
-        now = str(datetime.datetime.now())
-        sql = """update action_queue set
-                   status='T',
-                   date_dequeued='%s',
-                   ret=1,
-                   stdout="",
-                   stderr="invalid"
-                 where id in (%s)
-              """%(now, ','.join(invalid_ids))
-        cursor.execute(sql)
-        conn.commit()
-
-    if len(nids) > 0:
-        cursor.execute("update action_queue set status='N' where id in (%s) and status='W'"%(','.join(nids)))
-        conn.commit()
-
-    if len(ids) > 0:
-        cursor.execute("update action_queue set status='Q' where id in (%s) and status='W'"%(','.join(ids)))
-        conn.commit()
-
-    if len(ids)+len(nids)+len(invalid_ids) + len(unreachable_ids) > 0:
-        _websocket_send(event_msg(msg(conn)))
-
+    data = updates(data)
     cursor.close()
     conn.close()
     return cmds
@@ -402,8 +419,8 @@ def _dequeue():
             send.put((id, cmd, form_id), block=True)
     #stop_workers()
 
-#dequeue()
-#sys.exit()
+dequeue()
+sys.exit()
 
 try:
     lockfd = actiond_lock(lockfile)
