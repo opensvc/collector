@@ -6800,3 +6800,4 @@ alter table resmon modify column rid varchar(255);
 
 alter table nodes add column node_frozen varchar(1) default 'F';
 
+alter table action_queue modify ret int(11) default NULL;
