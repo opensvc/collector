@@ -419,8 +419,8 @@ def _dequeue():
             send.put((id, cmd, form_id), block=True)
     #stop_workers()
 
-dequeue()
-sys.exit()
+#dequeue()
+#sys.exit()
 
 try:
     lockfd = actiond_lock(lockfile)
