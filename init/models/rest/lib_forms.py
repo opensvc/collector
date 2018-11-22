@@ -715,7 +715,8 @@ def validate_input_data(form_definition, data, _input):
         val = form_dereference(val.strip(), data)
         if key not in data:
             raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
-        if val != data[key]:
+        if "#" not in val and val != data[key]:
+            # verify the submitted key value is aligned with the forced value in the form definition
             raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(val), input_id))
 
     #
@@ -735,7 +736,20 @@ def validate_input_data(form_definition, data, _input):
     #
     # Validate dynamic input
     #
-    key = _input.get("Value")
+    key = None
+
+    # Look for the input_id key in the keys first as they are added last to the
+    # data
+    for key_def in key_defs:
+        _key, _val = key_def.split("=", 1)
+        _key = _key.strip()
+        if _key == input_id:
+            key = _val.strip()
+
+    # Fallback to the "Value" input property value.
+    if key is None:
+        key = _input.get("Value")
+
     fn = _input.get("Function")
     if fn is not None and key is not None:
         fn = form_dereference(fn, data)
@@ -754,7 +768,7 @@ def validate_input_data(form_definition, data, _input):
             try:
                 candidates = [form_get_val(candidate, key) for candidate in candidates]
             except ValueError:
-                raise HTTP(500, "Key '%s' not in candidates" % key)
+                raise HTTP(400, "Key '%s' not in candidates" % key)
             for val in vals:
                 try:
                     val = int(val)
