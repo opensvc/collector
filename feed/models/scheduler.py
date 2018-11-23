@@ -4834,6 +4834,11 @@ def merge_daemon_ping(node_id):
 
 def _push_status(svcname, data, auth):
         data = json.loads(data)
+        encap = data.get("encap", {})
+        if encap is True:
+            # the master agent is responsible for that
+            return
+
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         r_vars = [
             "svcname",
@@ -4873,7 +4878,7 @@ def _push_status(svcname, data, auth):
 
         for rid, rdata in data.get("resources", {}).items():
             r_vals += [fmt_r_vals(rid, rdata)]
-        for erid, edata in data.get("encap", {}).items():
+        for erid, edata in encap.items():
             for rid, rdata in edata.get("resources", {}).items():
                 r_vals += [fmt_r_vals(rid, rdata, erid=erid)]
 
@@ -4898,9 +4903,9 @@ def _push_status(svcname, data, auth):
             "mon_frozen",
         ]
         g_vals = []
-        if data.get("encap", []):
+        if encap:
             gfrozen = 1 if data.get("frozen") else 0
-            for rid, edata in data.get("encap", {}).items():
+            for rid, edata in encap.items():
                 efrozen = 1 if edata.get("frozen") else 0
                 frozen = gfrozen + 2 * efrozen
 
