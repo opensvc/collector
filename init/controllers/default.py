@@ -117,6 +117,8 @@ class table_svcmon(HtmlTable):
             'nodename',
             'mon_availstatus',
             'mon_overallstatus',
+            'mon_smon_status',
+            'mon_smon_global_expect',
             'mon_frozen',
             'mon_monstatus',
             'mon_containerstatus',

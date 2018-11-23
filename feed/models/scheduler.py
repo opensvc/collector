@@ -5075,6 +5075,8 @@ def merge_daemon_status(node_id):
             node_id=peer.node_id,
             svc_id=svc.svc_id,
             mon_vmname=cname,
+            mon_smon_status=data["monitor"]["status"],
+            mon_smon_global_expect=data["monitor"]["global_expect"],
             mon_availstatus=data["avail"],
             mon_overallstatus=data["overall"],
             mon_monstatus=data.get("monitor", {}).get("status", ""),

@@ -1731,6 +1731,8 @@
 		"Service mode": "Service mode",
 		"Service frozen": "Service frozen",
 		"Node frozen": "Node frozen",
+		"Monitor status": "Monitor status",
+		"Monitor target": "Monitor target",
 		"Service provisioned": "Service provisioned",
 		"Service placement": "Service placement",
 		"HA": "HA",

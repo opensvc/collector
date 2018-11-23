@@ -1729,6 +1729,8 @@
 		"Service mode": "Mode du service",
 		"Service frozen": "Service gelé",
 		"Node frozen": "Noeud gelé",
+		"Monitor status": "Etat du moniteur",
+		"Monitor target": "Cible du moniteur",
 		"Service provisioned": "Service provisionné",
 		"Service placement": "Placement du service",
 		"HA": "HA",

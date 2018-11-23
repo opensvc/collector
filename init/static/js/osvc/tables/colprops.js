@@ -103,6 +103,8 @@ objcols = {
 		'mon_guestos',
 		'mon_availstatus',
 		'mon_overallstatus',
+		'mon_smon_status',
+		'mon_smon_global_expect',
 		'mon_frozen',
 		'mon_monstatus',
 		'mon_containerstatus',
@@ -1346,6 +1348,14 @@ colprops = {
 		"_class": "status",
 		"img": "svcinstance",
 		"title": "Disk status"
+	},
+	"mon_smon_status": {
+		"img": "svcinstance",
+		"title": "Monitor status"
+	},
+	"mon_smon_global_expect": {
+		"img": "svcinstance",
+		"title": "Monitor target"
 	},
 	"mon_frozen": {
 		"img": "svcinstance",
