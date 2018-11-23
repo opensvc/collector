@@ -81,8 +81,8 @@ function app_tabs(divid, options) {
 					"enclosures",
 					"hvs",
 					"hvpools",
-					"hvvdcs",
-					"disks"]
+					"hvvdcs"
+				]
 			})
 		}
 

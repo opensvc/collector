@@ -120,7 +120,6 @@ class table_svcmon(HtmlTable):
             'mon_smon_status',
             'mon_smon_global_expect',
             'mon_frozen',
-            'mon_monstatus',
             'mon_containerstatus',
             'mon_ipstatus',
             'mon_fsstatus',
