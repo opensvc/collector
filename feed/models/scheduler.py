@@ -360,37 +360,36 @@ def _push_checks(auth):
     """
 
     vars, vals = json.loads(rconn.hget(R_CHECKS_HASH, json.dumps([auth])))
-    n = len(vals)
     node_id = auth_to_node_id(auth)
-    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="chk_nodename")
-    vars, vals = replace_svcnames_in_data(vars, vals, auth, fieldname="chk_svcname")
 
-    # purge old checks
-    if n > 0:
-        where = ""
-        for v in vals:
-             where += """ and not (chk_type="%(chk_type)s" and chk_instance="%(chk_instance)s") """%dict(chk_type=v[2], chk_instance=v[3])
+    def _purge():
         sql = """delete from checks_live
                  where
                    node_id="%(node_id)s" and
-                   chk_type not in ("netdev_err", "save")
-                   %(where)s
-              """%dict(node_id=node_id, where=where)
+                   not chk_type in ("netdev_err", "save") and
+                   chk_updated < date_sub(now(), interval 20 second)
+              """%dict(node_id=node_id)
         db.executesql(sql)
         db.commit()
 
-        # for checks coming from vservice, update the svcname field
-        svc_id_idx = vars.index("svc_id")
-        svc_id = vals[0][svc_id_idx]
-        if svc_id == "":
-            q = db.svcmon.mon_vmname == auth[1]
-            row = db(q).select(db.svcmon.svc_id, limitby=(0,1)).first()
-            if row is not None:
-                svc_id = row.svc_id
-                for i, val in enumerate(vals):
-                    vals[i][svc_id_idx] = svc_id
-    else:
+    n = len(vals)
+    if n == 0:
+        _purge()
         return
+
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="chk_nodename")
+    vars, vals = replace_svcnames_in_data(vars, vals, auth, fieldname="chk_svcname")
+
+    # for checks coming from vservice, update the svcname field
+    svc_id_idx = vars.index("svc_id")
+    svc_id = vals[0][svc_id_idx]
+    if svc_id == "":
+        q = db.svcmon.mon_vmname == auth[1]
+        row = db(q).select(db.svcmon.svc_id, limitby=(0,1)).first()
+        if row is not None:
+            svc_id = row.svc_id
+            for i, val in enumerate(vals):
+                vals[i][svc_id_idx] = svc_id
 
     # insert new checks
     while len(vals) > 100:
@@ -398,6 +397,10 @@ def _push_checks(auth):
         vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     db.commit()
+
+    #print(json.dumps([vars,vals], indent=4))
+    # purge old checks
+    _purge()
 
     # update timeseries
     q = db.checks_live.node_id == node_id
