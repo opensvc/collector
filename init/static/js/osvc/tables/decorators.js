@@ -1410,7 +1410,7 @@ function cell_decorator_dash_links(e, line) {
 		   (dash_type == "check value not updated")) {
 		cell_decorator_dash_link_checks(e, line)
 	} else if (dash_type == "mac duplicate") {
-		cell_decorator_dash_link_mac_duplicate(e)
+		cell_decorator_dash_link_mac_duplicate(e, line)
 	} else if ((dash_type == "service available but degraded") ||
 		   (dash_type == "service status not updated") ||
 		   (dash_type == "service configuration not updated") ||
