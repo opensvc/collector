@@ -240,6 +240,9 @@ def get_get_handlers(prefix=None):
              "rest_get_resource",
              "rest_get_resources",
        ],
+       "resources_info": [
+             "rest_get_resources_info",
+       ],
        "resources_logs": [
              "rest_get_resources_logs",
        ],

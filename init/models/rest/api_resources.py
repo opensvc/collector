@@ -1,5 +1,32 @@
 
 #
+class rest_get_resources_info(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List OpenSVC services resources key/value pairs.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/resources_info",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/resources_info",
+          tables=["resinfo"],
+          desc=desc,
+          examples=examples,
+          allow_fset_id=True,
+        )
+
+    def handler(self, **vars):
+        q = q_filter(node_field=db.resinfo.node_id, svc_field=db.resinfo.svc_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.resinfo.node_id, svc_field=db.resinfo.svc_id, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_resources_logs(rest_get_table_handler):
     def __init__(self):
         desc = [
