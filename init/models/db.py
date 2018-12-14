@@ -6,6 +6,9 @@
 
 import datetime
 import os
+#import logging
+
+#log = logging.getLogger("web2py.init")
 
 dbopensvc_host = config_get('dbopensvc_host', '127.0.0.1')
 dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
@@ -197,16 +200,14 @@ service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, a
 # auth.settings.registration_requires_approval = True
 # auth.messages.verify_email = \
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
-mail_server = "%s:%d" % (config_get("email_server", "localhost"), config_get("email_port", 25))
-mail_sender = config_get("email_sender", "admin@opensvc.com")
-mail_login = config_get("email_login", None)
-mail_tls = config_get("email_tls", False)
 
 mail=Mail()
-mail.settings.server = mail_server
-mail.settings.sender = mail_sender
-mail.settings.login = mail_login
-mail.settings.tls = mail_tls
+mail.settings.server = "%s:%d" % (config_get("email_host", "localhost"), config_get("email_port", 25))
+mail.settings.sender = config_get("email_sender", "admin@opensvc.com")
+mail.settings.login = config_get("email_login", None)
+mail.settings.tls = config_get("email_tls", False)
+mail.settings.ssl = config_get("email_ssl", False)
+mail.settings.hostname = config_get("email_local_hostname", None)
 auth.settings.mailer = mail
 
 default_max_lines = 1000

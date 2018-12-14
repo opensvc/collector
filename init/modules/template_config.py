@@ -57,12 +57,6 @@ http_host = "opensvc.mydomain.com"
 websocket_url = "http://dbopensvc:8889"
 websocket_key = "magix123"
 
-# mail sending configuration
-mail_server = "localhost:25"
-mail_sender = "admin@opensvc.com"
-mail_tls = False
-mail_login = 'username:password'
-
 # time between relogin, in seconds
 session_expire = 36000000
 
@@ -150,10 +144,7 @@ retentions = {
  'dashboard_events': 165,
 }
 
-
-#
-# Alerts config
-#
+# mail sending configuration (alertd, web2py)
 email = True
 email_from = "admin@localhost"
 email_host = "localhost"
