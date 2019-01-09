@@ -5051,6 +5051,7 @@ def merge_daemon_status(node_id):
             cname = ""
             ctype = ""
             data = idata
+            data["frozen"] = 1 if idata.get("frozen") else 0
         else:
             cdata = idata["encap"][container_id]
             cname = cdata["hostname"]
@@ -5094,7 +5095,7 @@ def merge_daemon_status(node_id):
             mon_containerstatus=gstatus("container", data),
             mon_appstatus=gstatus("app", data),
             mon_syncstatus=gstatus("sync", data),
-            mon_frozen=1 if data.get("frozen") else 0,
+            mon_frozen=data.get("frozen"),
             mon_vmtype=ctype,
             mon_updated=now,
         )
