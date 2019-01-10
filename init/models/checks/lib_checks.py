@@ -137,8 +137,8 @@ def update_thresholds_from_filters(rows):
     return rest
 
 def update_thresholds_from_filters_one_source(rows):
-    if len(rows) == 0:
-        return rows
+    if not rows:
+        return []
     node_id = rows[0]['node_id']
     svc_id = rows[0]['svc_id']
 
@@ -224,6 +224,8 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_na
 
 
 def update_thresholds_from_settings(rows):
+    if not rows:
+        return []
     ids = map(lambda x: str(x.id), rows)
     ids = ','.join(ids)
     sql = """

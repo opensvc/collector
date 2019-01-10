@@ -379,6 +379,10 @@ def _push_checks(auth):
 
     vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="chk_nodename")
     vars, vals = replace_svcnames_in_data(vars, vals, auth, fieldname="chk_svcname")
+    now = datetime.datetime.now()
+    idx = vars.index("chk_updated")
+    for i, val in enumerate(vals):
+        vals[i][idx] = now
 
     # for checks coming from vservice, update the svcname field
     svc_id_idx = vars.index("svc_id")
