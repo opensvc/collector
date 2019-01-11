@@ -4716,6 +4716,11 @@ def merge_status(s1, s2):
     return MERGE_RULES[encode_pair(STATUS_VALUE[s1], STATUS_VALUE[s2])]
 
 def ping_instance(svc, peer, now):
+    q = (db.svcmon.node_id == peer.node_id) & (db.svcmon.svc_id == svc.svc_id)
+    if not db(q).count():
+        # the instance does not exist
+        return
+
     changed = set()
     q = (db.svcmon.node_id == peer.node_id) & (db.svcmon.svc_id == svc.svc_id)
     q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
@@ -5206,7 +5211,7 @@ def merge_daemon_status(node_id):
                 continue
             if changes is not None and svcname+"@"+nodename not in changes and not svc.svc_availstatus == "undef":
                 pi_changed = ping_instance(svc, peer, now)
-                if "svcmon" in pi_changed:
+                if pi_changed is not None:
                     # the instance already existed, and the updated tstamp has been refreshed
                     # skip the inserts/updates
                     continue
