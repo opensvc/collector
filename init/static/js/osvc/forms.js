@@ -854,7 +854,7 @@ function form(divid, options) {
 			})
 		},
 		function(xhr, stat, error) {
-			o.result.append(services_ajax_error_fmt(xhr, stat, error))
+			o.result.html(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 
@@ -1101,44 +1101,38 @@ function form(divid, options) {
 			mustMatch: true,
 			source: opts,
 			minLength: 0,
-			response: function( event, ui ) {
-				if (ui.content.length == 1) {
-					$(this).prop("acid", ui.content[0].id)
-				}
-				if(d.StrictCandidates) {
-					var v = input.val()
-					for (var i=0; i<ui.content.length; i++) {
-						if (ui.content[i].label==v) {
-							input.removeClass("candidates_violation")
-							o.update_submit()
-							return
-						}
-						input.addClass("candidates_violation")
-						o.update_submit()
-					}
-				}
+			response: function(event, ui) {
+				o.update_candidates_violation(d, input, opts)
 			},
 			change: function(event, ui) {
 				if (ui.item) {
-					$(this).prop("acid", ui.item.id)
+					input.prop("acid", ui.item.id)
+					input.removeClass("candidates_violation")
+				} else {
+					input.removeProp("acid")
 				}
-				input.removeClass("candidates_violation")
-				$(this).change()
+				o.update_candidates_violation(d, input, opts)
+				input.change()
 			},
 			focus: function(event, ui) {
 				return false
 			},
 			select: function(event, ui) {
-				$(this).prop("acid", ui.item.id)
+				input.prop("acid", ui.item.id)
 				input.removeClass("candidates_violation")
-				$(this).change()
+				input.change()
 			}
 		})
+		input.bind("blur", function(event) {
+			o.update_candidates_violation(d, input, opts)
+			input.change()
+		})
 		input.bind("keyup", function(event) {
-			if ($(this).val() == "") {
-				$(this).removeProp("acid")
-				$(this).change()
+			if (input.val() == "") {
+				input.removeProp("acid")
 			}
+			o.update_candidates_violation(d, input, opts)
+			input.change()
 		})
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
@@ -1409,30 +1403,19 @@ function form(divid, options) {
 				mustMatch: true,
 				source: opts,
 				minLength: 0,
-				response: function( event, ui ) {
-					if (ui.content.length == 1) {
-						$(this).prop("acid", ui.content[0].id)
-						$(this).prop("option_data", ui.content[0].option_data)
-					}
-					if (d.StrictCandidates) {
-						var v = input.val()
-						for (var i=0; i<ui.content.length; i++) {
-							if (ui.content[i].label==v) {
-								input.removeClass("candidates_violation")
-								o.update_submit()
-								return
-							}
-							input.addClass("candidates_violation")
-							o.update_submit()
-						}
-					}
+				response: function(event, ui) {
+					o.update_candidates_violation(d, input, opts)
 				},
 				change: function(event, ui) {
 					if (ui.item) {
 						$(this).prop("acid", ui.item.id)
 						$(this).prop("option_data", ui.item.option_data)
+						input.removeClass("candidates_violation")
+					} else {
+						input.removeProp("acid")
+						input.removeProp("option_data")
 					}
-					input.removeClass("candidates_violation")
+					o.update_candidates_violation(d, input, opts)
 					$(this).change()
 				},
 				focus: function(event, ui) {
@@ -1445,12 +1428,17 @@ function form(divid, options) {
 					$(this).change()
 				}
 			})
+			input.bind("blur", function(event) {
+				o.update_candidates_violation(d, input, opts)
+				$(this).change()
+			})
 			input.bind("keyup", function(event) {
 				if ($(this).val() == "") {
 					$(this).removeProp("acid")
 					$(this).removeProp("option_data")
-					$(this).change()
 				}
+				o.update_candidates_violation(d, input, opts)
+				$(this).change()
 			})
 			if (opts.length == 1) {
 				input.removeClass("aci")
@@ -1615,6 +1603,30 @@ function form(divid, options) {
 		}
 	}
 
+	o.update_candidates_violation = function(d, input, opts) {
+		if (!d.StrictCandidates) {
+			return
+		}
+
+		function is_candidate(v, opts) {
+			for (var i=0; i<opts.length; i++) {
+				if (opts[i].label==v) {
+					return true
+				}
+			}
+			return false
+		}
+
+		var v = input.val()
+		console.log(v, opts)
+		if (is_candidate(v, opts)) {
+			input.removeClass("candidates_violation")
+		} else {
+			input.addClass("candidates_violation")
+		}
+		o.update_submit()
+	}
+
 	o.update_submit = function() {
 		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:not(.hidden)").length == 0) {
 			o.enable_submit()
@@ -1700,7 +1712,7 @@ function form(divid, options) {
 		tr.removeClass("hidden")
 		var input = tr.find("[name=val]").children("input,textarea,.form_input_info")
 		if (d.Function && fn_has_refs(d)) {
-			fn_init(input, d, autocomplete_callback)
+			fn_init(input, d, null, autocomplete_callback)
 			var data = $.data(input[0])
 			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
 				input.val(data.autocomplete.options.source[0].label)
@@ -1783,7 +1795,7 @@ function form(divid, options) {
 		else if (typeof val === "boolean") {
 			c.ref = (c.ref.toLowerCase() == 'true')
 		}
-		if ((val != "") || (val == 0)) {
+		if ((val != "") || (typeof val === "number")) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty

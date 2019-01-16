@@ -217,7 +217,15 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
 		url: url,
 		contentType: content_type,
 		data: data,
-		error: error_callback,
+		error: function(xhr, stat, error) {
+			console.log(error)
+			if (error == "UNAUTHORIZED") {
+				app_load_href("/"+osvc.app+"/default/user/login")
+			}
+			else if (error_callback) {
+				error_callback(xhr, stat, error)
+			}
+		},
 		success: callback
 	})
 	return xhr
@@ -281,7 +289,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 			if (error == "UNAUTHORIZED") {
 				app_load_href("/"+osvc.app+"/default/user/login")
 			}
-			if (error_callback) {
+			else if (error_callback) {
 				error_callback(xhr, stat, error)
 			}
 		},
@@ -318,7 +326,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 			if (error == "UNAUTHORIZED") {
 				app_load_href("/"+osvc.app+"/default/user/login")
 			}
-			if (error_callback) {
+			else if (error_callback) {
 				error_callback(xhr, stat, error)
 			}
 		},
@@ -408,11 +416,10 @@ function services_ismemberof(groups) {
 }
 
 function services_ajax_error_fmt(xhr, stat, error) {
-	var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='ajax.error'></span></span>")
-	e.i18n()
-	var p = $("<pre class='api_error'></pre>")
-	p.text("status: " + stat + "\nerror: " + error)
-	e.append(p)
+	if (xhr.responseJSON.error) {
+		error = xhr.responseJSON.error
+	}
+	var e = $("<div class='icon alert16'>"+error+"</div>")
 	return e
 }
 
