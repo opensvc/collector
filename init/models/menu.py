@@ -30,7 +30,7 @@ menu_entries = [
   'view-net',
   'view-node-net',
   'view-node-san',
-  'view-node-hw',
+  'view-nodes-hw',
   'view-san',
   'view-dns',
   'view-docker',
