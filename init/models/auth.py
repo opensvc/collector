@@ -40,10 +40,10 @@ def get_node_id(s):
     q = q_filter(q, app_field=db.nodes.app)
     nodes = db(q).select(db.nodes.node_id, cacheable=True)
     if len(nodes) > 1:
-        raise Exception("Multiple nodes match the '%s' nodename. Use a node id." % s)
+        raise HTTP(403, "Multiple nodes match the '%s' nodename. Use a node id." % s)
     node = nodes.first()
     if node is None:
-        raise KeyError("Node '%s' not found" % s)
+        raise HTTP(404, "Node '%s' not found" % s)
     return node.node_id
 
 def get_svc(svc_id):
