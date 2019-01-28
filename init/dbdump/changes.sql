@@ -6812,3 +6812,5 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 
 alter table dashboard modify dash_dict text default '';
 alter table dashboard_ref modify dash_dict text default '';
+
+alter table comp_rulesets_variables modify var_value longtext;
