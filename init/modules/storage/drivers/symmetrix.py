@@ -75,7 +75,7 @@ class Driver(object):
 
         data = json.loads(ret["data"][0]["stdout"])
         results = [data]
-        if "driver_data" in data and "rdf" in data["driver_data"] and "Remote" in data["driver_data"]["rdf"]:
+        if "driver_data" in data and "rdf" in data["driver_data"] and "Remote" in data["driver_data"]["rdf"] and data["driver_data"].get("pair_deleted"):
             local_rdf_data = data["driver_data"]["rdf"]["Local"]
             remote_rdf_data = data["driver_data"]["rdf"]["Remote"]
             srdf_mode = data["driver_data"]["rdf"]["Mode"]["mode"]

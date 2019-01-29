@@ -886,7 +886,7 @@ def get_sym(xml_dir=None):
         for e in tree.getiterator('Symm_Info'): pass
         model = e.find('model').text
         del tree
-        if 'VMAX' in model:
+        if 'VMAX' in model or 'PowerMax' in model:
             return Vmax(xml_dir)
         elif 'DMX' in model or '3000-M':
             return Dmx(xml_dir)
