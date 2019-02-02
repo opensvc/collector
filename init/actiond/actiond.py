@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import datetime
+import optparse
 import MySQLdb
 from multiprocessing import Process, JoinableQueue, Queue
 from subprocess import *
@@ -419,14 +420,24 @@ def _dequeue():
             send.put((id, cmd, form_id), block=True)
     #stop_workers()
 
-#dequeue()
-#sys.exit()
+def main(**options):
+    try:
+        lockfd = actiond_lock(lockfile)
+        if options.get("foreground"):
+            dequeue()
+        else:
+            fork(dequeue)
+        actiond_unlock(lockfd)
+    except lock.lockError:
+        return 0
+    except:
+        return 1
+    return 0
 
-try:
-    lockfd = actiond_lock(lockfile)
-    fork(dequeue)
-    actiond_unlock(lockfd)
-except lock.lockError:
-    sys.exit(0)
-except:
-    sys.exit(1)
+if __name__ == "__main__":
+    parser = optparse.OptionParser()
+    parser.add_option("-f", default=False, action="store_true",
+                      dest="foreground", help="Run in forground")
+    options, _ = parser.parse_args()
+    options = vars(options)
+    sys.exit(main(**options))
