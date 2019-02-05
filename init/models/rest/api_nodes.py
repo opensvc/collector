@@ -948,7 +948,7 @@ class rest_post_nodes(rest_post_handler):
                 node_id = vars['nodename']
                 del(_vars["nodename"])
             return rest_post_node().handler(node_id, **_vars)
-        except KeyError:
+        except (KeyError, HTTP):
             pass
 
         # create node code path
