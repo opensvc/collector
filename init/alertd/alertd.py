@@ -502,32 +502,35 @@ class Alertd(object):
 
     def setup_log(self):
         self.log = logging.getLogger()
-        logfile = os.path.join(basedir, 'alertd.log')
         fileformatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        filehandler = logging.handlers.RotatingFileHandler(logfile,
-                                                           maxBytes=5242880,
-                                                           backupCount=5)
-        filehandler.setFormatter(fileformatter)
-        self.log.addHandler(filehandler)
+        #logfile = os.path.join(basedir, 'alertd.log')
+        #filehandler = logging.handlers.RotatingFileHandler(logfile,
+        #                                                   maxBytes=5242880,
+        #                                                   backupCount=5)
+        #filehandler.setFormatter(fileformatter)
+        #self.log.addHandler(filehandler)
+        streamhandler = logging.StreamHandler()
+        streamhandler.setFormatter(fileformatter)
+        self.log.addHandler(streamhandler)
         self.log.setLevel(logging.INFO)
 
     def alertd_lock(self):
         try:
             self.lockfd = lock.lock(timeout=0, delay=0, lockfile=self.lockfile)
         except lock.lockTimeout:
-            print("timed out waiting for lock")
+            self.log.info("timed out waiting for lock")
             raise lock.lockError
         except lock.lockNoLockFile:
-            print("lock_nowait: set the 'lockfile' param")
+            self.log.info("lock_nowait: set the 'lockfile' param")
             raise lock.lockError
         except lock.lockCreateError:
-            print("can not create lock file %s"%lockfile)
+            self.log.info("can not create lock file %s"%lockfile)
             raise lock.lockError
         except lock.lockAcquire as e:
-            print("another alertd is currently running (pid=%s)"%e.pid)
+            self.log.info("another alertd is currently running (pid=%s)"%e.pid)
             raise lock.lockError
         except:
-            print("unexpected locking error")
+            self.log.error("unexpected locking error")
             import traceback
             traceback.print_exc()
             raise lock.lockError
@@ -679,9 +682,10 @@ class Alertd(object):
         return data
 
     def get_users(self):
+        self.users = {}
         conn = get_conn()
         if conn is None:
-            return {}
+            return
         sql = """select
                    u.id,
                    u.email_notifications,
@@ -702,7 +706,6 @@ class Alertd(object):
         """
         cursor = conn.cursor()
         cursor.execute(sql)
-        self.users = {}
         while True:
             row = cursor.fetchone()
             if row is None:
