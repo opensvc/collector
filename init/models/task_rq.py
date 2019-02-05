@@ -7,6 +7,7 @@ def enqueue_async_task(fn, args=[], kwargs={}):
     }))
 
 def task_rq(rqueues, getfn, app="feed"):
+    import time
     import socket
 
     log = logging.getLogger("web2py.app.%s.task_rq" % app)
