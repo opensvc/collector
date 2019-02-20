@@ -53,6 +53,16 @@ WEEKDAYS = {
     6: "sun",
 }
 
+try:
+    dbopensvc = config.dbopensvc_host
+except:
+    dbopensvc = "127.0.0.1"
+
+try:
+    dbopensvc_password = config.dbopensvc_password
+except:
+    dbopensvc_password = "opensvc"
+
 def config_get(param, default=None):
     if not hasattr(config, param):
         return default
@@ -133,9 +143,9 @@ def prettydate(dt, T=lambda x: x):
 
 def get_conn():
     try:
-        conn = MySQLdb.connect(host=config.dbopensvc_host,
+        conn = MySQLdb.connect(host=dbopensvc,
                                user="opensvc",
-                               passwd=config.dbopensvc_password,
+                               passwd=dbopensvc_password,
                                db="opensvc")
     except MySQLdb.Error, e:
         return None
