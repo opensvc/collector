@@ -53,20 +53,40 @@ WEEKDAYS = {
     6: "sun",
 }
 
-try:
-    dbopensvc = config.dbopensvc_host
-except:
-    dbopensvc = "127.0.0.1"
+DEFAULTS = {
+    "dbopensvc_host": "127.0.0.1",
+    "dbopensvc_user": "opensvc",
+    "dbopensvc_password": "opensvc",
+    "xmpp": False,
+    "xmpp_port": 5222,
+    "xmpp_host": "talk.google.com",
+    "http_host": "collector",
+    "title": "collector",
+    "slack": False,
+    "email": False,
+    "email_from": "collector",
+    "email_ssl": False,
+    "email_tls": False,
+}
 
-try:
-    dbopensvc_password = config.dbopensvc_password
-except:
-    dbopensvc_password = "opensvc"
+OPTIONS = {}
 
-def config_get(param, default=None):
-    if not hasattr(config, param):
-        return default
-    return getattr(config, param)
+def config_get(param):
+    try:
+        val = OPTIONS[param]
+        if val is not None:
+            return val
+    except Exception:
+        pass
+    try:
+        return os.environ[param.upper().replace("-", "_")]
+    except Exception:
+        pass
+    try:
+        return getattr(config, param)
+    except Exception:
+        pass
+    return DEFAULTS.get(param)
 
 def fmt_desc(data):
     try:
@@ -101,7 +121,7 @@ def fork(fn, kwargs={}):
     except:
         os._exit(1)
 
-    fn(**kwargs)
+    fn(kwargs)
     os._exit(0)
 
 def prettydate(dt, T=lambda x: x):
@@ -143,9 +163,9 @@ def prettydate(dt, T=lambda x: x):
 
 def get_conn():
     try:
-        conn = MySQLdb.connect(host=dbopensvc,
-                               user="opensvc",
-                               passwd=dbopensvc_password,
+        conn = MySQLdb.connect(host=config_get("dbopensvc_host"),
+                               user=config_get("dbopensvc_user"),
+                               passwd=config_get("dbopensvc_password"),
                                db="opensvc")
     except MySQLdb.Error, e:
         return None
@@ -227,15 +247,15 @@ class GenericJob(object):
         }
         if data["node_id"] != "":
             dig["nodename"] = data["nodename"]
-            dig["node_link"] = "https://%s/init/show/tabs/node/%s" % (config.http_host, data["node_id"])
+            dig["node_link"] = "https://%s/init/show/tabs/node/%s" % (config_get("http_host"), data["node_id"])
             if data["svc_id"] == "":
-                dig["app_link"] = "https://%s/init/show/tabs/app/%s" % (config.http_host, data["node_app"])
+                dig["app_link"] = "https://%s/init/show/tabs/app/%s" % (config_get("http_host"), data["node_app"])
                 dig["app"] = data["node_app"]
                 dig["env"] = data["node_env"]
         if data["svc_id"] != "":
-            dig["svc_link"] = "https://%s/init/show/tabs/svc/%s" % (config.http_host, data["svc_id"])
+            dig["svc_link"] = "https://%s/init/show/tabs/svc/%s" % (config_get("http_host"), data["svc_id"])
             dig["svcname"] = data["svcname"]
-            dig["app_link"] = "https://%s/init/show/tabs/app/%s" % (config.http_host, data["svc_app"])
+            dig["app_link"] = "https://%s/init/show/tabs/app/%s" % (config_get("http_host"), data["svc_app"])
             dig["app"] = data["svc_app"]
             dig["env"] = data["svc_env"]
         return dig
@@ -275,6 +295,8 @@ class XmppJob(GenericJob):
         message = str(self)
         try:
             jid = xmpp.protocol.JID(config_get("xmpp_username"))
+            if not jid:
+                raise Exception("xmpp_username not set")
             if "@" not in self.addr:
                 self.addr = self.addr+"@"+jid.getDomain()
             c = xmpp.Client(jid.getDomain(), debug=[])
@@ -346,14 +368,14 @@ class SlackJob(GenericJob):
     def slacksend(self):
         payload = {
             'channel': "@"+self.addr,
-            'username': config.title,
+            'username': config_get("title"),
             'attachments': self.attachments,
             'parse': 'none',
             'icon_url': ('http://www.opensvc.com/init/static/images/opensvc-logo-64.png'),
         }
         data = json.dumps(payload)
         try:
-            response = requests.post(config.slack_webhook_url, data=data)
+            response = requests.post(config_get("slack_webhook_url"), data=data)
             return response
         except Exception as exc:
             log = logging.getLogger("JOB.SLACK")
@@ -428,7 +450,7 @@ class EmailJob(GenericJob):
     def __call__(self):
         receivers = [self.addr]
         ts = time.time()
-        sender = config.email_from
+        sender = config_get("email_from")
         ses = sender.index("@")
         sender = sender[:ses] + "+" + str(ts) + sender[ses:]
         message = "From: %(sender_name)s <%(sender)s>\n" \
@@ -444,11 +466,11 @@ class EmailJob(GenericJob):
         )
 
         try:
-            if config_get("email_ssl", False):
-                server = smtplib.SMTP_SSL(config.email_host)
+            if config_get("email_ssl"):
+                server = smtplib.SMTP_SSL(config_get("email_host"))
             else:
-                server = smtplib.SMTP(config.email_host)
-            if config_get("email_tls", False) and not config_get("email_ssl", False):
+                server = smtplib.SMTP(config_get("email_host"))
+            if config_get("email_tls") and not config_get("email_ssl"):
                 hostname = None
                 server.ehlo(hostname)
                 server.starttls()
@@ -456,7 +478,7 @@ class EmailJob(GenericJob):
             login = config_get("email_login")
             if login:
                 server.login(*login.split(':', 1))
-            server.sendmail(config.email_from, receivers, message)
+            server.sendmail(config_get("email_from"), receivers, message)
             server.quit()
             mark_done("email", self.user["id"], self.alert_ids)
         except Exception as exc:
@@ -771,12 +793,12 @@ class Alertd(object):
         if not self.in_period(user):
             self.log.info("user %d not in notification period", user["id"])
             return
-        if user["email_notifications"] and config.email:
+        if user["email_notifications"] and config_get("email"):
             self.enqueue_user(user, "email")
         if user["im_notifications"]:
-            if user["im_type"] == "xmpp" and config.xmpp:
+            if user["im_type"] == "xmpp" and config_get("xmpp"):
                 self.enqueue_user(user, "xmpp")
-            elif user["im_type"] == "slack" and config.slack:
+            elif user["im_type"] == "slack" and config_get("slack"):
                 self.enqueue_user(user, "slack")
 
     def purge_alerts_sent(self):
@@ -833,11 +855,11 @@ class Alertd(object):
             self.stop_workers()
             self.alertd_unlock()
 
-def main(**kwargs):
+def main(foreground=True):
     daemon = Alertd()
     try:
         daemon.alertd_lock()
-        if kwargs["foreground"]:
+        if foreground:
             daemon.main()
         else:
             fork(daemon.main)
@@ -852,6 +874,36 @@ if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option("-f", default=False, action="store_true",
                       dest="foreground", help="Run in forground")
+    parser.add_option("--email", action="store_true",
+                      dest="email", help="Activate email alarming")
+    parser.add_option("--email-from",
+                      dest="email_from", help="The email sender address")
+    parser.add_option("--email-host",
+                      dest="email_host", help="The email server address or name")
+    parser.add_option("--email-port",
+                      dest="email_port", help="The email server port")
+    parser.add_option("--email-ssl", action="store_true",
+                      dest="email_ssl", help="Use SSL to communicate with the email server")
+    parser.add_option("--email-tls", action="store_true",
+                      dest="email_tls", help="Use TLS to communicate with the email server")
+    parser.add_option("--slack", action="store_true",
+                      dest="slack", help="Activate Slack alarming")
+    parser.add_option("--slack-webhook-url",
+                      dest="slack_webhook_url", help="The url to post Slack messages to")
+    parser.add_option("--xmpp", action="store_true",
+                      dest="xmpp", help="Activate XMPP alarming")
+    parser.add_option("--xmpp-port", default="5222",
+                      dest="xmpp_port", help="XMPP server port")
+    parser.add_option("--xmpp-host",
+                      dest="xmpp_host", help="XMPP server dns name")
+    parser.add_option("--xmpp-username",
+                      dest="xmpp_username", help="user to log in the XMPP server")
+    parser.add_option("--xmpp-password",
+                      dest="xmpp_password", help="user password to log in the XMPP server")
+    parser.add_option("--http-host",
+                      dest="http_host", help="The collector url to format links with")
+    parser.add_option("--title",
+                      dest="title", help="The bot name to display in Slack messages")
     options, _ = parser.parse_args()
-    options = vars(options)
-    sys.exit(main(**options))
+    OPTIONS.update(vars(options))
+    sys.exit(main(foreground=OPTIONS["foreground"]))
