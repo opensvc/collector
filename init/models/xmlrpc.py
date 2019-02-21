@@ -71,7 +71,7 @@ def insert_multiline(table, vars, valsl, node_id=None, get_last_id=False):
 def generic_insert(table, vars, vals, node_id=None, get_last_id=False):
     if len(vals) == 0:
         return
-    elif isinstance(vals[0], list):
+    elif isinstance(vals[0], (tuple, list)):
         i = insert_multiline(table, vars, vals, node_id=node_id, get_last_id=get_last_id)
     else:
         i = insert_multiline(table, vars, [vals], node_id=node_id, get_last_id=get_last_id)
