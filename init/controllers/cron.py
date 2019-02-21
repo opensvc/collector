@@ -1,19 +1,15 @@
 def refresh_b_action_errors():
-    sql = """truncate b_action_errors"""
-    db.executesql(sql)
-    db.commit()
-    sql = """insert into b_action_errors
-    select NULL, m.svc_id, m.node_id, count(a.id)
-    from svcmon m
-    left join svcactions a
-    on m.svc_id=a.svc_id and m.node_id=a.node_id
-    where
-    a.status='err'
-    and isnull(a.ack)
-    and a.end is not NULL
-    group by m.svc_id, m.node_id
-    """
-    db.executesql(sql)
+    sql = """
+             select a.svc_id, a.node_id, count(a.id)
+             from svcactions a where
+               a.end>date_sub(now(), interval 1 day) and
+               a.status='err' and
+               isnull(a.ack) and
+               a.end is not NULL
+             group by a.svc_id, a.node_id """
+    rows = db.executesql(sql)
+    db.executesql("truncate b_action_errors")
+    generic_insert("b_action_errors", ["svc_id", "node_id", "err"], rows)
     db.commit()
 
 def cron_scrub():
