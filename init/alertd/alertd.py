@@ -829,6 +829,17 @@ class Alertd(object):
         conn.close()
 
     def run_forever(self):
+        while True:
+            try:
+                self._run_forever()
+            except KeyboardInterrupt:
+                # propagate
+                raise
+            except Exception as exc:
+                self.log.exception(exc)
+                time.sleep(5)
+
+    def _run_forever(self):
         iterations = 0
         while True:
             iterations += 1
@@ -848,9 +859,6 @@ class Alertd(object):
         except KeyboardInterrupt:
             self.log.info("keyboard interrupt")
             pass
-        except Exception as exc:
-            self.log.exception(exc)
-            time.sleep(5)
         finally:
             self.stop_workers()
             self.alertd_unlock()
