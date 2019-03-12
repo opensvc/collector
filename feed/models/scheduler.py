@@ -5157,11 +5157,11 @@ def merge_daemon_status(node_id):
                 "svc_id": svc.svc_id,
             },
             svc_id=svc.svc_id,
-            svc_availstatus=sdata["avail"],
-            svc_status=sdata["overall"],
-            svc_placement=sdata["placement"],
-            svc_frozen=sdata["frozen"],
-            svc_provisioned=sdata["provisioned"],
+            svc_availstatus=sdata.get("avail", "n/a"),
+            svc_status=sdata.get("overall", "n/a"),
+            svc_placement=sdata.get("placement", "none"),
+            svc_frozen=sdata.get("frozen", "n/a"),
+            svc_provisioned=sdata.get("provisioned", "n/a"),
             svc_status_updated=now,
         )
         return set(["services"])
@@ -5200,7 +5200,7 @@ def merge_daemon_status(node_id):
             ping_svc(svc, now)
         else:
             print " update service", svcname, svc.svc_id
-            changed |= svc_log_update(svc.svc_id, sdata["avail"], deferred=True)
+            changed |= svc_log_update(svc.svc_id, sdata.get("avail", "n/a"), deferred=True)
             changed |= update_service(svc, sdata)
 
         monstatus = set()
@@ -5230,13 +5230,13 @@ def merge_daemon_status(node_id):
                     changed |= update_container_node_fields(svc, peer, container_id, idata)
                     changed |= update_instance(svc, peer, container_id, idata)
 
-            changed |= update_instance_resources(svc, peer, "", idata["resources"])
+            changed |= update_instance_resources(svc, peer, "", idata.get("resources", {}))
             changed |= svcmon_log_update(peer.node_id, svc.svc_id, idata, deferred=True)
 
         if monstatus == set(["idle"]):
-            changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
-            changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
-            update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
+            changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata.get("avail", "n/a"))
+            changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata.get("placement", "none"))
+            update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata.get("avail", "n/a"), sdata.get("overall", "n/a"))
             update_dash_flex_instances_started(svc.svc_id)
             update_dash_flex_cpu(svc.svc_id)
             # TODO

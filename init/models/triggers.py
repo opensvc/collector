@@ -46,8 +46,8 @@ def svcmon_log_update(node_id, svc_id, idata, deferred=False):
     end = datetime.datetime.now()
     if len(rows) == 1:
         prev = rows[0]
-        if prev["mon_availstatus"] == idata["avail"] and \
-           prev["mon_overallstatus"] == idata["overall"] and \
+        if prev["mon_availstatus"] == idata.get("avail", "n/a") and \
+           prev["mon_overallstatus"] == idata.get("overall", "n/a") and \
            prev["mon_syncstatus"] == gstatus("sync", idata) and \
            prev["mon_ipstatus"] == gstatus("ip", idata) and \
            prev["mon_fsstatus"] == gstatus("fs", idata) and \
@@ -82,8 +82,8 @@ def svcmon_log_update(node_id, svc_id, idata, deferred=False):
             },
             svc_id=svc_id,
             node_id=node_id,
-            mon_availstatus=idata["avail"],
-            mon_overallstatus=idata["overall"],
+            mon_availstatus=idata.get("avail", "n/a"),
+            mon_overallstatus=idata.get("overall", "n/a"),
             mon_syncstatus=gstatus("sync", idata),
             mon_ipstatus=gstatus("ip", idata),
             mon_fsstatus=gstatus("fs", idata),
