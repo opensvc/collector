@@ -5159,7 +5159,7 @@ def merge_daemon_status(node_id):
             svc_id=svc.svc_id,
             svc_availstatus=sdata.get("avail", "n/a"),
             svc_status=sdata.get("overall", "n/a"),
-            svc_placement=sdata.get("placement", "none"),
+            svc_placement=sdata.get("placement", "n/a"),
             svc_frozen=sdata.get("frozen", "n/a"),
             svc_provisioned=sdata.get("provisioned", "n/a"),
             svc_status_updated=now,
@@ -5235,7 +5235,7 @@ def merge_daemon_status(node_id):
 
         if monstatus == set(["idle"]):
             changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata.get("avail", "n/a"))
-            changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata.get("placement", "none"))
+            changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata.get("placement", "n/a"))
             update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata.get("avail", "n/a"), sdata.get("overall", "n/a"))
             update_dash_flex_instances_started(svc.svc_id)
             update_dash_flex_cpu(svc.svc_id)
