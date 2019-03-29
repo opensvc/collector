@@ -771,10 +771,10 @@ def validate_input_data(form_definition, data, _input):
                 raise HTTP(400, "Key '%s' not in candidates" % key)
             for val in vals:
                 try:
-                    val = int(val)
+                    int_val = int(val)
                 except ValueError:
-                    pass
-                if val not in candidates and str(val) not in candidates and unicode(val) not in candidates:
+                    int_val = val
+                if val not in candidates and int_val not in candidates and unicode(val) not in candidates:
                     raise HTTP(400, "Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
 
 def form_dereference(s, data, prefix=""):
