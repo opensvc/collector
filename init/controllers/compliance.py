@@ -2480,23 +2480,25 @@ def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[],
     if rset_relations is None:
         rset_relations = get_rset_relations()
 
-    def recurse_rel(rset_id, children=[]):
+    def recurse_rel(rset_id, children={}, depth=1):
         if rset_id not in rset_relations:
             return children
         for row in rset_relations[rset_id]:
             # don't validate sub ruleset ownership.
             # parent ownership is inherited
             if row.comp_rulesets.ruleset_type == "explicit":
-                children.append(row.comp_rulesets_rulesets.child_rset_id)
-                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children)
+                children[row.comp_rulesets_rulesets.child_rset_id] = depth
+                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children, depth+1)
             elif row.comp_rulesets.ruleset_type == "contextual" and \
                  row.comp_rulesets_filtersets.fset_id is not None and \
                  row.comp_rulesets_filtersets.fset_id in matching_fsets:
-                children.append(row.comp_rulesets_rulesets.child_rset_id)
-                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children)
+                children[row.comp_rulesets_rulesets.child_rset_id] = depth
+                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children, depth+1)
         return children
 
-    children = recurse_rel(ruleset_id)
+    children_depth = {ruleset_id: 0}
+    children_depth.update(recurse_rel(ruleset_id))
+    children = [c for c in children_depth]
 
     # get variables (pass as arg too ?)
     q = db.comp_rulesets_variables.ruleset_id.belongs([ruleset_id]+children)
@@ -2504,6 +2506,7 @@ def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[],
       db.comp_rulesets_variables.var_class,
       db.comp_rulesets_variables.var_name,
       db.comp_rulesets_variables.var_value,
+      db.comp_rulesets_variables.ruleset_id,
       cacheable=True
     )
     d = dict(
@@ -2511,14 +2514,23 @@ def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[],
           filter=f,
           vars=[]
         )
+    vars_added = {}
     for row in rows:
+        depth = vars_added.get(row.var_name, {}).get("depth")
+        candidate_depth = children_depth.get(row.ruleset_id, 0)
+        if depth is not None and candidate_depth < depth:
+            continue
+        vars_added[row.var_name] = {
+            "depth": candidate_depth,
+        }
         if var_class:
-            d['vars'].append((row.var_name,
-                              row.var_value,
-                              row.var_class))
+            vars_added[row.var_name]['data'] = (row.var_name,
+                                                row.var_value,
+                                                row.var_class)
         else:
-            d['vars'].append((row.var_name,
-                              row.var_value))
+            vars_added[row.var_name]['data'] = (row.var_name,
+                                                row.var_value)
+    d["vars"] += [e["data"] for e in vars_added.values()]
     return {ruleset_name: d}
 
 def ruleset_add_var(d, rset_name, var, val):
