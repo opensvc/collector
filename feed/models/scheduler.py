@@ -4827,6 +4827,8 @@ def merge_daemon_ping(node_id):
 
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
     for svcname in data["services"].keys():
+        if svcname == "cluster":
+            continue
         svc = None
         for peer_node_id in peer_node_ids:
             try:
@@ -5185,6 +5187,8 @@ def merge_daemon_status(node_id):
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
 
     for svcname, sdata in data["services"].items():
+        if svcname == "cluster":
+            continue
         svc = None
         for peer_node_id in peer_node_ids:
             try:
@@ -5246,8 +5250,9 @@ def merge_daemon_status(node_id):
     if peer_node_ids:
         q = db.svcmon.node_id.belongs(peer_node_ids)
         q &= db.svcmon.svc_id == db.services.svc_id
-        if len(data["services"]) > 0:
-            q &= ~db.services.svcname.belongs(data["services"])
+        names_to_keep = [svcname for svcname in data["services"] if svcname != "cluster"]
+        if len(names_to_keep) > 0:
+            q &= ~db.services.svcname.belongs(names_to_keep)
         for instance in db(q).select(db.svcmon.svc_id, db.svcmon.node_id):
             print " purge instance:", instance.svc_id+"@"+instance.node_id
             for t in ["svcmon", "dashboard", "dashboard_events", "svcdisks", "resmon", "checks_live", "comp_status", "action_queue", "resinfo", "saves"]:
