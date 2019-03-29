@@ -148,4 +148,16 @@ class Driver(object):
                 results += _data
         return results
 
+    def add_masking(self, data):
+        cmd = [
+            "array", "add", "masking",
+            "-a", data["array_id"],
+            "--data", "'%s'" % json.dumps(data),
+        ]
+        ret = self.storage.proxy_action(" ".join(cmd), proxy=data["proxy"])
+        try:
+            return json.loads(ret["data"][0]["stdout"])
+        except ValueError:
+            raise Error("unexpected output format: %s" % ret)
+
 
