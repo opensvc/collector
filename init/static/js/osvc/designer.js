@@ -215,6 +215,9 @@ function designer(divid, options) {
 			var obj_id = node.li_attr.obj_id
 			var obj_rel = node.type
 			var new_name = node.text
+			if (obj_rel == "module_autofix") {
+				obj_rel = "module"
+			}
 			$.ajax({
 				async: false,
 				type: "POST",
@@ -611,6 +614,8 @@ function designer(divid, options) {
 		}
 		if (!msg) {
 			s = i18n.t("designer.empty_response")
+		} else if ((msg == -1) || (msg == "-1")) {
+			s = "" + msg
 		} else if ("err" in msg) {
 			s = msg["err"]
 		} else if ("error" in msg) {
