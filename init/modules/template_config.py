@@ -150,7 +150,7 @@ email_from = "admin@localhost"
 email_host = "localhost"
 email_port = 465
 email_ssl = True
-email tls = False
+email_tls = False
 email_login = me:1234
 
 xmpp = True
