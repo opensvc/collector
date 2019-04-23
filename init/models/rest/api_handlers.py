@@ -186,6 +186,9 @@ def get_get_handlers(prefix=None):
              "rest_get_network_segment_responsibles",
              "rest_get_network_nodes",
        ],
+       "nodes_hbas": [
+             "rest_get_nodes_hbas",
+       ],
        "nodes_hardware": [
              "rest_get_nodes_hardwares",
        ],

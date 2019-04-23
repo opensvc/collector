@@ -355,6 +355,32 @@ class rest_get_node_targets(rest_get_table_handler):
 
 
 #
+class rest_get_nodes_hbas(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List all nodes fc and iscsi host bus adapters.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes_hbas?props=nodes.nodename,hba_id",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes_hbas",
+          tables=["node_hba"],
+          desc=desc,
+          examples=examples,
+          allow_fset_id=True,
+        )
+
+    def handler(self, **vars):
+        q = q_filter(node_field=db.node_hba.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.node_hba.node_id, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 class rest_get_node_hbas(rest_get_table_handler):
     def __init__(self):
         desc = [
