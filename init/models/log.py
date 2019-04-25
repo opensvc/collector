@@ -43,7 +43,7 @@ def beautify_change(d1, d2):
 def log_events(i):
     ws_send('log_change', {'id': i})
 
-def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
+def _log(action, fmt, d, user=None, svc_id="", level="info", node_id="", nodename=None, svcname=None):
     if user is None:
         user = user_name()
     if user in ("Unknown", "agent"):
@@ -70,10 +70,14 @@ def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
          s = ""
          if user:
              s += "user[%s] " % user
-         if node_id != "":
+         if node_id:
              s += "node[%s] " % node_id
-         if svc_id != "":
+         if nodename:
+             s += "nodename[%s] " % nodename
+         if svc_id:
              s += "svc[%s] " % svc_id
+         if svcname:
+             s += "svcname[%s] " % svcname
          s += "action[%s] " % str(action)
          try:
              s += fmt % d

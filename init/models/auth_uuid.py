@@ -145,6 +145,8 @@ def node_svc_id(node_id, svcname):
     return svc["svc_id"]
 
 def create_svc(node_id, cluster_id, svcname):
+    if svcname == "cluster":
+        return
     from gluon.storage import Storage
     node = get_node(node_id)
     if node is None:
@@ -270,6 +272,8 @@ def auth_uuid(fn):
                  dict(e=str(e)),
                  node_id=node_id,
                  svc_id=svc_id,
+                 nodename=nodename,
+                 svcname=svcname,
                  user="feed",
                  level="warning")
             raise
