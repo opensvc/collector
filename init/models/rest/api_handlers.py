@@ -34,6 +34,9 @@ def get_get_handlers(prefix=None):
              "rest_get_app_responsibles",
              "rest_get_app_publications",
        ],
+       "arrays_diskgroups": [
+             "rest_get_arrays_diskgroups",
+       ],
        "arrays": [
              "rest_get_arrays",
              "rest_get_array",

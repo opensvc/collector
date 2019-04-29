@@ -97,6 +97,29 @@ class rest_get_array_diskgroup(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_arrays_diskgroups(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage arrays diskgroups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays_diskgroups"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays_diskgroups",
+          tables=["stor_array_dg"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.stor_array.id > 0
+        q = db.stor_array_dg.array_id == db.stor_array.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 class rest_get_array_diskgroups(rest_get_table_handler):
     def __init__(self):
         desc = [
