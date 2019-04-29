@@ -852,7 +852,10 @@ def prepare_data(
                     total = db(q).select(count_col, left=left).first()._extra[count_col]
             except TypeError as exc:
                 # raised when pydal smart query is bogus
-                return dict(error="query error: %s" % str(exc))
+                raise HTTP(400, "query error: %s" % str(exc))
+            except ValueError as exc:
+                # raised when query args are bogus (str filter on an int field for ex)
+                raise HTTP(400, "query error: %s" % str(exc))
 
         limit = int(limit)
         offset = int(offset)
