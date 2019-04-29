@@ -142,6 +142,15 @@ class Storage(object):
             "result": json.dumps(result),
             "output_id": self.output_id
         })
+        if isinstance(result, dict) and "log" in result:
+            for entry in result["log"]:
+                try:
+                    if entry[0] == 0:
+                        print(entry[1] % entry[2])
+                    else:
+                        print(entry[1] % entry[2], file=sys.stderr)
+                except Exception:
+                    continue
 
     def get_nodes(self):
         if "svc_id" in self.request_data:
@@ -337,6 +346,12 @@ class Storage(object):
                 if ret["data"][0]["stderr"] != "":
                     print(ret["data"][0]["stderr"], file=sys.stderr)
                 if ret["data"][0]["ret"] != 0:
+                    try:
+                        _data = json.loads(ret["data"][0]["stdout"])
+                        self.put_result(_data)
+                    except Exception as exc:
+                        print(exc, file=sys.stderr)
+                        pass
                     raise Error("command failed")
                 return ret
             time.sleep(1)
