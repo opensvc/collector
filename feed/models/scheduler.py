@@ -3966,7 +3966,12 @@ def update_dash_pkgdiff(node_id):
                    dash_updated="%(now)s",
                    dash_env="%(env)s"
                  on duplicate key update
-                   dash_updated="%(now)s"
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
+                   dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
+                   dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
+                   dash_updated="%(now)s",
+                   dash_env="%(env)s"
               """%dict(svc_id=svc_id,
                        now=str(now),
                        sev=sev,
@@ -4054,7 +4059,12 @@ def update_dash_flex_cpu(svc_id):
                    dash_dict_md5=md5(concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}')),
                    dash_env="%(env)s"
                  on duplicate key update
-                   dash_updated=now()
+                   dash_severity=%(sev)d,
+                   dash_updated=now(),
+                   dash_fmt="%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
+                   dash_dict=concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}'),
+                   dash_dict_md5=md5(concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}')),
+                   dash_env="%(env)s"
           """%dict(svc_id=svc_id,
                    sev=sev,
                    cmin=svc_flex_cpu_low_threshold,
@@ -4481,6 +4491,8 @@ def update_dash_service_placement(svc_id, env, placement):
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=1,
+                   dash_fmt="%%(placement)s",
+                   dash_dict='{"placement": "%(placement)s"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svc_id=svc_id,
@@ -4515,6 +4527,7 @@ def update_dash_service_frozen(svc_id, node_id, env, frozen):
                  on duplicate key update
                    dash_severity=1,
                    dash_fmt="",
+                   dash_dict="",
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svc_id=svc_id,
@@ -4579,6 +4592,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
              on duplicate key update
                dash_severity=%(sev)d,
                dash_fmt="",
+               dash_dict="",
                dash_updated=now(),
                dash_env="%(env)s"
 
