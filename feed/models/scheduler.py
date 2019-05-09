@@ -3897,7 +3897,7 @@ def update_dash_pkgdiff(node_id):
 
     q = db.nodes.node_id == db.svcmon.node_id
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
-    rows = db(q).select(db.svcmon.svc_id, db.svcmon.mon_svctype)
+    rows = db(q).select(db.svcmon.svc_id, db.svcmon.mon_svctype, db.svcmon.mon_vmtype)
     svc_ids = map(lambda x: x.svc_id, rows)
 
     for row in rows:
@@ -3906,6 +3906,14 @@ def update_dash_pkgdiff(node_id):
         q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.node_id == db.nodes.node_id
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
+
+        # separate the encap / master instances to workaround (bogus
+        # encap-sourced lines in svcmon
+        if row.mon_vmtype:
+            q &= db.svcmon.mon_vmtype != ""
+        else:
+            q &= db.svcmon.mon_vmtype == ""
+
         nodes = db(q).select(db.nodes.node_id, db.nodes.nodename,
                              orderby=db.nodes.nodename,
                              groupby=db.nodes.node_id)
