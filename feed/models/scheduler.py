@@ -5250,7 +5250,11 @@ def merge_daemon_status(node_id):
             print "  update service", svcname, svc.svc_id, "instance on node", nodename
             encap = idata.get("encap")
             if isinstance(encap, bool) or encap is None or len(encap) == 0:
-                changed |= update_instance(svc, peer, "", idata)
+                _node_id, vmname, vmtype = translate_encap_nodename(svc.svc_id, peer.node_id)
+                if _node_id is not None and _node_id != "" and peer.node_id != _node_id:
+                    continue
+                else:
+                    changed |= update_instance(svc, peer, "", idata)
             else:
                 for container_id, cdata in encap.items():
                     changed |= update_container_node_fields(svc, peer, container_id, idata)
