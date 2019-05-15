@@ -216,9 +216,6 @@ class rest_post_tag(rest_post_handler):
 #
 class rest_post_tags(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_tags()
-        self.update_one_handler = rest_post_tag()
-        self.update_one_param = "id"
         desc = [
           "Create a tag.",
           "Update tags matching the specified query.",
@@ -233,6 +230,7 @@ class rest_post_tags(rest_post_handler):
           desc=desc,
           examples=examples
         )
+        self.update_one_param = "tag_id"
 
     def handler(self, **vars):
         if 'tag_name' not in vars:
@@ -302,6 +300,7 @@ class rest_delete_tags(rest_delete_handler):
           desc=desc,
           examples=examples,
         )
+        self.delete_one_param = "tag_id"
 
     def handler(self, **vars):
         if "tag_id" not in vars:

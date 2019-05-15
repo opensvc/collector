@@ -65,7 +65,7 @@ def get_svc_id(s):
         if "svc_id" in auth.user:
             return auth.user["svc_id"]
         else:
-            raise Exception("the 'self' id can only be used when logged as a service")
+            raise HTTP(403, "the 'self' id can only be used when logged as a service")
 
     svc = get_svc(s)
     if svc:
@@ -77,10 +77,10 @@ def get_svc_id(s):
         q = q_filter(q, app_field=db.services.svc_app)
     svcs = db(q).select(db.services.svc_id)
     if len(svcs) > 1:
-        raise Exception("Multiple services match the '%s' svcname. Use a service id." % s)
+        raise HTTP(403, "Multiple services match the '%s' svcname. Use a service id." % s)
     svc = svcs.first()
     if svc is None:
-        raise KeyError("Service '%s' not found" % s)
+        raise HTTP(404, "Service '%s' not found" % s)
     return svc.svc_id
 
 def check_quota_docker_registries():
@@ -121,12 +121,12 @@ def check_privilege(privs, user_id=None):
 def node_responsible(node_id=None, user_id=None):
     if node_id is None:
         raise Exception("node_responsible() must have a not None node_id parameter")
+    if "Manager" in user_groups(user_id):
+        return
     q = db.nodes.node_id == node_id
     n = db(q).count()
     if n == 0:
         raise Exception("Node %s does not exist" % node_id)
-    if "Manager" in user_groups(user_id):
-        return
     q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
@@ -135,12 +135,12 @@ def node_responsible(node_id=None, user_id=None):
 def svc_responsible(svc_id=None, user_id=None):
     if svc_id is None:
         raise Exception("svc_responsible() must have a not None svc_id parameter")
+    if "Manager" in user_groups(user_id):
+        return
     q = db.services.svc_id == svc_id
     n = db(q).count()
     if n == 0:
         raise Exception("Service %s does not exist" % svc_id)
-    if "Manager" in user_groups(user_id):
-        return
     q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
     if n == 0:

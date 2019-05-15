@@ -461,9 +461,6 @@ class rest_delete_network_segment(rest_delete_handler):
 #
 class rest_post_network_segments(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_network_segments()
-        self.update_one_handler = rest_post_network_segment()
-        self.update_one_param = "id"
         desc = [
           "Create a new network segment",
           "Update network segments matching the specified query.",
@@ -568,9 +565,6 @@ class rest_post_network_segment(rest_post_handler):
 #
 class rest_post_networks(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_networks()
-        self.update_one_handler = rest_post_network()
-        self.update_one_param = "id"
         desc = [
           "Create a new network",
           "Update network matching the specified query.",

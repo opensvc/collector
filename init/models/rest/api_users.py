@@ -313,10 +313,6 @@ class rest_get_user_groups(rest_get_table_handler):
 #
 class rest_post_users(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_users()
-        self.update_one_handler = rest_post_user()
-        self.update_one_param = "email"
-
         desc = [
           "Create a user.",
           "Update users matching the specified query."

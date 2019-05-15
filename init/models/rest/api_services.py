@@ -157,8 +157,11 @@ class rest_post_services(rest_post_handler):
             svc = db(q).select().first()
             if svc is not None:
                 return rest_post_service().handler(svc_id, **vars)
-        except KeyError:
-            pass
+        except HTTP as exc:
+            if exc.status == 400:
+                pass
+            else:
+                raise
 
         svc_id = get_new_svc_id()
         vars["svc_id"] = svc_id

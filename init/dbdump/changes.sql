@@ -6817,3 +6817,4 @@ alter table comp_rulesets_variables modify var_value longtext;
 
 alter table comp_run_ruleset add index idx_date(date);
 alter table svcactions add key k_instance (node_id,svc_id);
+alter table svcactions modify action varchar(128);

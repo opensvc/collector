@@ -95,10 +95,6 @@ class rest_get_app(rest_get_line_handler):
 #
 class rest_post_apps(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_apps()
-        self.update_one_handler = rest_post_app()
-        self.update_one_param = "app"
-
         desc = [
           "Create an application code.",
           "Update applications matching the specified query.",

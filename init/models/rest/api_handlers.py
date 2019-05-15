@@ -287,6 +287,7 @@ def get_get_handlers(prefix=None):
              "rest_get_service_instance",
        ],
        "services_actions": [
+             "rest_get_services_action",
              "rest_get_services_actions",
        ],
        "services_instances_status_log": [
@@ -574,6 +575,10 @@ def get_delete_handlers(prefix=None):
         "resources": [
              "rest_delete_resource",
              "rest_delete_resources",
+        ],
+        "services_actions": [
+             "rest_delete_services_action",
+             "rest_delete_services_actions",
         ],
         "services_instances": [
              "rest_delete_service_instance",

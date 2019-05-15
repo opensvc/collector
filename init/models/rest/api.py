@@ -122,6 +122,8 @@ class rest_handler(object):
         else:
             self.db = db
 
+    def _type(self):
+        return self.__class__.__name__
 
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
@@ -372,10 +374,25 @@ Available properties are: ``%(props)s``:green.
 class rest_post_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "POST"
+        try:
+            name = self._type().replace("rest_post_", "rest_get_")
+            self.get_handler = globals()[name]()
+        except Exception as exc:
+            pass
+        self.update_one_param = "id"
+        try:
+            name = self._type()[:-1]
+            self.update_one_handler = globals()[name]()
+        except Exception as exc:
+            pass
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
+        if "filters" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
+        if "query" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
         if request.env.http_content_type and "application/json" in request.env.http_content_type or \
            request.env.content_type and "application/json" in request.env.content_type:
             try:
@@ -396,10 +413,6 @@ class rest_post_handler(rest_handler):
                     return dict(error=str(e)+": "+e.body)
                 except Exception as e:
                     return dict(error=str(e))
-        if "filters" in vars and hasattr(self, "get_handler"):
-            return self.handle_multi_update(*args, **vars)
-        if "query" in vars and hasattr(self, "get_handler"):
-            return self.handle_multi_update(*args, **vars)
         try:
             return rest_handler.handle(self, *args, **vars)
         except HTTP as e:
@@ -418,19 +431,19 @@ class rest_post_handler(rest_handler):
         if "filters" in vars:
             _vars["filters"] = vars["filters"]
             del(vars["filters"])
-        l = self.get_handler.handler(**vars)["data"]
+        l = self.get_handler.handler(**_vars)["data"]
         result = {"data": []}
         for e in l:
             try:
                 r = self.update_one_handler.handler(e.get(self.update_one_param), **vars)
-                result["data"] += r["data"] if "data" in r else r
-            except HTTP as e:
-                d = dict(error=str(e)+": "+e.body)
-                d[self.update_one_param] = e[self.update_one_param]
+                result["data"] += r["data"] if "data" in r else [r]
+            except HTTP as exc:
+                d = dict(error=str(exc)+": "+exc.body)
+                d[self.update_one_param] = e.get(self.update_one_param)
                 result["data"] += [d]
-            except Exception as ex:
-                d = {"error": str(ex)}
-                d[self.update_one_param] = e[self.update_one_param]
+            except Exception as exc:
+                d = {"error": str(exc)}
+                d[self.update_one_param] = e.get(self.update_one_param)
                 result["data"] += [d]
         return result
 
@@ -457,10 +470,25 @@ A web2py smart query.
 class rest_put_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "PUT"
+        try:
+            name = self._type().replace("rest_post_", "rest_get_")
+            self.get_handler = globals()[name]()
+        except Exception as exc:
+            pass
+        self.update_one_param = "id"
+        try:
+            name = self._type()[:-1]
+            self.update_one_handler = globals()[name]()
+        except Exception as exc:
+            pass
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
+        if "filters" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
+        if "query" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
         if request.env.http_content_type and "application/json" in request.env.http_content_type or \
            request.env.content_type and "application/json" in request.env.content_type:
             try:
@@ -471,20 +499,31 @@ class rest_put_handler(rest_handler):
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
                 return rest_handler.handle(self, *args, **data)
-        if "filters" in vars and hasattr(self, "get_handler"):
-            return self.handle_multi_update(*args, **vars)
-        if "query" in vars and hasattr(self, "get_handler"):
-            return self.handle_multi_update(*args, **vars)
         return rest_handler.handle(self, *args, **vars)
 
 
 class rest_delete_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "DELETE"
+        try:
+            name = self._type().replace("rest_delete_", "rest_get_")
+            self.get_handler = globals()[name]()
+        except Exception as exc:
+            pass
+        self.delete_one_param = "id"
+        try:
+            name = self._type()[:-1]
+            self.delete_one_handler = globals()[name]()
+        except Exception as exc:
+            pass
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
+        if "filters" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_delete(*args, **vars)
+        if "query" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_delete(*args, **vars)
         if request.env.http_content_type and "application/json" in request.env.http_content_type or \
            request.env.content_type and "application/json" in request.env.content_type:
             try:
@@ -499,9 +538,52 @@ class rest_delete_handler(rest_handler):
 
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
+        if len(self.tables) == 0:
+            return
+        self.params.update({
+          "filters": {
+            "desc": """
+An opensvc property values filter.
+
+""",
+          },
+          "query": {
+            "desc": """
+A web2py smart query.
+
+""",
+          },
+        })
 
     def update_data(self):
         self.data = copy.copy(self.init_data)
+
+    def handle_multi_delete(self, *args, **vars):
+        _vars = {
+          "limit": 0,
+          "props": self.delete_one_param,
+        }
+        if "query" in vars:
+            _vars["query"] = vars["query"]
+            del(vars["query"])
+        if "filters" in vars:
+            _vars["filters"] = vars["filters"]
+            del(vars["filters"])
+        l = self.get_handler.handler(**_vars)["data"]
+        result = {"data": []}
+        for e in l:
+            try:
+                r = self.delete_one_handler.handler(e.get(self.delete_one_param), **vars)
+                result["data"] += r["data"] if "data" in r else [r]
+            except HTTP as exc:
+                d = dict(error=str(exc)+": "+exc.body)
+                d[self.delete_one_param] = e.get(self.delete_one_param)
+                result["data"] += [d]
+            except Exception as exc:
+                d = {"error": str(exc)}
+                d[self.delete_one_param] = e.get(self.delete_one_param)
+                result["data"] += [d]
+        return result
 
 class rest_get_handler(rest_handler):
     def __init__(self, **vars):

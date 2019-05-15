@@ -293,9 +293,6 @@ class rest_get_group_users(rest_get_table_handler):
 #
 class rest_post_groups(rest_post_handler):
     def __init__(self):
-        self.get_handler = rest_get_groups()
-        self.update_one_handler = rest_post_group()
-        self.update_one_param = "role"
         desc = [
           "Create a group.",
           "Update groups matching the specified query.",

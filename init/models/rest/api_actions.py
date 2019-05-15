@@ -1,4 +1,27 @@
 #
+class rest_get_services_action(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "List services action log.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services_actions/1234",
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/services_actions/<id>",
+          tables=["svcactions"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.svcactions.id == id
+        q = q_filter(q, svc_field=db.svcactions.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 class rest_get_services_actions(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -20,6 +43,67 @@ class rest_get_services_actions(rest_get_table_handler):
         q = q_filter(svc_field=db.svcactions.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
+
+#
+class rest_delete_services_actions(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete services action log entries.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE --header 'Content-Type: application/json' -d @/tmp/list.json -o- https://%(collector)s/init/rest/api/services_action",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/services_actions",
+          tables=["svcactions"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if 'id' not in vars:
+           raise HTTP(400, "The 'id' key must be specified")
+        id = vars["id"]
+        del(vars["id"])
+        return rest_delete_services_action().handler(id, **vars)
+
+#
+class rest_delete_services_action(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Modify a services action log entry.",
+          "Responsibles can modify only the acknowledged and comment fields",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services_action/123445",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/services_actions/<id>",
+          tables=["svcactions"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.svcactions.id == id
+        row = db(q).select(
+          db.svcactions.id,
+          db.svcactions.node_id,
+          db.svcactions.svc_id,
+        ).first()
+        if row is None:
+            raise HTTP(404, "log entry %s does not exist" % str(id))
+        svc_responsible(row.svc_id)
+        db(q).delete()
+        table_modified("svcactions")
+
+        update_instance_action_errors(row.svc_id, row.node_id)
+        update_dash_action_errors(row.svc_id, row.node_id)
+        return dict(info="actions log entry %s deleted" %str(id))
 
 #
 class rest_post_services_action(rest_post_handler):
