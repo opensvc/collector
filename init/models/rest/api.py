@@ -422,7 +422,8 @@ class rest_post_handler(rest_handler):
 
     def handle_multi_update(self, *args, **vars):
         _vars = {
-          "limit": 0,
+          "meta": 0,
+          "limit": vars.get("limit", 0),
           "props": self.update_one_param,
         }
         if "query" in vars:
@@ -553,6 +554,12 @@ A web2py smart query.
 
 """,
           },
+          "limit": {
+            "desc": """
+The maximum number of entries to return. 0 means no limit.
+
+""",
+          },
         })
 
     def update_data(self):
@@ -560,7 +567,8 @@ A web2py smart query.
 
     def handle_multi_delete(self, *args, **vars):
         _vars = {
-          "limit": 0,
+          "meta": 0,
+          "limit": vars.get("limit", 0),
           "props": self.delete_one_param,
         }
         if "query" in vars:
@@ -802,6 +810,56 @@ def prepare_data(
     else:
         raise HTTP(500, "invalid 'left' parameter type: %s" % type(left))
 
+    def find_prop(t, prop):
+        if t == "nodes":
+            for table in tables:
+                if "node_id" in db[table].fields:
+                    left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
+                    tables.append("nodes")
+                    return prop
+        elif t == "services":
+            for table in tables:
+                if "svc_id" in db[table].fields:
+                    left.append(db.services.on(db.services.svc_id==db[table].svc_id))
+                    tables.append("services")
+                    return prop
+        elif t == "apps":
+            for table in tables:
+                if "app_id" in db[table].fields:
+                    left.append(db.apps.on(db.apps.id==db[table].app_id))
+                    tables.append("apps")
+                    return prop
+        elif t == "stor_array":
+            for table in tables:
+                if "array_id" in db[table].fields:
+                    left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
+                    tables.append("stor_array")
+                    return prop
+        elif t == "tags":
+            for table in tables:
+                if "tag_id" in db[table].fields:
+                    left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
+                    tables.append("tags")
+                    return prop
+        elif t == "comp_rulesets":
+            for table in tables:
+                if "ruleset_id" in db[table].fields:
+                    left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
+                    tables.append("comp_rulesets")
+                    return prop
+        elif t == "node_tags":
+            for table in tables:
+                if "tag_id" in db[table].fields:
+                    left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
+                    tables.append("node_tags")
+                    return prop
+        elif t == "svc_tags":
+            for table in tables:
+                if "tag_id" in db[table].fields:
+                    left.append(db.svc_tags.on(db.svc_tags.tag_id==db[table].tag_id))
+                    tables.append("svc_tags")
+                    return prop
+
     if props is not None:
         for i, prop in enumerate(props.split(",")):
             if prop.count(":") == 1:
@@ -818,62 +876,8 @@ def prepare_data(
                 t, c = prop.split(".")
                 if t in tables:
                     validated_prop = prop
-                elif t == "nodes":
-                    for table in tables:
-                        if "node_id" in db[table].fields:
-                            left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
-                            tables.append("nodes")
-                            validated_prop = prop
-                            break
-                elif t == "services":
-                    for table in tables:
-                        if "svc_id" in db[table].fields:
-                            left.append(db.services.on(db.services.svc_id==db[table].svc_id))
-                            tables.append("services")
-                            validated_prop = prop
-                            break
-                elif t == "apps":
-                    for table in tables:
-                        if "app_id" in db[table].fields:
-                            left.append(db.apps.on(db.apps.id==db[table].app_id))
-                            tables.append("apps")
-                            validated_prop = prop
-                            break
-                elif t == "stor_array":
-                    for table in tables:
-                        if "array_id" in db[table].fields:
-                            left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
-                            tables.append("stor_array")
-                            validated_prop = prop
-                            break
-                elif t == "tags":
-                    for table in tables:
-                        if "tag_id" in db[table].fields:
-                            left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
-                            tables.append("tags")
-                            validated_prop = prop
-                            break
-                elif t == "comp_rulesets":
-                    for table in tables:
-                        if "ruleset_id" in db[table].fields:
-                            left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
-                            tables.append("comp_rulesets")
-                            validated_prop = prop
-                            break
-                elif t == "node_tags":
-                    for table in tables:
-                        if "tag_id" in db[table].fields:
-                            left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
-                            tables.append("node_tags")
-                            validated_prop = prop
-                            break
-                elif t == "svc_tags":
-                    for table in tables:
-                        if "tag_id" in db[table].fields:
-                            left.append(db.svc_tags.on(db.svc_tags.tag_id==db[table].tag_id))
-                            tables.append("svc_tags")
-                            validated_prop = prop
-                            break
+                else:
+                    validated_prop = find_prop(t, prop)
             if validated_prop:
                 validated_props.append(prop)
                 if remap_as:
@@ -908,6 +912,7 @@ def prepare_data(
             f_val = f[len(f_prop):].strip()
             if '.' in f_prop:
                 t, f_col = f_prop.split(".")
+                find_prop(t, f_prop)
             else:
                 t = tables[0]
                 f_col = f_prop
