@@ -160,7 +160,7 @@ def _where(query, table, var, field, depth=0, db=db):
         _q = where_json_chunk(table, field, chunk, db)
         if _q:
             q = _q
-    elif chunk == 'empty':
+    elif chunk in ('empty', '=empty'):
         if db[table][field].type == "string":
             q = (db[table][field]==None)|(db[table][field]=='')
         else:
