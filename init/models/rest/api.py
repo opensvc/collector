@@ -814,48 +814,64 @@ def prepare_data(
         if t == "nodes":
             for table in tables:
                 if "node_id" in db[table].fields:
+                    if "nodes" in tables:
+                        return prop
                     left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
                     tables.append("nodes")
                     return prop
         elif t == "services":
             for table in tables:
                 if "svc_id" in db[table].fields:
+                    if "services" in tables:
+                        return prop
                     left.append(db.services.on(db.services.svc_id==db[table].svc_id))
                     tables.append("services")
                     return prop
         elif t == "apps":
             for table in tables:
                 if "app_id" in db[table].fields:
+                    if "apps" in tables:
+                        return prop
                     left.append(db.apps.on(db.apps.id==db[table].app_id))
                     tables.append("apps")
                     return prop
         elif t == "stor_array":
             for table in tables:
                 if "array_id" in db[table].fields:
+                    if "stor_array" in tables:
+                        return prop
                     left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
                     tables.append("stor_array")
                     return prop
         elif t == "tags":
             for table in tables:
                 if "tag_id" in db[table].fields:
+                    if "tags" in tables:
+                        return prop
                     left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
                     tables.append("tags")
                     return prop
         elif t == "comp_rulesets":
             for table in tables:
                 if "ruleset_id" in db[table].fields:
+                    if "comp_rulesets" in tables:
+                        return prop
                     left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
                     tables.append("comp_rulesets")
                     return prop
         elif t == "node_tags":
             for table in tables:
                 if "tag_id" in db[table].fields:
+                    if "node_tags" in tables:
+                        return prop
                     left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
                     tables.append("node_tags")
                     return prop
         elif t == "svc_tags":
             for table in tables:
                 if "tag_id" in db[table].fields:
+                    if "svc_tags" in tables:
+                        return prop
                     left.append(db.svc_tags.on(db.svc_tags.tag_id==db[table].tag_id))
                     tables.append("svc_tags")
                     return prop
