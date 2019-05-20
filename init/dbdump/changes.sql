@@ -6818,3 +6818,8 @@ alter table comp_rulesets_variables modify var_value longtext;
 alter table comp_run_ruleset add index idx_date(date);
 alter table svcactions add key k_instance (node_id,svc_id);
 alter table svcactions modify action varchar(128);
+alter table services_log add index idx_svc_end(svc_end);
+alter table resmon_log add index idx_res_end(res_end); 
+alter table packages add index idx_pkg_updated(pkg_updated);
+alter table resmon add index idx_node_id_updated(node_id,updated);
+alter table svcactions add index idx_count_err(svc_id,node_id,status,begin);
