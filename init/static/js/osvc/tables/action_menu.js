@@ -150,6 +150,20 @@ var am_node_agent_leafs = [
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
 		"min": 1,
 		'fn': 'agent_action_provisioning'
+	},
+	{
+		'title': 'Freeze',
+		'class': 'icon fa-snowflake icon-blue',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'freeze'
+	},
+	{
+		'title': 'Thaw',
+		'class': 'icon fa-snowflake icon-gray',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'thaw'
 	}
 ]
 
