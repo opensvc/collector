@@ -146,19 +146,19 @@ class rest_post_services(rest_post_handler):
         )
 
     def handler(self, **vars):
+        svc_id = vars.get("svc_id")
+        svcname = vars.get("svcname")
+        if svc_id is None and svcname is None:
+            raise HTTP(400, "Either the 'svc_id' or 'svcname' key is mandatory")
         try:
-            if "svc_id" in vars:
-                svc_id = vars.get("svc_id")
-            elif "svcname" in vars:
-                svc_id = get_svc_id(vars.get("svcname"))
-            else:
-                raise HTTP(400, "Either the 'svc_id' or 'svcname' key is mandatory")
+            if svc_id is None:
+                svc_id = get_svc_id(svcname)
             q = db.services.svc_id == svc_id
             svc = db(q).select().first()
             if svc is not None:
                 return rest_post_service().handler(svc_id, **vars)
         except HTTP as exc:
-            if exc.status == 400:
+            if exc.status == 404:
                 pass
             else:
                 raise
