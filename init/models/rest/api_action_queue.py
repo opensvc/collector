@@ -196,7 +196,12 @@ class rest_delete_action_queue_one(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             return dict(info="Action %s does not exist in action queue" % id)
-        node_responsible(node_id=row.node_id)
+        try:
+            node_responsible(node_id=row.node_id)
+        except HTTP as exc:
+            # accept deleting orphaned action
+            if exc.status != 404:
+                raise
         db(q).delete()
         _log('action_queue.delete',
              'deleted actions %(u)s',

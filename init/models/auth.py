@@ -120,13 +120,13 @@ def check_privilege(privs, user_id=None):
 
 def node_responsible(node_id=None, user_id=None):
     if node_id is None:
-        raise Exception("node_responsible() must have a not None node_id parameter")
+        raise HTTP(400, "node_responsible() must have a not None node_id parameter")
     if "Manager" in user_groups(user_id):
         return
     q = db.nodes.node_id == node_id
     n = db(q).count()
     if n == 0:
-        raise Exception("Node %s does not exist" % node_id)
+        raise HTTP(404, "Node %s does not exist" % node_id)
     q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
@@ -134,13 +134,13 @@ def node_responsible(node_id=None, user_id=None):
 
 def svc_responsible(svc_id=None, user_id=None):
     if svc_id is None:
-        raise Exception("svc_responsible() must have a not None svc_id parameter")
+        raise HTTP(400, "svc_responsible() must have a not None svc_id parameter")
     if "Manager" in user_groups(user_id):
         return
     q = db.services.svc_id == svc_id
     n = db(q).count()
     if n == 0:
-        raise Exception("Service %s does not exist" % svc_id)
+        raise HTTP(404, "service %s does not exist" % svc_id)
     q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
