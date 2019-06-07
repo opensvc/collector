@@ -165,6 +165,8 @@ def fmt_node_action(node, action, action_type, connect_to=None, options=None):
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', 'nodemgr']
     cmd += [action]
+    if action in ["freeze", "thaw"]:
+        cmd += ["--local"]
     cmd += fmt_options(options)
     return ' '.join(cmd)
 
