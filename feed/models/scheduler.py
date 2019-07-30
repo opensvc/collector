@@ -777,6 +777,8 @@ def _update_asset(auth):
 
 def __update_asset(vars, vals, auth):
     node_id = auth_to_node_id(auth)
+    if node_id is None:
+        raise HTTP(400, "node_id not found")
     vars.append("node_id")
     vals.append(node_id)
     h = {}
