@@ -26,7 +26,7 @@ def beautify_data(d):
 def log_events(i):
     ws_send('log_change', {'id': i})
 
-def _log(action, fmt, d, user=None, svc_id=None, node_id=None, level="info"):
+def _log(action, fmt, d, user=None, svc_id=None, node_id=None, level="info", nodename=None, svcname=None):
     if user is None:
         user = 'agent'
 
