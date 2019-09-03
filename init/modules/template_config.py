@@ -181,4 +181,9 @@ remote_cmd_ssh = {
     "SunOS": cmd_ssh,
 }
 
+# JWT server for registries: key/cert to encode the tokens with.
+# If self-signed the crt must be trusted by the registry via the container's
+# REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE env var
+registry_jwt_key = "/opt/web2py/applications/init/private/ssl/server.key"
+registry_jwt_crt = "/opt/web2py/applications/init/private/ssl/server.crt"
 
