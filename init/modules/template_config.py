@@ -186,4 +186,4 @@ remote_cmd_ssh = {
 # REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE env var
 registry_jwt_key = "/opt/web2py/applications/init/private/ssl/server.key"
 registry_jwt_crt = "/opt/web2py/applications/init/private/ssl/server.crt"
-
+registry_jwt_issuer = "opensvc"
