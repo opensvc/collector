@@ -6823,3 +6823,5 @@ alter table resmon_log add index idx_res_end(res_end);
 alter table packages add index idx_pkg_updated(pkg_updated);
 alter table resmon add index idx_node_id_updated(node_id,updated);
 alter table svcactions add index idx_count_err(svc_id,node_id,status,begin);
+
+alter table services add column svc_flex_target integer;
