@@ -810,9 +810,21 @@ def cron_alerts_daily():
 
 def cron_alerts_hourly():
     rets = []
+    cron_purge_tempviz()
     alert_wrong_netmask()
     rets.append(alerts_svcmon_not_updated())
     return rets
+
+def cron_purge_tempviz():
+    import time
+    import glob
+    pattern = os.path.join(os.getcwd(), 'applications', 'init', 'static', 'tempviz*')
+    threshold = time.time() - 3600
+    for fpath in glob.glob(pattern):
+        mtime = os.path.getmtime(fpath)
+        if mtime < threshold:
+            print "rm", fpath, "mtime", mtime
+            os.unlink(fpath)
 
 def cron_resmon_purge():
     sql = """delete from resmon where
