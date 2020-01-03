@@ -132,10 +132,14 @@ def _allocate_network_ip(net_id, instance_name):
         raise Exception("No free address in this network")
     ip = ipl[0]
     if auth_is_svc():
-        create_service_dns_record(
+        result = create_service_dns_record(
             instance_name=instance_name,
             content=ip["ip"],
         )
+        try:
+            ip["record_name"] = result["data"]["name"]
+        except Exception:
+            pass
     elif auth_is_node():
         raise Exception("Ip allocation for nodes is not implemented")
     else:

@@ -263,11 +263,11 @@ def _create_dns_record(data):
 
 def create_node_dns_record(instance_name=None, content=None, ttl=None, node=None):
     data = prepare_node_dns_record(instance_name, content, ttl, node=node)
-    _create_dns_record(data)
+    return _create_dns_record(data)
 
 def create_service_dns_record(instance_name=None, content=None, ttl=None, svc=None):
     data = prepare_service_dns_record(instance_name, content, ttl, svc=svc)
-    _create_dns_record(data)
+    return _create_dns_record(data)
 
 def create_node_dns_records(node, vars, vals):
     log = logging.getLogger("web2py.app.init.create_node_dns_records")
