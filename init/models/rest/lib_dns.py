@@ -1,10 +1,29 @@
 def create_zone(zone):
-    domain_type = "MASTER"
+    head = dns_managed_zone()
+    head = get_dns_domain(head)
+    if head:
+        domain_type = head["type"]
+        q = dbdns.records.type == "NS"
+        q &= dbdns.records.domain_id == head.id
+        nameservers = dbdns(q).select()
+    else:
+        domain_type = "MASTER"
+        nameservers = []
     data = {
         "name": zone,
         "type": domain_type,
     }
     domain_id = dbdns.domains.insert(**data)
+    for ns in nameservers:
+        data = {
+            "name": zone,
+            "type": "NS",
+            "content": ns.content,
+            "ttl": ns.ttl,
+            "domain_id": domain_id,
+            "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
+        }
+        dbdns.records.insert(**data)
 
     _log('dns.domains.create',
          'domain %(name)s %(type)s auto created by dns update',
@@ -28,6 +47,7 @@ def create_zone(zone):
     d = dict(name=data["name"], type=data["type"], content=data["content"], domain=zone)
     _log('dns.records.create', fmt, d)
     ws_send('pdns_records_change')
+    return get_dns_domain(zone)
 
 def sanitize_dns_name(name):
     name = name.lower()
@@ -101,6 +121,11 @@ def dns_record_responsible(row, current={}):
 
     raise Exception("Not allowed to manage the record %s %s %s"%(name, t, content))
 
+def dns_managed_zone():
+    zone = config_get("dns_managed_zone", "opensvc")
+    zone = zone.rstrip(".")
+    return zone
+
 def prepare_node_dns_record(instance_name=None, content=None, ttl=None, node=None):
     if node:
         nodename = node.nodename
@@ -117,14 +142,12 @@ def prepare_node_dns_record(instance_name=None, content=None, ttl=None, node=Non
     name = sanitize_dns_name(name)
 
     # domain
-    zone = config_get("dns_managed_zone", "opensvc")
-    zone = zone.rstrip(".")
+    zone = dns_managed_zone()
     zone = app + "." + zone
     zone = sanitize_dns_name(zone)
     domain = get_dns_domain(zone)
     if domain is None:
-        create_zone(zone)
-        domain = get_dns_domain(zone)
+        domain = create_zone(zone)
     if domain is None:
         raise Exception("failed to create the %s zone" % zone)
 
@@ -171,14 +194,12 @@ def prepare_service_dns_record(instance_name=None, content=None, ttl=None, svc=N
     name = sanitize_dns_name(name)
 
     # domain
-    zone = config_get("dns_managed_zone", "opensvc")
-    zone = zone.rstrip(".")
+    zone = dns_managed_zone()
     zone = app + "." + zone
     zone = sanitize_dns_name(zone)
     domain = get_dns_domain(zone)
     if domain is None:
-        create_zone(zone)
-        domain = get_dns_domain(zone)
+        domain = create_zone(zone)
     if domain is None:
         raise Exception("failed to create the %s zone" % zone)
 
