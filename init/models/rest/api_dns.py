@@ -270,6 +270,9 @@ class rest_post_dns_records(rest_post_handler):
 
     def handler(self, **vars):
         check_privilege("DnsOperator")
+        for k in list(vars):
+            if k not in dbdns.records.fields:
+                del vars[k]
         if len(vars) == 0:
             raise HTTP(400, "Insufficient data")
         vars["change_date"] = int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
