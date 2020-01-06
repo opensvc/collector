@@ -730,6 +730,8 @@ def validate_input_data(form_definition, data, _input):
             else:
                 candidate_vals.append(candidate)
         for val in vals:
+            if not val and not _input.get("Mandatory"):
+                continue
             if val not in candidate_vals:
                 raise HTTP(400, "Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
 
@@ -774,6 +776,8 @@ def validate_input_data(form_definition, data, _input):
                     int_val = int(val)
                 except ValueError:
                     int_val = val
+                if not val and not _input.get("Mandatory"):
+                    continue
                 if val not in candidates and int_val not in candidates and unicode(val) not in candidates:
                     raise HTTP(400, "Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
 
