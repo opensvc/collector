@@ -23,29 +23,7 @@ class rest_put_dns_domain_sync(rest_put_handler):
         if domain is None:
             raise HTTP(404, "domain %s not found" % domain_id)
         dname = domain.name
-
-        q = dbdns.records.name == dname
-        q &= dbdns.records.type == "SOA"
-        rows = dbdns(q).select()
-
-        if len(rows) != 1:
-            raise HTTP(500, "no single SOA found for domain %s"%dname)
-
-        l = rows[0].content.split()
-
-        if len(l) < 3:
-            raise HTTP(500, "SOA record content has less than 3 fields for domain %s"%dname)
-
-        new = int(l[2]) + 1
-        l[2] = str(new)
-        dbdns(q).update(content=' '.join(l))
-
-        fmt = "SOA incremented to %(new)d for domain %(dname)s"
-        d = dict(new=new, dname=dname)
-
-        _log('dns.domain.sync', fmt, d)
-        ws_send('pdns_records_change')
-        return dict(info=fmt%d)
+        return inc_serial(dname)
 
 #
 class rest_get_dns_domains(rest_get_table_handler):

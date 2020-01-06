@@ -247,6 +247,7 @@ def delete_service_dns_record(instance_name=None, content=None):
     d = dict(name=row.name, type=row.type, content=row.content, domain=str(row.domain_id))
     _log('dns.records.delete', fmt, d)
     ws_send('pdns_records_change')
+    inc_serial(row.name[row.name.index(".")+1:])
 
     return {
         "info": fmt % d,
@@ -276,6 +277,7 @@ def _create_dns_record(data):
     d = dict(name=row.name, type=row.type, op=op, content=row.content, domain=str(row.domain_id))
     _log('dns.records.'+op, fmt, d)
     ws_send('pdns_records_change')
+    inc_serial(row.name[row.name.index(".")+1:])
 
     return {
         "data": row,
@@ -311,4 +313,28 @@ def create_node_dns_records(node, vars, vals):
             create_node_dns_record(instance_name=data["intf"], content=data["addr"], node=node)
         except Exception as exc:
             log.warning(str(exc))
+
+def inc_serial(zone):
+    q = dbdns.records.name == zone
+    q &= dbdns.records.type == "SOA"
+    rows = dbdns(q).select()
+
+    if len(rows) != 1:
+        raise HTTP(500, "no single SOA found for domain %s"%zone)
+
+    l = rows[0].content.split()
+
+    if len(l) < 3:
+        raise HTTP(500, "SOA record content has less than 3 fields for domain %s"%zone)
+
+    new = int(l[2]) + 1
+    l[2] = str(new)
+    dbdns(q).update(content=' '.join(l))
+
+    fmt = "SOA incremented to %(new)d for domain %(zone)s"
+    d = dict(new=new, zone=zone)
+
+    _log('dns.domain.sync', fmt, d)
+    ws_send('pdns_records_change')
+    return dict(info=fmt%d)
 
