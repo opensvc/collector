@@ -2085,6 +2085,9 @@ function form(divid, options) {
 			}
 			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
 			if (!td.is(":visible")) {
+				if (input_key_id in data) {
+					continue
+				}
 				if (typeof(o.options[input_key_id]) !== "undefined") {
 					data[input_key_id] = o.options[input_key_id]
 				}
