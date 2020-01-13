@@ -1,11 +1,18 @@
 def create_zone(zone):
     head = dns_managed_zone()
     head = get_dns_domain(head)
+    head_soa_content = config_get(
+        "dns_default_soa_content",
+        "127.0.0.1 admin@localhost.localdomain 1 10800 3600 604800 600",
+    ).split()
     if head:
         domain_type = head["type"]
         q = dbdns.records.type == "NS"
         q &= dbdns.records.domain_id == head.id
         nameservers = dbdns(q).select()
+        q = dbdns.records.type == "SOA"
+        q &= dbdns.records.domain_id == head.id
+        head_soa_content = dbdns(q).select().first().content.split()
     else:
         domain_type = "MASTER"
         nameservers = []
@@ -32,10 +39,13 @@ def create_zone(zone):
     ws_send('pdns_domains_change')
 
     # SOA
+    soa_content = list(head_soa_content)
+    soa_content[2] = 1 # reset serial
+    soa_content = " ".join([str(x) for x in soa_content])
     data = {
         "name": zone,
         "type": "SOA",
-        "content": config_get("dns_default_soa_content", config_get("dbopensvc_host", "")),
+        "content": soa_content,
         "ttl": 86400,
         "domain_id": domain_id,
         "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
@@ -185,7 +195,8 @@ def prepare_service_dns_record(instance_name=None, content=None, ttl=None, svc=N
         app = auth.user.svc_app
 
     # short record name
-    name = svcname.split(".")[0]
+    name, namespace, kind = split_path(svcname)
+    name = name.split(".")[0]
     if instance_name:
         if "." in instance_name:
             raise Exception("No dots allowed in instance name '%s'" % instance_name)
@@ -202,6 +213,15 @@ def prepare_service_dns_record(instance_name=None, content=None, ttl=None, svc=N
         domain = create_zone(zone)
     if domain is None:
         raise Exception("failed to create the %s zone" % zone)
+
+    if namespace:
+        zone = namespace + "." + zone
+        zone = sanitize_dns_name(zone)
+        domain = get_dns_domain(zone)
+        if domain is None:
+            domain = create_zone(zone)
+        if domain is None:
+            raise Exception("failed to create the %s zone" % zone)
 
     # full record name
     name = name + "." + zone
