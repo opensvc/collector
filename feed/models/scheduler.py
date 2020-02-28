@@ -2749,6 +2749,87 @@ def insert_eva(name=None, node_id=None):
             db.executesql(sql)
             db.commit()
 
+def insert_dorado(name=None, node_id=None):
+    import glob
+    import os
+    from applications.init.modules import dorado
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='dorado'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = dorado.get_dorado(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         s.system["productModeString"],
+                         s.system["pointRelease"] + " " + s.system["patchVersion"],
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.storagepools:
+                vals.append([array_id,
+                             dg['NAME'],
+                             str(int(dg['USERFREECAPACITY']) * 512 / 1024 / 1024),
+                             str((int(dg['USERTOTALCAPACITY']) - int(dg['USERFREECAPACITY'])) * 512 / 1024 / 1024),
+                             str(int(dg['USERTOTALCAPACITY']) * 512 / 1024 / 1024),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            purge_array_dg(vals)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for port in s.fc_ports:
+                vals.append([array_id, port["WWN"]])
+            generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_name',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_alloc',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.luns:
+                vals.append([d['WWN'],
+                             s.name,
+                             d['NAME'],
+                             d['ID'],
+                             str(int(d['CAPACITY']) * 512 / 1024 / 1024),
+                             str(int(d['ALLOCCAPACITY']) * 512 / 1024 / 1024),
+                             "",
+                             d['PARENTNAME'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
+            db.executesql(sql)
+            db.commit()
+
+
 def insert_sym(symid=None, node_id=None):
     import glob
     import os
@@ -4999,14 +5080,23 @@ def merge_daemon_status(node_id):
     rconn.hdel(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     print "daemon status", node_id, changes
     now = datetime.datetime.now().replace(microsecond=0)
-    data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
+    raw_data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
     changed = set()
 
-    if data is None:
+    if raw_data is None:
         return
 
-    data = json.loads(data)
+    data = json.loads(raw_data)
     cluster_id = data.get("cluster_id", "")
+    cluster_name = data.get("cluster_name", "")
+    if cluster_id:
+	db.clusters.update_or_insert({
+	        "cluster_id": cluster_id,
+	    },
+	    cluster_id=cluster_id,
+	    cluster_name=cluster_name,
+	    cluster_data=raw_data,
+	)
     node = get_node(node_id)
     if cluster_id and node and node.cluster_id != cluster_id:
         q = db.nodes.node_id == node_id

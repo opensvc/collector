@@ -565,6 +565,17 @@ def rpc_update_sym_xml(symid, vars, vals, auth):
         update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
 @service.xmlrpc
+def update_dorado_xml(name, vars, vals, auth):
+    return rpc_update_dorado_xml(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_dorado_xml(name, vars, vals, auth):
+    if len(vars) == 1:
+        update_array_xml(name, vars, vals, auth, "dorado", None)
+    else:
+        update_array_xml(name, vars, vals, auth, "dorado", insert_dorado)
+
+@service.xmlrpc
 def update_eva_xml(name, vars, vals, auth):
     return rpc_update_eva_xml(name, vars, vals, auth)
 
@@ -797,6 +808,9 @@ def insert_evas():
 
 def insert_syms():
     return insert_sym()
+
+def insert_dorados():
+    return insert_dorado()
 
 @service.xmlrpc
 def delete_pkg(node, auth):

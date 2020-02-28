@@ -662,3 +662,9 @@ db.define_table('v_tags',
     Field('created','datetime'),
     migrate=False)
 
+db.define_table('clusters',
+    Field('cluster_id', 'string', length=36),
+    Field('cluster_name', 'string'),
+    Field('cluster_data','json'),
+    migrate=False)
+
