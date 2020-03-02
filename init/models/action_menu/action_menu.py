@@ -122,7 +122,7 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None,
         node_version = 0.0
     if rid is not None:
         cmd += ["--rid", rid]
-    elif local and node_version >= 1.9 and action not in ("create", "takeover"):
+    elif local and node_version >= 1.9 and action not in ("create", "takeover", "switch"):
         cmd += ["--local"]
     cmd += fmt_options(options)
     return ' '.join(cmd)
