@@ -4013,7 +4013,8 @@ def update_dash_pkgdiff(node_id):
                      count(node_id) as c
                    from packages
                    where
-                     node_id in (%(node_ids)s)
+                     node_id in (%(node_ids)s) and
+                     pkg_name not like "gpg-pubkey-%"
                    group by
                      pkg_name,
                      pkg_version,
