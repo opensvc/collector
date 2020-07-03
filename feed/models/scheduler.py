@@ -4014,7 +4014,7 @@ def update_dash_pkgdiff(node_id):
                    from packages
                    where
                      node_id in (%(node_ids)s) and
-                     pkg_name not like "gpg-pubkey%"
+                     pkg_name not like "gpg-pubkey%%"
                    group by
                      pkg_name,
                      pkg_version,
