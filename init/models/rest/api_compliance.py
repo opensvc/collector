@@ -515,7 +515,7 @@ class rest_get_compliance_modulesets_export(rest_get_handler):
           "Export all modulesets in a JSON format compatible with the import handler.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/2/export"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/export"
         ]
 
         rest_get_handler.__init__(
