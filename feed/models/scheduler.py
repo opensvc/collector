@@ -1491,6 +1491,137 @@ def insert_dcs(name=None, node_id=None):
         db.executesql(sql)
         db.commit()
 
+def insert_hcs(name=None, node_id=None):
+    import glob
+    import os
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='hcs'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        name = os.path.basename(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, name)
+
+        def load_system(data):
+            # stor_array
+            vars = [
+                'array_name',
+                'array_model',
+                #'array_cache',
+                'array_firmware',
+                'array_updated',
+            ]
+            vals = []
+            vals.append([name,
+                         data["model"],
+                         # memory
+                         data["dkcMicroVersion"],
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """ % name
+            print(sql)
+            array_id = str(db.executesql(sql)[0][0])
+            return array_id
+
+        def load_pools(array_id, data):
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            poolnames = {}
+            for dg in data:
+                poolnames[dg["poolId"]] = dg["poolName"]
+                vals.append([array_id,
+                             dg["poolName"],
+                             str(dg['availableVolumeCapacity']),
+                             str(dg['totalPoolCapacity'] - dg['availableVolumeCapacity']),
+                             str(dg['totalPoolCapacity']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            purge_array_dg(vals)
+            return poolnames
+
+        def load_ports(array_id, data):
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid', 'updated']
+            vals = []
+            for port in data:
+                vals.append([array_id, port["wwn"], now])
+            generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
+
+        def load_ldevs(array_id, data):
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_name',
+                    'disk_size',
+                    'disk_alloc',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in data:
+                ldev = str(d['ldevId'])
+                #wwid = d.get('naaId', r+hex(d["ldevId"])[2:])
+                vals.append([d.get("naaId", ""),
+                             name,
+                             ldev,
+                             d.get('label', ''),
+                             str(d['blockCapacity'] * 512 // 1024 // 1024),
+                             str(d['numOfUsedBlock'] * 512 // 1024 // 1024),
+                             d['dataReductionMode'],
+                             poolnames[d['poolId']],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
+            db.executesql(sql)
+            db.commit()
+
+        try:
+            with open(os.path.join(d, "system"), "r") as f:
+                data = json.load(f)
+            print(data)
+            array_id = load_system(data)
+        except Exception as exc:
+            print(exc)
+            return
+
+        try:
+            with open(os.path.join(d, "pools"), "r") as f:
+                data = json.load(f)
+            print(data)
+            poolnames = load_pools(array_id, data)
+        except Exception as exc:
+            print(exc)
+            pass
+
+        try:
+            with open(os.path.join(d, "fc_ports"), "r") as f:
+                data = json.load(f)
+            load_ports(array_id, data)
+        except Exception as exc:
+            print(exc)
+            pass
+
+        try:
+            with open(os.path.join(d, "ldevs"), "r") as f:
+                data = json.load(f)
+            print(data)
+            load_ldevs(array_id, data)
+        except Exception as exc:
+            print(exc)
+            pass
+
 def insert_hds(name=None, node_id=None):
     import glob
     import os

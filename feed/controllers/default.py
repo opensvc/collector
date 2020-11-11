@@ -546,6 +546,14 @@ def rpc_insert_patch(vars, vals, auth):
     rconn.lpush(R_PATCHES, key)
 
 @service.xmlrpc
+def update_hcs(symid, vars, vals, auth):
+    return rpc_update_hcs(symid, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_hcs(symid, vars, vals, auth):
+    update_array_xml(symid, vars, vals, auth, "hcs", insert_hcs)
+
+@service.xmlrpc
 def update_hds(symid, vars, vals, auth):
     return rpc_update_hds(symid, vars, vals, auth)
 
