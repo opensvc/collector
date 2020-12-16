@@ -119,7 +119,7 @@ class rest_put_provisioning_template(rest_put_handler):
 
         try:
             data = rest_get_service().handler(vars["svcname"])
-        except KeyError:
+        except (KeyError, HTTP):
             data = {"data": []}
 
         if len(data["data"]) == 1:
