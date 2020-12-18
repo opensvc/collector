@@ -6825,3 +6825,13 @@ alter table resmon add index idx_node_id_updated(node_id,updated);
 alter table svcactions add index idx_count_err(svc_id,node_id,status,begin);
 
 alter table services add column svc_flex_target integer;
+
+CREATE TABLE  `opensvc`.`clusters` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) charset ascii default '',
+  `cluster_name` varchar(128) NOT NULL,
+  `cluster_data` json,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cluster_id` (`cluster_id`)
+);
+

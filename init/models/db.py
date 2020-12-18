@@ -2004,4 +2004,9 @@ db.define_table('form_output_results',
     Field('results', 'text'),
     migrate=False)
 
+db.define_table('clusters',
+    Field('cluster_id', 'string', length=36),
+    Field('cluster_name', 'string'),
+    Field('cluster_data','json'),
+    migrate=False)
 
