@@ -5432,13 +5432,21 @@ def merge_daemon_status(node_id):
 
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
 
+    def get_svc_app(svcname):
+        for nodename, ndata in data["nodes"].items():
+            try:
+                return ndata["services"]["status"][svcname]["app"]
+            except KeyError:
+                continue
+
     for svcname, sdata in data["services"].items():
         if svcname == "cluster":
             continue
         svc = None
         for peer_node_id in peer_node_ids:
+            app = get_svc_app(svcname)
             try:
-                svc = node_svc(peer_node_id, svcname)
+                svc = node_svc(peer_node_id, svcname, app=app)
             except:
                 # service dups
                 continue

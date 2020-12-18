@@ -16,7 +16,7 @@ def node_cluster_id(node_id):
     except Exception as exc:
         return ""
 
-def node_svc(node_id, svcname):
+def node_svc(node_id, svcname, app=None):
     if node_id is None:
         return
     if svcname is None:
@@ -134,7 +134,7 @@ def node_svc(node_id, svcname):
         return rows.first()
 
     if len(rows) == 0:
-        return create_svc(node_id, cluster_id, svcname)
+        return create_svc(node_id, cluster_id, svcname, app=app)
 
     return rows.first()
 
@@ -144,7 +144,7 @@ def node_svc_id(node_id, svcname):
         return ""
     return svc["svc_id"]
 
-def create_svc(node_id, cluster_id, svcname):
+def create_svc(node_id, cluster_id, svcname, app=None):
     if svcname == "cluster":
         return
     from gluon.storage import Storage
@@ -152,15 +152,20 @@ def create_svc(node_id, cluster_id, svcname):
     if node is None:
         return
 
-    # verify the node.app is valid
-    q = db.apps.app == node.app
-    app = db(q).select().first()
-    if app is None:
+    if not app:
+        app = node.app
+    elif not common_responsible(app=app, node_id=node_id):
+        app = node.app
+
+    # verify the app is valid
+    q = db.apps.app == app
+    row = db(q).select().first()
+    if row is None:
         return
 
     data = {
       "svcname": svcname,
-      "svc_app": node.app,
+      "svc_app": app,
       "svc_env": node.node_env,
       "svc_availstatus": "undef",
       "svc_status": "undef",
