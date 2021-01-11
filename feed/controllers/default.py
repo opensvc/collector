@@ -181,7 +181,7 @@ def update_service(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_service(vars, vals, auth):
-    key = json.dumps([vals[0][0], auth])
+    key = json.dumps([vals[0], auth])
     rconn.hset(R_SVCCONF_HASH, key, json.dumps([vars, vals]))
     rconn.lrem(R_SVCCONF, 0, key)
     rconn.lpush(R_SVCCONF, key)
