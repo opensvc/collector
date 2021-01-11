@@ -1565,7 +1565,7 @@ function form(divid, options) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Type == "form") {
-				return
+				continue
 			}
 			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
 			o.install_constraint_trigger(input, d)
