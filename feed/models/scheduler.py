@@ -5063,13 +5063,14 @@ def merge_daemon_ping(node_id):
         changed |= ping_peer(peer, now)
 
     peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
-    for svcname in data["services"].keys():
+    for svcname, sdata in data["services"].items():
         if svcname == "cluster":
             continue
         svc = None
+        app = sdata.get("app")
         for peer_node_id in peer_node_ids:
             try:
-                svc = node_svc(peer_node_id, svcname)
+                svc = node_svc(peer_node_id, svcname, app=app)
             except:
                 continue
             if svc:
@@ -5443,8 +5444,8 @@ def merge_daemon_status(node_id):
         if svcname == "cluster":
             continue
         svc = None
+        app = get_svc_app(svcname)
         for peer_node_id in peer_node_ids:
-            app = get_svc_app(svcname)
             try:
                 svc = node_svc(peer_node_id, svcname, app=app)
             except:
