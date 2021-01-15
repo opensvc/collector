@@ -444,7 +444,7 @@ def output_rest(output, form_definition, _d=None, results=None):
         f.close()
         l = [ line for line in out.split("\n") if "[vm] " not in line and line != ""]
         if len(l) == 0:
-            raise Exception(out)
+            raise Exception("mangling produced no data:\nmangler: %s\noutput: %s\nerror: %s" % (s, out, err))
         return json.loads('\n'.join(l))
 
     args = form_rest_args(url, _d)
@@ -500,13 +500,13 @@ def output_rest(output, form_definition, _d=None, results=None):
         url = "/".join(args)
         import requests
         if action == "GET":
-            result = requests.get(url, data=vars)
+            result = requests.get(url, json=vars)
         elif action == "POST":
-            result = requests.post(url, data=vars)
+            result = requests.post(url, json=vars)
         elif action == "DELETE":
-            result = requests.delete(url, data=vars)
+            result = requests.delete(url, json=vars)
         elif action == "PUT":
-            result = requests.put(url, data=vars)
+            result = requests.put(url, json=vars)
         return result.json()
 
     if output.get("LogRequestData", True) == True:
@@ -521,7 +521,7 @@ def output_rest(output, form_definition, _d=None, results=None):
                     results["log"][output_id].append((0, line, {}))
             elif len(jd["info"]) > 0:
                 results["log"][output_id].append((0, jd["info"], {}))
-        if "error" in jd:
+        if jd.get("error", []):
             results["returncode"] += 1
             if isinstance(jd["error"], list):
                 for line in jd["error"]:
