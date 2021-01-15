@@ -50,6 +50,12 @@ ldap_group_mapping = {
 ldap_bind_dn = ""
 ldap_bind_pw = ""
 ldap_filter = ""
+ldap_secure = False
+ldap_cacert_file = "/tmp/foo"
+ldap_user_firstname_attrib = "cn:1"
+ldap_user_lastname_attrib = "cn:2"
+ldap_user_mail_attrib = "mail"
+
 
 http_host = "opensvc.mydomain.com"
 

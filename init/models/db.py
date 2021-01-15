@@ -158,8 +158,8 @@ if ldap_mode:
     kwargs["mode"] = ldap_mode
     kwargs["db"] = db
     kwargs["manage_user"] = True
-    kwargs["user_firstname_attrib"]='givenName'
-    kwargs["user_lastname_attrib"]='sn'
+    kwargs["user_firstname_attrib"] = 'givenName'
+    kwargs["user_lastname_attrib"] = 'sn'
     kwargs["server"] = config_get("ldap_server", None)
     kwargs["base_dn"] = config_get("ldap_base_dn", None)
     allowed_groups = config_get("ldap_allowed_groups", None)
@@ -186,6 +186,21 @@ if ldap_mode:
     filterstr = config_get("ldap_filter", None)
     if filterstr:
         kwargs["filterstr"] = filterstr
+    ldap_secure = config_get("ldap_secure", None)
+    if ldap_secure:
+        kwargs["secure"] = ldap_secure
+    ldap_cacert_file = config_get("ldap_cacert_file", None)
+    if ldap_cacert_file:
+        kwargs["cacert_file"] = ldap_cacert_file
+    ldap_user_firstname_attrib = config_get("ldap_user_firstname_attrib", None)
+    if ldap_user_firstname_attrib:
+        kwargs["user_firstname_attrib"] = ldap_user_firstname_attrib
+    ldap_user_lastname_attrib = config_get("ldap_user_lastname_attrib", None)
+    if ldap_user_lastname_attrib:
+        kwargs["user_lastname_attrib"] = ldap_user_lastname_attrib
+    ldap_user_mail_attrib = config_get("ldap_user_mail_attrib", None)
+    if ldap_user_mail_attrib:
+        kwargs["user_mail_attrib"] = ldap_user_mail_attrib
     kwargs["logging_level"] = "debug"
     auth.settings.login_methods.append(ldap_auth(**kwargs))
 
