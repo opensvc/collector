@@ -178,19 +178,19 @@ function form(divid, options) {
 			var d = o.form_data.form_definition.Inputs[i]
 			o.form_inputs[d.Id] = d
 			if (d.Candidates == "__node_selector__") {
-				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/nodes")
+				console.log("mangle form definition: switch __node_selector__ to rest GET /users/self/nodes")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/nodes"
 				o.form_data.form_definition.Inputs[i].Args = ["props = nodename", "meta = 0", "limit = 0"]
 				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Candidates == "__service_selector__") {
-				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/services")
+				console.log("mangle form definition: switch __node_selector__ to rest GET /users/self/services")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/services"
 				o.form_data.form_definition.Inputs[i].Args = ["props = svcname", "meta = 0", "limit = 0"]
 				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Default == "__user_primary_group__") {
-				console.log("mangle form definition: swich __user_primary_group__ to rest GET /users/self/primary_group")
+				console.log("mangle form definition: switch __user_primary_group__ to rest GET /users/self/primary_group")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/primary_group"
 				o.form_data.form_definition.Inputs[i].Args = ["props = role"]
 				o.form_data.form_definition.Inputs[i].Default = null
