@@ -193,3 +193,8 @@ remote_cmd_ssh = {
 registry_jwt_key = "/opt/web2py/applications/init/private/ssl/server.key"
 registry_jwt_crt = "/opt/web2py/applications/init/private/ssl/server.crt"
 registry_jwt_issuer = "opensvc"
+
+custom_get_handlers = {"mycorp": ["rest_get_mycorp_custohandler"]}
+custom_delete_handlers = {"mycorp": ["rest_delete_mycorp_custohandler"]}
+custom_post_handlers = {"mycorp": ["rest_post_mycorp_custohandler"]}
+custom_put_handlers = {"mycorp": ["rest_put_mycorp_custohandler"]}

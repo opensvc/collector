@@ -390,6 +390,7 @@ def get_get_handlers(prefix=None):
              "rest_get_workflow_dump",
        ]
     }
+    _handlers.update(config_get("custom_get_handlers", {}))
     if prefix:
         return [globals()[h]() for h in _handlers[prefix]]
     data = []
@@ -625,6 +626,7 @@ def get_delete_handlers(prefix=None):
              "rest_delete_user_filterset",
         ]
     }
+    _handlers.update(config_get("custom_delete_handlers", {}))
     if prefix:
         return [globals()[h]() for h in _handlers[prefix]]
     data = []
@@ -870,6 +872,7 @@ def get_post_handlers(prefix=None):
              "rest_post_wikis",
         ]
     }
+    _handlers.update(config_get("custom_post_handlers", {}))
     if prefix:
         return [globals()[h]() for h in _handlers[prefix]]
     data = []
@@ -908,6 +911,7 @@ def get_put_handlers(prefix=None):
              "rest_put_service_disks",
         ]
     }
+    _handlers.update(config_get("custom_put_handlers", {}))
     if prefix:
         return [globals()[h]() for h in _handlers[prefix]]
     data = []
