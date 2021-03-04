@@ -757,6 +757,8 @@ def validate_input_data(form_definition, data, _input):
         fn = form_dereference(fn, data)
         if fn.startswith("/"):
             handler = get_handler("GET", fn)
+            if handler is None:
+                raise HTTP(400, "Unknown handler '%s': can not verify the submitted value is a valid candidates" % fn)
             args = form_rest_args(fn, data)
             kwargs = {}
             for entry in _input.get("Args", []):
