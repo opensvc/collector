@@ -1180,6 +1180,7 @@ def json_startup_data():
       "hb",
       "stonith",
       "ip",
+      "volume",
       "disk",
       "fs",
       "share",
