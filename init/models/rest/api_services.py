@@ -1022,6 +1022,54 @@ class rest_get_service_compliance_logs(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_put_service_orchestration_queue(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Enqueue an orchestrated action that will be executed by opensvc agents on *any* service instances.",
+          "The user must be responsible for the target node or service.",
+          "The action is logged in the collector's log.",
+        ]
+        data = """
+- <property>=<value> pairs.
+- **svc_id**
+. The service targeted by the action. The action is run using the
+  svcmgr opensvc agent command on the node specified by **node_id**.
+- **action**
+. The opensvc agent action to execute.
+
+Each action has specific property requirements:
+
+- ``start``:green requires **svc_id**
+- ``stop``:green requires **svc_id**
+- ``restart``:green requires **svc_id**
+- ``freeze``:green requires **svc_id**
+- ``thaw``:green requires **svc_id**
+"""
+        examples = [
+          "# curl -u %(email)s -o- -X PUT -d action=start https://%(collector)s/init/rest/api/services/test/queue_orchestration",
+        ]
+
+        rest_put_handler.__init__(
+          self,
+          path="/services/<id>/queue_orchestration",
+          desc=desc,
+          data=data,
+          examples=examples
+        )
+
+    def handler(self, svc_id, **vars):
+        data = []
+        svc_id = get_svc_id(svc_id)
+        vars["svc_id"] = svc_id
+        if "node_id" in vars:
+            del vars["node_id"]
+        action_id = json_action_one(vars)
+        if action_id > 0:
+            data += rest_get_action_queue_one().handler(action_id)["data"]
+            action_q_event()
+        return dict(data=data)
+
+#
 class rest_put_service_action_queue(rest_put_handler):
     def __init__(self):
         desc = [
@@ -1059,23 +1107,8 @@ Each action has specific property requirements:
 - ``disable``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``freeze``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``thaw``:green requires **node_id**, **svc_id**, optionally **rid**
-- ``pushasset``:green requires **node_id**
-- ``pushdisks``:green requires **node_id**
 - ``push``:green requires **node_id**
-- ``pushpkg``:green requires **node_id**
-- ``pushpatch``:green requires **node_id**
-- ``pushstats``:green requires **node_id**
-- ``checks``:green requires **node_id**
-- ``sysreport``:green requires **node_id**
-- ``updatecomp``:green requires **node_id**
-- ``updatepkg``:green requires **node_id**
-- ``rotate_root_pw``:green requires **node_id**
-- ``scanscsi``:green requires **node_id**
-- ``reboot``:green requires **node_id**
-- ``schedule_reboot``:green requires **node_id**
-- ``unschedule_reboot``:green requires **node_id**
 - ``shutdown``:green requires **node_id**
-- ``wol``:green requires **node_id**
 """
         examples = [
           "# curl -u %(email)s -o- -X PUT -d action=push https://%(collector)s/init/rest/api/services/test/queue_action",
@@ -1101,7 +1134,7 @@ Each action has specific property requirements:
             action_id = json_action_one(vars)
             if action_id > 0:
                 n += 1
-                data.append(rest_get_action_queue_one().handler(action_id)["data"])
+                data += rest_get_action_queue_one().handler(action_id)["data"]
         if n > 0:
             action_q_event()
         return dict(data=data)

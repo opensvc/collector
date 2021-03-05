@@ -909,6 +909,7 @@ def get_put_handlers(prefix=None):
         "services": [
              "rest_put_service_action_queue",
              "rest_put_service_disks",
+             "rest_put_service_orchestration_queue",
         ]
     }
     _handlers.update(config_get("custom_put_handlers", {}))
