@@ -5063,12 +5063,12 @@ def merge_daemon_ping(node_id):
         peer = get_cluster_node(nodename)
         changed |= ping_peer(peer, now)
 
-    peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
     for svcname, sdata in data["services"].items():
         if svcname == "cluster":
             continue
         svc = None
         app = sdata.get("app")
+        peer_node_ids = get_peer_node_ids(svcname, data, node_ids)
         for peer_node_id in peer_node_ids:
             try:
                 svc = node_svc(peer_node_id, svcname, app=app)
@@ -5084,6 +5084,18 @@ def merge_daemon_ping(node_id):
     for table_name in changed:
         table_modified(table_name)
         ws_send(table_name+'_change')
+
+def get_peer_node_ids(svcname, data, node_ids):
+    peer_ids = []
+    for nodename, ndata in data.get("nodes", {}).items():
+        scope = ndata.get("services", {}).get("config", {}).get(svcname, {}).get("scope", [])
+        if scope:
+            break
+    for peername in scope:
+        peer = node_ids.get(peername)
+        if peer:
+            peer_ids.append(peer.node_id)
+    return peer_ids
 
 def _push_status(svcname, data, auth):
         data = json.loads(data)
@@ -5446,7 +5458,7 @@ def merge_daemon_status(node_id):
             continue
         svc = None
         app = get_svc_app(svcname)
-        for peer_node_id in peer_node_ids:
+        for peer_node_id in get_peer_node_ids(svcname, data, node_ids):
             try:
                 svc = node_svc(peer_node_id, svcname, app=app)
             except:
