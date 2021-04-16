@@ -4358,12 +4358,13 @@ def update_dash_flex_instances_started(svc_id):
                     from svcmon c
                     where
                      c.svc_id = "%(svc_id)s" and
-                     c.mon_availstatus in ('up', 'n/a')
+                     c.mon_availstatus = "up"
                    ) AS up
                   from v_svcmon p
                   where
                    p.svc_id="%(svc_id)s" and
-                   p.svc_topology="flex"
+                   p.svc_topology="flex" and
+                   not p.svc_availstatus="n/a"
                  ) w
                  where
                    ((
