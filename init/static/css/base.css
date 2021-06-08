@@ -1789,6 +1789,9 @@ div.login {
 	color: #CC9966;
 	content: '\f1b2';
 }
+.parentfolder:before {
+	content: '\f060';
+}
 .folder-closed:before {
 	content: '\f07b';
 }

@@ -107,7 +107,7 @@ function requests(divid, options) {
 		if (d.form_definition.FolderCss) {
 			div_icon.addClass(d.form_definition.FolderCss)
 		} else {
-			div_icon.addClass("fa-folder-open")
+			div_icon.addClass("fa fa-folder-open")
 		}
 		p1.text(d.form_definition.FolderLabel)
 		p2.text(d.form_definition.FolderDesc)
@@ -212,6 +212,7 @@ function requests(divid, options) {
 				"FolderName": "prev",
 				"FolderLabel": i18n.t("requests.parent_folder"),
 				"FolderDesc": get_parent_folder(),
+				"FolderCss": "icon parentfolder",
 			}
 			o.e_list.append(o.render_folder({"form_definition": d}))
 		}
