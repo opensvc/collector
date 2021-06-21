@@ -62,7 +62,7 @@ class rest_post_form(rest_post_handler):
         if "form_definition" in vars:
             try:
                 form_definition = json.loads(vars["form_definition"])
-                vars["form_yaml"] = yaml.dump(form_definition)
+                vars["form_yaml"] = yaml.safe_dump(form_definition, allow_unicode=True)
                 del(vars["form_definition"])
             except Exception as e:
                 pass
@@ -80,7 +80,7 @@ class rest_post_form(rest_post_handler):
 
         ret = rest_get_form().handler(form.id)
         if "form_definition" in ret["data"][0]:
-            content = yaml.dump(ret["data"][0]["form_definition"], default_flow_style=False)
+            content = yaml.safe_dump(ret["data"][0]["form_definition"], default_flow_style=False, allow_unicode=True)
         else:
             content = ""
         lib_form_add_to_git(id, content)
