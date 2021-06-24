@@ -634,6 +634,9 @@ function form(divid, options) {
 			if (o.form_data.form_definition.Width) {
 				input.width(o.form_data.form_definition.Width)
 			}
+			if (o.form_data.form_definition.MinWidth) {
+				input.css({"min-width": o.form_data.form_definition.MinWidth})
+			}
 
 			if (d.Condition && d.Condition.match(/#/)) {
 				o.add_cond_triggers(d)
@@ -1123,6 +1126,9 @@ function form(divid, options) {
 				input.change()
 			}
 		})
+		input.bind("click", function(event) {
+			$(this).autocomplete("search", $(this).val())
+		})
 		input.bind("blur", function(event) {
 			o.update_candidates_violation(d, input, opts)
 			input.change()
@@ -1427,6 +1433,9 @@ function form(divid, options) {
 					input.removeClass("candidates_violation")
 					$(this).change()
 				}
+			})
+			input.bind("click", function(event) {
+				$(this).autocomplete("search", $(this).val())
 			})
 			input.bind("blur", function(event) {
 				o.update_candidates_violation(d, input, opts)

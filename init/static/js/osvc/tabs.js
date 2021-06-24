@@ -173,9 +173,6 @@ tab_properties_generic_autocomplete = function(options) {
 					}
 				}
 			}
-			input.click(function(){
-				input.autocomplete("search")
-			})
 			input.keyup(function(){
 				var opts = input.autocomplete("option").source
 				var current = input.val()
@@ -207,6 +204,9 @@ tab_properties_generic_autocomplete = function(options) {
 					input.val(ui.item.label)
 					input.attr("acid", ui.item.value)
 				}
+			})
+			input.click(function(){
+				input.autocomplete("search", $(this).val())
 			})
 		})
 		input.bind("blur", function(){

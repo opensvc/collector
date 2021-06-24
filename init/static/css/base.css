@@ -61,7 +61,7 @@ td {
 }
 
 input.aci, input.aci:focus {
-	background-image: url("/init/static/images/search.png");
+	background-image: url("/init/static/images/down12.png");
 	background-repeat: no-repeat;
 	background-position: right;
 	background-size: 12px;
