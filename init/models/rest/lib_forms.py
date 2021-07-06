@@ -62,22 +62,34 @@ def form_rest_args(url, _d):
             args.append(s)
     return args
 
-def get_form_formatted_data_o(output, form_definition, _d=None):
-    if _d is not None:
-        return _d
-    raise Exception("get_form_formatted_data_o: no form data")
+def raise_if_no_form_data(_d):
+    if _d is None:
+        raise Exception("no form data")
 
-def check_output_condition(output, form, form_definition, _d=None):
-    cond = output.get('Condition', 'none')
+def check_input_condition(indef, _d=None):
+    if "Condition" not in indef:
+        return True
+    cond = indef['Condition']
+    return check_condition(cond, _d=_d)
+
+def check_output_condition(outdef, _d=None):
+    if "Condition" not in outdef:
+        return True
+    cond = outdef['Condition']
+    if outdef.get('Format') != "dict":
+        raise Exception("Output condition can only be set on dict-format output")
+    return check_condition(cond, _d=_d)
+
+def check_condition(cond, _d=None):
+    if cond == '':
+        return True
     if cond == 'none':
         return True
     if cond is None:
-        raise Exception("malformed output condition: %s"%cond)
-    if output.get('Format') != "dict":
-        raise Exception("Output condition can only be set on dict-format output")
+        raise Exception("malformed condition: %s"%cond)
 
     def get_var_val(op):
-        l = cond.split(op)
+        l = cond.split(op, 1)
         if len(l) != 2:
             raise Exception("malformed output condition: %s"%cond)
         var = l[0].strip()
@@ -85,44 +97,71 @@ def check_output_condition(output, form, form_definition, _d=None):
         if not var.startswith("#") or len(var) < 2:
             raise Exception("malformed output condition: %s"%cond)
         var = var[1:]
-        if var not in o:
+        if var not in _d:
             if op == "==" and val == "empty":
                 pass
             else:
-                raise Exception("input id %s is not present in submitted data : %s"%(var, str(o)))
+                raise Exception("input id %s is not present in submitted data : %s"%(var, str(_d)))
         return var, val
 
-    o = get_form_formatted_data_o(output, form_definition, _d)
+    raise_if_no_form_data(_d)
 
     if "==" in cond:
         var, val = get_var_val("==")
         if val == "empty":
-            if var not in o or o[val] in (None, "undefined", ""):
+            if var not in _d or _d[val] in (None, "undefined", ""):
                 return True
             return False
-        if var not in o:
+        if var not in _d:
             return False
-        if o[var] == val:
+        if _d[var] == val:
             return True
         else:
             return False
     elif "!=" in cond:
         var, val = get_var_val("!=")
         if val == "empty":
-            if var in o and o[val] not in (None, "undefined", ""):
+            if var in _d and _d[var] not in (None, "undefined", ""):
                 return True
             return False
-        if var not in o:
+        if var not in _d:
             return True
-        if o[var] != val:
+        if _d[var] != val:
+            return True
+        else:
+            return False
+    elif " NOT IN " in cond:
+        var, val = get_var_val("NOT IN")
+        val = val.split(",")
+        if len(val) == 0:
+            if var in _d and _d[var] not in (None, "undefined", ""):
+                return True
+            return False
+        if var not in _d:
+            return True
+        if _d[var] not in val:
+            return True
+        else:
+            return False
+    elif " IN " in cond:
+        var, val = get_var_val("IN")
+        val = val.split(",")
+        if len(val) == 0:
+            if var not in _d or _d[val] in (None, "undefined", ""):
+                return True
+            return False
+        if var not in _d:
+            return False
+        if _d[var] in val:
             return True
         else:
             return False
 
-    raise Exception("operator is not supported in output condition %s"%cond)
+    raise Exception("operator is not supported in condition %s" % cond)
 
 def get_form_formatted_data(output, form_definition, _d=None):
-    output_value = get_form_formatted_data_o(output, form_definition, _d)
+    raise_if_no_form_data(_d)
+    output_value = _d
 
     if output.get('Type') == "json":
         output_value = sjson.dumps(output_value, default=datetime.datetime.isoformat)
@@ -174,7 +213,8 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
     label = form_definition.get('Label', form.form_name)
     title = label
     try:
-        d = get_form_formatted_data_o(output, form_definition, _d)
+        raise_if_no_form_data(_d)
+        d = _d
     except Exception, e:
         results = form_log(output_id, results, 1, "form.submit", str(e), dict())
         return results
@@ -691,6 +731,9 @@ def validate_input_data(form_definition, data, _input):
     input_id = _input.get("Id")
     val = data.get(input_id)
 
+    if not check_input_condition(_input, data):
+        return
+
     if val is None:
         if _input.get("Mandatory", False):
             raise HTTP(400, "Missing value for mandatory input '%s'" % input_id)
@@ -902,7 +945,7 @@ def __form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None)
             continue
 
         try:
-            chkcond = check_output_condition(output, form, form_definition, _d)
+            chkcond = check_output_condition(output, _d)
         except Exception as e:
             results = form_log(output_id, results, 1, "form.submit", str(e), dict())
             update_results(results)
