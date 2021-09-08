@@ -3158,7 +3158,7 @@ pre.api_doc {
 	cursor: pointer;
 }
 
-.tabs th {
+.tabs .line th {
 	text-transform: capitalize;
 }
 .tabs > .otools {
