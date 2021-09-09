@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -21,6 +23,17 @@ import lock
 import config
 from comet import event_msg, _websocket_send
 
+def purge():
+    conn = get_conn()
+    if conn is None:
+        return
+    sql = """delete from action_queue where date_dequeued<date_sub(now(), interval 1 day) and status in ('T', 'C')
+          """
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    cursor.close()
+
 def msg(conn):
     sql = """select
               (select count(id) from action_queue where status in ('Q', 'N', 'W', 'R')) as queued,
@@ -41,25 +54,33 @@ def msg(conn):
     cursor.close()
     return s
 
-try:
-    dbopensvc = config.dbopensvc_host
-except:
-    dbopensvc = "127.0.0.1"
+def conf(envkey, cnfkey, default):
+    v = os.environ.get(envkey)
+    if v is not None:
+        return v, "env"
+    try:
+        return getattr(config, cnfkey), "configfile"
+    except AttributeError:
+        return default, "default"
 
-try:
-    dbopensvc_password = config.dbopensvc_password
-except:
-    dbopensvc_password = "opensvc"
+print("init parameters:")
 
-try:
-    actiond_workers = config.actiond_workers
-except:
-    actiond_workers = 10
+dbopensvc_host, src = conf("DBOPENSVC_HOST", "dbopensvc_host", "127.0.0.1")
+print(" dbopensvc_host =", dbopensvc_host, "<", src)
 
-try:
-    notification_timeout = config.notification_timeout
-except:
-    notification_timeout = 5
+dbopensvc_password, src = conf("DBOPENSVC_PASSWORD", "dbopensvc_password", "opensvc")
+print(" dbopensvc_password =", "xxxx", "<", src)
+
+actiond_workers, src = conf("ACTIOND_WORKERS", "actiond_workers", 10)
+print(" actiond_workers =", actiond_workers, "<", src)
+
+notification_timeout, src = conf("NOTIFICATION_TIMEOUT", "notification_timeout", 5)
+notification_timeout = int(notification_timeout)
+print(" notification_timeout =", notification_timeout, "<", src)
+
+purge_timeout, src = conf("PURGE_TIMEOUT", "purge_timeout", 24*3600)
+purge_timeout = int(purge_timeout)
+print(" purge_timeout =", purge_timeout, "<", src)
 
 lockfile = __file__+'.lock'
 
@@ -232,7 +253,7 @@ def dequeue_worker(i, recv, send):
             return
         except Queue.Empty:
             if not idle:
-                print '[%d] idle'%(i)
+                print('[%d] idle'%(i))
                 idle = True
             time.sleep(1)
             continue
@@ -244,7 +265,7 @@ def dequeue_worker(i, recv, send):
         cursor.execute("update action_queue set status='R' where id=%d"%id)
         conn.commit()
         _websocket_send(event_msg(msg(conn)))
-        print '[%d] %d: %s'%(i, id, cmd)
+        print('[%d] %d: %s'%(i, id, cmd))
         cmd = cmd.split()
         process = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=None)
         out, err = process.communicate()
@@ -303,19 +324,19 @@ def update_form_id(data):
     for i in range(5):
         script_data = get_form_scripts(conn, cursor, form_id)
         if script_data is None:
-            print "form %s not found. wait."%str(form_id)
+            print("form %s not found. wait."%str(form_id))
             time.sleep(1)
         break
 
     if script_data is None:
-        print "form %s not found. abort."%str(form_id)
+        print("form %s not found. abort."%str(form_id))
         return
 
     script_data = script_data.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
     try:
         script_data = json.loads(script_data)
     except Exception as e:
-        print e
+        print(e)
         script_data = {'returncode': 0}
 
     script_data[str(id)] = {
@@ -327,7 +348,7 @@ def update_form_id(data):
     if ret != 0:
         script_data['returncode'] = 1
 
-    print "updating form_id", form_id, "with script data", script_data
+    print("updating form_id", form_id, "with script data", script_data)
     sql = """update forms_store set form_scripts='%s' where id=%s""" % (json.dumps(script_data), str(form_id))
     cursor.execute(sql)
     conn.commit()
@@ -347,7 +368,7 @@ def update_form_id(data):
             done.append(int(key))
         except:
             pass
-    print "todo", todo, "done", done
+    print("todo", todo, "done", done)
     if set(todo) == set(done):
         close_workflow(form_id, conn, cursor)
 
@@ -355,7 +376,7 @@ def update_form_id(data):
     conn.close()
 
 def close_workflow(form_id, conn, cursor):
-    print "close workflow %s is the tail form of"%str(form_id)
+    print("close workflow %s is the tail form of"%str(form_id))
     sql = """update workflows set status="closed" where last_form_id=%s"""%str(form_id)
     cursor.execute(sql)
     sql = """update forms_store set form_next_id=0 where id=%s"""%str(form_id)
@@ -364,12 +385,12 @@ def close_workflow(form_id, conn, cursor):
 
 def get_conn():
     try:
-        conn = MySQLdb.connect(host=dbopensvc,
+        conn = MySQLdb.connect(host=dbopensvc_host,
                                user="opensvc",
                                passwd=dbopensvc_password,
                                db="opensvc")
     except MySQLdb.Error, e:
-        print "Error %d: %s" % (e.args[0], e.args[1])
+        print("Error %d: %s" % (e.args[0], e.args[1]))
         return None
     return conn
 
@@ -399,20 +420,25 @@ def _dequeue():
     send = JoinableQueue()
     recv = JoinableQueue()
     start_workers(send, recv)
+    last_purge = 0
     while True:
         bunch = get_queued()
         while not recv.empty():
             data = recv.get()
-            print "scheduler recv data:", data
+            print("scheduler recv data:", data)
             try:
                 update_form_id(data)
             except Exception as e:
-                print e
+                print(e)
             recv.task_done()
         if len(bunch) == 0:
             if not idle:
-                print "[Queue manager] idle"
+                print("[Queue manager] idle")
                 idle = True
+            if time.time() - last_purge > purge_timeout:
+                print("purge")
+                purge()
+                last_purge = time.time()
             time.sleep(1)
             continue
         idle = False
@@ -430,7 +456,8 @@ def main(**options):
         actiond_unlock(lockfd)
     except lock.lockError:
         return 0
-    except:
+    except Exception as exc:
+        print(exc)
         return 1
     return 0
 
