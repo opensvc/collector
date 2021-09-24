@@ -802,7 +802,7 @@ class rest_put_form_output_result(rest_put_handler):
           },
         }
         examples = [
-          """# curl -u %(email)s -d output_id="add disk" --result='{"lun": 1}' -X PUT -o- https://%(collector)s/init/rest/api/form_output_results/10"""
+          """# curl -u %(email)s -d output_id="add disk" -d result='{"lun": 1}' -X PUT -o- https://%(collector)s/init/rest/api/form_output_results/10"""
         ]
 
         rest_put_handler.__init__(
