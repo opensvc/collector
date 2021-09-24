@@ -713,7 +713,8 @@ def update_results(results, reload_outputs=False):
             db._adapter.close()
             db._adapter.reconnect()
             dbdo()
-        raise
+        else:
+            raise
     ws_send("form_output_results_change", {"results_id": results["results_id"]})
 
 def validate_data(form_definition, data):
