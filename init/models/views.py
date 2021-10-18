@@ -405,6 +405,7 @@ joins = {
                   (db.svcmon.node_id == db.resmon_log.node_id),
     'v_resmon_log': (db.svcmon.svc_id == db.v_resmon_log.svc_id) & \
                   (db.svcmon.node_id == db.v_resmon_log.node_id),
+    'resinfo': (db.resinfo.svc_id == db.svcmon.svc_id) & (db.resinfo.node_id == db.svcmon.node_id),
   },
   'services':{
     'services': None,
@@ -430,6 +431,7 @@ joins = {
     'v_svcmon': None,
     'v_svcactions': None,
     'checks_live': db.nodes.node_id == db.checks_live.node_id,
+    'resinfo': db.nodes.node_id == db.resinfo.node_id,
     'packages': db.nodes.node_id == db.packages.node_id,
     'patches': db.nodes.node_id == db.patches.node_id,
     'comp_rulesets_nodes': db.nodes.node_id == db.comp_rulesets_nodes.node_id,
@@ -445,7 +447,14 @@ joins = {
     'v_apps': db.nodes.app == db.v_apps.app,
     'v_tags': db.v_tags.node_id == db.nodes.node_id,
   },
+  'resinfo': {
+    'resinfo': None,
+    'svcmon': (db.resinfo.svc_id == db.svcmon.svc_id) & (db.resinfo.node_id == db.svcmon.node_id),
+    'nodes': db.resinfo.node_id == db.nodes.node_id,
+    'services': db.resinfo.svc_id == db.services.svc_id,
+  },
 }
+
 def gen_filterset_query(q, row, tables=[]):
     if 'v_gen_filtersets' in row:
         v = row.v_gen_filtersets

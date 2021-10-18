@@ -875,6 +875,14 @@ def prepare_data(
                     left.append(db.svc_tags.on(db.svc_tags.tag_id==db[table].tag_id))
                     tables.append("svc_tags")
                     return prop
+        elif t == "svcmon":
+            for table in tables:
+                if "svc_id" in db[table].fields and "node_id" in db[table].fields:
+                    if "svcmon" in tables:
+                        return prop
+                    left.append(db.svcmon.on((db.svcmon.svc_id==db[table].svc_id)&(db.svcmon.node_id==db[table].node_id)))
+                    tables.append("svcmon")
+                    return prop
 
     if props is not None:
         for i, prop in enumerate(props.split(",")):
