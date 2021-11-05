@@ -1743,14 +1743,15 @@ function form(divid, options) {
 			var input_id = o.resolve_key(key)
 			var line = table.find("[iid="+input_id+"]")
 		}
-		var cell = line.children("[name=val]").children("input,textarea")
-		trigger(cell, true)
+		var head = line.children("[name=val]")
+		var cell = head.find("input,textarea")
+		trigger(true)
 		cell.bind("change", function() {
-			trigger($(this))
+			trigger(false)
 		})
-		function trigger(input, initial) {
+		function trigger(initial) {
 			if (key in o.form_inputs) {
-				var val = o.get_val(input.parent())
+				var val = o.get_val(head)
 			} else {
 				var data = o.form_to_data()
 				var val = data[key]
