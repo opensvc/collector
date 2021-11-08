@@ -295,13 +295,17 @@ def _update_service(svcname, auth):
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
     if 'svc_app' in h:
-        if h['svc_app'] is None or h['svc_app'].strip("'") == "" or not common_responsible(node_id=node_id, app=h['svc_app'].strip("'")):
+        if h["svc_app"] is None:
+            # cluster, cfg and sec => drop config
+            return
+        orig_app = h["svc_app"].strip("'")
+        if orig_app == "" or not common_responsible(node_id=node_id, app=orig_app):
             q = db.nodes.node_id == node_id
             new_app = db(q).select().first().app
             _log("service.change",
                  "advertized app %(app)s remapped to %(new_app)s",
                  dict(
-                   app=h['svc_app'].strip("'"),
+                   app=orig_app,
                    new_app=new_app,
                  ),
                  svc_id=svc_id,
