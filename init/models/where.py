@@ -13,6 +13,8 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
             q = svc_field == auth.user.svc_id
         elif auth_is_node():
             node_svc_ids = [r.svc_id for r in db(db.svcmon.node_id==auth.user.node_id).select()]
+            app = db(db.nodes.node_id==auth.user.node_id).select().first().app
+            node_svc_ids += [r.svc_id for r in db((db.svcmon.mon_vmname==auth.user.nodename)&(db.services.svc_app==app)&(db.svcmon.svc_id==db.services.svc_id)).select(db.services.svc_id)]
             q = svc_field.belongs(node_svc_ids)
         elif not manager:
             q = svc_field.belongs(user_published_services())
