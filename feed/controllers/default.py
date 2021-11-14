@@ -1439,6 +1439,7 @@ def rpc_collector_get_action_queue(nodename, auth):
     sql = db(q)._select(db.action_queue.ALL, db.services.svcname, left=l)
     data = db.executesql(sql, as_dict=True)
     if len(data) > 0:
+        q = db.action_queue.id.belongs([action["id"] for action in data])
         db(q).update(status="R")
         db.commit()
     return data
