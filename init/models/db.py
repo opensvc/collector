@@ -1045,7 +1045,7 @@ db.define_table('v_action_queue',
     migrate=False)
 
 db.define_table('action_queue',
-    Field('status', 'string'),
+    Field('status', 'string'),  # W: created, N: node notified, R: running, T: terminated, S: sent
     Field('ret', 'integer'),
     Field('user_id', 'integer'),
     Field('command', 'text'),

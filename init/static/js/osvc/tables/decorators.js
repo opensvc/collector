@@ -1710,6 +1710,8 @@ function cell_decorator_action_q_status(e, line) {
 		st = i18n.t("decorators.waiting")
 	} else if (v == "N") {
 		st = i18n.t("decorators.notified")
+	} else if (v == "S") {
+		st = i18n.t("decorators.waiting")
 	} else if (v == "Q") {
 		st = i18n.t("decorators.queued")
 	} else if (v == "C") {

@@ -1445,6 +1445,52 @@ def rpc_collector_get_action_queue(nodename, auth):
     return data
 
 @service.xmlrpc
+def collector_update_action_queue_received(data, auth):
+    return rpc_collector_update_action_queue_received(data, auth)
+
+@auth_uuid
+def rpc_collector_update_action_queue_received(data, auth):
+    node_id = auth_to_node_id(auth)
+    for action_id in data:
+        q = db.action_queue.id == action_id
+        q &= db.action_queue.node_id == node_id
+        db(q).update(status="R", date_dequeued=datetime.datetime.now())
+        db.commit()
+    action_q_event()
+    table_modified("action_queue")
+
+@service.xmlrpc
+def collector_get_action_queue_v2(nodename, auth):
+    return rpc_collector_get_action_queue_v2(nodename, auth)
+
+@auth_uuid
+def rpc_collector_get_action_queue_v2(nodename, auth):
+    """
+    Same as rpc_collector_get_action_queue, but allow clients retry when
+    actions are not received correctly by clients.
+    This now set sent actions to status 'S'.
+    Clients have to notify when action is received with the rpc_collector_update_action_queue_received().
+    This will change received action to status 'R'.
+
+    Pull actions in status 'S' are resent if not acknowledge after 20s.
+    """
+    node_id = auth_to_node_id(auth)
+    now = datetime.datetime.now()
+    old_date = now - datetime.timedelta(seconds=20)
+    q = db.action_queue.node_id == node_id
+    q &= db.action_queue.action_type == "pull"
+    q &= (db.action_queue.status.belongs(["W", "N"])) \
+         | ((db.action_queue.status == "S") & (db.action_queue.date_queued < old_date))
+    l = db.services.on((db.action_queue.svc_id != "") & (db.action_queue.svc_id == db.services.svc_id))
+    sql = db(q)._select(db.action_queue.ALL, db.services.svcname, left=l)
+    data = db.executesql(sql, as_dict=True)
+    if len(data) > 0:
+        q = db.action_queue.id.belongs([action["id"] for action in data])
+        db(q).update(status="S")
+        db.commit()
+    return data
+
+@service.xmlrpc
 def collector_list_actions(cmd, auth):
     return rpc_collector_list_actions(cmd, auth)
 
