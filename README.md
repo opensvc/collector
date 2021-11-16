@@ -17,7 +17,7 @@ static files are served from this location based on git HEAD ref
 ## .git/hooks/pre-commit
 
 	cat > .git/hooks/pre-commit <<-EOF
-	CID="\$(git show HEAD | head -n 1 | awk '{print $NF}')"
+	CID="\$(git show HEAD | head -n 1 | awk '{print \$NF}')"
 	echo "code_rev=\"\$CID\"" > $PWD/init/models/version.py
 	git add init/models/version.py
 	EOF
