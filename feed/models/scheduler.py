@@ -997,7 +997,7 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=No
                 # update diskinfo timestamp
                 vars = ['disk_id', 'disk_arrayid', 'disk_updated']
                 vals = [repr(disk_id), node_id, h['disk_updated']]
-                generic_insert('diskinfo', vars, vals)
+                generic_insert('diskinfo', vars, vals, commit=False, notify=False)
         else:
             # diskinfo registered by a array parser or an hv pushdisks
             h['disk_local'] = 'F'
@@ -1011,12 +1011,12 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=No
                 repr(disk_id.replace(node_id+'.', '')),
                 h['disk_size'],
                 h['disk_updated']]
-        generic_insert('diskinfo', vars, vals)
+        generic_insert('diskinfo', vars, vals, commit=False, notify=False)
     elif n == 0:
         h['disk_local'] = 'F'
         vars = ['disk_id', 'disk_size', 'disk_updated']
         vals = [repr(disk_id), h['disk_size'], h['disk_updated']]
-        generic_insert('diskinfo', vars, vals)
+        generic_insert('diskinfo', vars, vals, commit=False, notify=False)
 
         # if no array claimed that disk, give it to the node
         sql = """update diskinfo
@@ -1030,7 +1030,7 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=No
 
     vars, vals = replace_nodename_in_data(h.keys(), h.values(), auth, fieldname="disk_nodename")
     vars, vals = add_app_id_in_data(vars, vals)
-    generic_insert('svcdisks', vars, vals)
+    generic_insert('svcdisks', vars, vals, commit=False, notify=False)
 
 def _insert_pkg(auth):
     vars, vals = json.loads(rconn.hget(R_PACKAGES_HASH, json.dumps([auth])))

@@ -306,6 +306,8 @@ def rpc_register_disks(vars, vals, auth):
     db.executesql(sql)
 
     db.commit()
+    table_modified("diskinfo")
+    table_modified("svcdisks")
 
 @service.xmlrpc
 def register_disk_blacklist(vars, vals, auth):

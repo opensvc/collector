@@ -26,7 +26,7 @@ def quote_wrap(x):
         return "NULL"
     raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
 
-def insert_multiline(table, vars, valsl, node_id=None, get_last_id=False):
+def insert_multiline(table, vars, valsl, node_id=None, get_last_id=False, commit=True):
     # convert agent time to server time
     if node_id:
         node = db(db.nodes.node_id==node_id).select(db.nodes.tz).first()
@@ -51,18 +51,21 @@ def insert_multiline(table, vars, valsl, node_id=None, get_last_id=False):
     db.executesql(sql)
     if get_last_id:
         i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
-        db.commit()
+        if commit:
+            db.commit()
         return i
-    db.commit()
+    if commit:
+        db.commit()
 
-def generic_insert(table, vars, vals, node_id=None, get_last_id=False):
+def generic_insert(table, vars, vals, node_id=None, get_last_id=False, commit=True, notify=True):
     if len(vals) == 0:
         return
     elif isinstance(vals[0], list):
-        i = insert_multiline(table, vars, vals, node_id=node_id, get_last_id=get_last_id)
+        i = insert_multiline(table, vars, vals, node_id=node_id, get_last_id=get_last_id, commit=commit)
     else:
-        i = insert_multiline(table, vars, [vals], node_id=node_id, get_last_id=get_last_id)
-    table_modified(table)
+        i = insert_multiline(table, vars, [vals], node_id=node_id, get_last_id=get_last_id, commit=commit)
+    if notify:
+        table_modified(table)
     return i
 
 
