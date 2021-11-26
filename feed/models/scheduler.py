@@ -918,7 +918,7 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=No
     if node_id is None:
         node_id = auth_to_node_id(auth)
 
-    if disk_nonename is None:
+    if disk_nodename is None:
         q = db.nodes.node_id == node_id
         disk_nodename = db(q).select().first().nodename
 
