@@ -17,14 +17,13 @@ def node_cluster_id(node_id):
         return ""
 
 def node_svc(node_id, svcname, app=None):
-    if node_id is None:
+    if node_id is None or svcname is None:
         return
-    if svcname is None:
+    svcname = svcname.strip("'")
+    if svcname == "":
         return
     cluster_id = node_cluster_id(node_id)
-    svcname = svcname.strip("'")
-    if svcname == "" or svcname is None:
-        return
+
     responsibles = node_responsibles(node_id)
 
     q = db.services.svcname == svcname
