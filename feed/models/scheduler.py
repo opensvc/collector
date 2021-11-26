@@ -913,9 +913,14 @@ def __resmon_update(vars, vals, auth, cache=cache):
     print datetime.datetime.now() - _now, "__resmon_update", h['rid']
     return cache
 
-def _register_disk(vars, vals, auth):
+def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None):
     h = {}
-    node_id = auth_to_node_id(auth)
+    if node_id is None:
+        node_id = auth_to_node_id(auth)
+
+    if disk_nonename is None:
+        q = db.nodes.node_id == node_id
+        disk_nodename = db(q).select().first().nodename
 
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
@@ -925,8 +930,6 @@ def _register_disk(vars, vals, auth):
     disk_id = h["disk_id"].strip("'")
     disk_svcname = h["disk_svcname"].strip("'")
     disk_model = h['disk_model'].strip("'")
-    q = db.nodes.node_id == node_id
-    disk_nodename = db(q).select().first().nodename
 
     svc_id = node_svc_id(node_id, disk_svcname)
     h["svc_id"] = svc_id

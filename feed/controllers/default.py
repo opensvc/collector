@@ -256,12 +256,14 @@ def register_disks(vars, vals, auth):
 
 @auth_uuid
 def rpc_register_disks(vars, vals, auth):
-    node_id = auth_to_node_id(auth)
+    node = auth_to_node(auth)
+    node_id = node.node_id
+    nodename = node.nodename
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
     for v in vals:
-        _register_disk(vars, v, auth)
+        _register_disk(vars, v, auth, node_id=node_id, disk_nodename=nodename)
 
     # purge svcdisks
     sql = """ delete from svcdisks
