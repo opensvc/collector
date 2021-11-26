@@ -389,6 +389,10 @@ def register_disk(vars, vals, auth):
 @auth_uuid
 def rpc_register_disk(vars, vals, auth):
     _register_disk(vars, vals, auth)
+    db.commit()
+    table_modified("diskinfo")
+    table_modified("svcdisks")
+
 
 @service.xmlrpc
 def register_sync(vars, vals, auth):
