@@ -262,8 +262,29 @@ def rpc_register_disks(vars, vals, auth):
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
+    idx_disk_svcname = vars.index("disk_svcname")
+    svc_ids = {}
+
+    def _svc_id(disk_svcname):
+        """local cache function for disk_svcname to svc_id"""
+        if disk_svcname in svc_ids:
+            return svc_ids[disk_svcname]
+        svc_id = node_svc_id(node_id, disk_svcname)
+        if len(svc_id) == 0:
+            # if no service name is provided and the node is actually
+            # a service encpasulated vm, add the encapsulating svcname
+            q = db.svcmon.mon_vmname == db.nodes.nodename
+            q &= db.nodes.node_id == node_id
+            row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
+            if row is not None:
+                svc_id = repr(row.svc_id)
+        svc_ids[disk_svcname] = svc_id
+        return svc_id
+
     for v in vals:
-        _register_disk(vars, v, auth, node_id=node_id, disk_nodename=nodename)
+        disk_svcname = v[idx_disk_svcname].strip("'")
+        svc_id = _svc_id(disk_svcname)
+        _register_disk(vars, v, auth, node_id=node_id, disk_nodename=nodename, svc_id=svc_id)
 
     # purge svcdisks
     sql = """ delete from svcdisks

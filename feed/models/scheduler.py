@@ -913,7 +913,7 @@ def __resmon_update(vars, vals, auth, cache=cache):
     print datetime.datetime.now() - _now, "__resmon_update", h['rid']
     return cache
 
-def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None):
+def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=None):
     h = {}
     if node_id is None:
         node_id = auth_to_node_id(auth)
@@ -928,25 +928,26 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None):
         h[a] = b
 
     disk_id = h["disk_id"].strip("'")
-    disk_svcname = h["disk_svcname"].strip("'")
     disk_model = h['disk_model'].strip("'")
 
-    svc_id = node_svc_id(node_id, disk_svcname)
+    if not svc_id:
+        disk_svcname = h["disk_svcname"].strip("'")
+        svc_id = node_svc_id(node_id, disk_svcname)
+        if len(svc_id) == 0:
+            # if no service name is provided and the node is actually
+            # a service encpasulated vm, add the encapsulating svcname
+            q = db.svcmon.mon_vmname == db.nodes.nodename
+            q &= db.nodes.node_id == node_id
+            row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
+            if row is not None:
+                svc_id = repr(row.svc_id)
+
     h["svc_id"] = svc_id
     del(h["disk_svcname"])
 
     if disk_id.startswith(disk_nodename+"."):
         disk_id = disk_id.replace(disk_nodename+".", node_id+".")
         h["disk_id"] = disk_id
-
-    if len(svc_id) == 0:
-        # if no service name is provided and the node is actually
-        # a service encpasulated vm, add the encapsulating svcname
-        q = db.svcmon.mon_vmname == db.nodes.nodename
-        q &= db.nodes.node_id == node_id
-        row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
-        if row is not None:
-            h["svc_id"] = repr(row.svc_id)
 
     # don't register blacklisted disks (might be VM disks, already accounted)
     #n = db(db.disk_blacklist.disk_id==disk_id).count()
