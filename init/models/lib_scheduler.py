@@ -36,8 +36,6 @@ def add_app_id_in_data(vars, vals, app_key="app_id", node_key="node_id", svc_key
         return vars, vals
     if node_key not in vars and svc_key not in vars:
         return vars, vals
-    if len(vals) == 0:
-        return vars, vals
 
     if type(vals[0]) != list:
         vals = [vals]

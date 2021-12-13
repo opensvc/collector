@@ -913,9 +913,14 @@ def __resmon_update(vars, vals, auth, cache=cache):
     print datetime.datetime.now() - _now, "__resmon_update", h['rid']
     return cache
 
-def _register_disk(vars, vals, auth):
+def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=None):
     h = {}
-    node_id = auth_to_node_id(auth)
+    if node_id is None:
+        node_id = auth_to_node_id(auth)
+
+    if disk_nodename is None:
+        q = db.nodes.node_id == node_id
+        disk_nodename = db(q).select().first().nodename
 
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
@@ -923,27 +928,26 @@ def _register_disk(vars, vals, auth):
         h[a] = b
 
     disk_id = h["disk_id"].strip("'")
-    disk_svcname = h["disk_svcname"].strip("'")
     disk_model = h['disk_model'].strip("'")
-    q = db.nodes.node_id == node_id
-    disk_nodename = db(q).select().first().nodename
 
-    svc_id = node_svc_id(node_id, disk_svcname)
+    if not svc_id:
+        disk_svcname = h["disk_svcname"].strip("'")
+        svc_id = node_svc_id(node_id, disk_svcname)
+        if len(svc_id) == 0:
+            # if no service name is provided and the node is actually
+            # a service encpasulated vm, add the encapsulating svcname
+            q = db.svcmon.mon_vmname == db.nodes.nodename
+            q &= db.nodes.node_id == node_id
+            row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
+            if row is not None:
+                svc_id = repr(row.svc_id)
+
     h["svc_id"] = svc_id
     del(h["disk_svcname"])
 
     if disk_id.startswith(disk_nodename+"."):
         disk_id = disk_id.replace(disk_nodename+".", node_id+".")
         h["disk_id"] = disk_id
-
-    if len(svc_id) == 0:
-        # if no service name is provided and the node is actually
-        # a service encpasulated vm, add the encapsulating svcname
-        q = db.svcmon.mon_vmname == db.nodes.nodename
-        q &= db.nodes.node_id == node_id
-        row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
-        if row is not None:
-            h["svc_id"] = repr(row.svc_id)
 
     # don't register blacklisted disks (might be VM disks, already accounted)
     #n = db(db.disk_blacklist.disk_id==disk_id).count()
@@ -993,7 +997,7 @@ def _register_disk(vars, vals, auth):
                 # update diskinfo timestamp
                 vars = ['disk_id', 'disk_arrayid', 'disk_updated']
                 vals = [repr(disk_id), node_id, h['disk_updated']]
-                generic_insert('diskinfo', vars, vals)
+                generic_insert('diskinfo', vars, vals, commit=False, notify=False)
         else:
             # diskinfo registered by a array parser or an hv pushdisks
             h['disk_local'] = 'F'
@@ -1007,12 +1011,12 @@ def _register_disk(vars, vals, auth):
                 repr(disk_id.replace(node_id+'.', '')),
                 h['disk_size'],
                 h['disk_updated']]
-        generic_insert('diskinfo', vars, vals)
+        generic_insert('diskinfo', vars, vals, commit=False, notify=False)
     elif n == 0:
         h['disk_local'] = 'F'
         vars = ['disk_id', 'disk_size', 'disk_updated']
         vals = [repr(disk_id), h['disk_size'], h['disk_updated']]
-        generic_insert('diskinfo', vars, vals)
+        generic_insert('diskinfo', vars, vals, commit=False, notify=False)
 
         # if no array claimed that disk, give it to the node
         sql = """update diskinfo
@@ -1026,7 +1030,7 @@ def _register_disk(vars, vals, auth):
 
     vars, vals = replace_nodename_in_data(h.keys(), h.values(), auth, fieldname="disk_nodename")
     vars, vals = add_app_id_in_data(vars, vals)
-    generic_insert('svcdisks', vars, vals)
+    generic_insert('svcdisks', vars, vals, commit=False, notify=False)
 
 def _insert_pkg(auth):
     vars, vals = json.loads(rconn.hget(R_PACKAGES_HASH, json.dumps([auth])))
