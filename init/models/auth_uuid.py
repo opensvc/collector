@@ -128,14 +128,11 @@ def node_svc(node_id, svcname, app=None):
           node_id=node_id,
           svc_ids=', '.join([r.svc_id for r in rows]),
         ))
-
-    if len(rows) == 1:
+    elif len(rows) == 1:
         return rows.first()
 
-    if len(rows) == 0:
-        return create_svc(node_id, cluster_id, svcname, app=app)
+    return create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
 
-    return rows.first()
 
 def node_svc_id(node_id, svcname):
     svc = node_svc(node_id, svcname)
@@ -143,7 +140,17 @@ def node_svc_id(node_id, svcname):
         return ""
     return svc["svc_id"]
 
-def create_svc(node_id, cluster_id, svcname, app=None):
+def create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
+    name = "create_svc_%s_%s" % (svcname, app)
+    lock_id = acquire_lock(name, timeout=10)
+    if lock_id:
+        result = _create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
+        release_lock(name, lock_id)
+        return result
+    raise Exception("unable to acquire lock %s" % name)
+
+
+def _create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
     if svcname == "cluster":
         return
     from gluon.storage import Storage
@@ -161,6 +168,40 @@ def create_svc(node_id, cluster_id, svcname, app=None):
     row = db(q).select().first()
     if row is None:
         return
+
+    if responsibles:
+        q = db.services.svcname == svcname
+        q &= db.services.cluster_id == cluster_id
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        q &= db.apps_responsibles.group_id.belongs(responsibles)
+        rows = db(q).select(
+            db.services.svcname,
+            db.services.svc_id,
+            db.services.svc_app,
+            db.services.svc_env,
+            db.services.svc_availstatus,
+            db.services.svc_status,
+            groupby=db.services.svc_id
+        )
+        if len(rows) == 1:
+            _log('create_svc',
+                 'skip already present service %s cluster_id:%s app:%s responsibles:%s' % (
+                     svcname, cluster_id, app, responsibles
+                 ),
+                 dict(),
+                 node_id=node_id,
+                 svcname=svcname,
+                 user="feed",
+                 level="warning")
+            return rows.first()
+        elif len(rows) > 1:
+            raise Exception("skip create_svc, multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster %(cluster_id)s responsibility zone: %(svc_ids)s" % dict(
+                svcname=svcname,
+                cluster_id=cluster_id,
+                node_id=node_id,
+                svc_ids=', '.join([r.svc_id for r in rows]),
+            ))
 
     data = {
       "svcname": svcname,
