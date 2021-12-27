@@ -254,7 +254,6 @@ class rest_delete_services(rest_delete_handler):
         q = q_filter(q, app_field=db.services.svc_app)
         row = db(q).select(db.services.svc_id).first()
         if row is None:
-            svcname = get_svcname(row.svc_id)
             raise HTTP(404, "service %s does not exist" % s)
         return rest_delete_service().handler(row.svc_id)
 
