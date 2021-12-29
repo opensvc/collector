@@ -149,7 +149,7 @@ def node_svc_id(node_id, svcname):
 
 def create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
     name = "create_svc_%s_%s" % (svcname, app)
-    lock_id = acquire_lock(name, timeout=10)
+    lock_id = acquire_lock(name, timeout=20)
     if lock_id:
         result = _create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
         release_lock(name, lock_id)
