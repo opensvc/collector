@@ -12,7 +12,7 @@ def acquire_lock(name, timeout=10):
     while True:
         if rconn.set(lock_name, lock_id, ex=timeout, nx=True):
             return lock_id
-        time.sleep(.01)
+        time.sleep(0.1)
 
 
 def release_lock(name, lock_id):
