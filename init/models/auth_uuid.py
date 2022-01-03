@@ -177,6 +177,7 @@ def _create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
         return
 
     # Last retry search, in lock mode, perhaps changes during last search
+    db.commit()  # ensure start from fresh db
     found = search_node_svc(node_id, svcname, responsibles, cluster_id)
     if found:
         _log('create_svc',
