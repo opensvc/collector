@@ -16,16 +16,8 @@ def node_cluster_id(node_id):
     except Exception as exc:
         return ""
 
-def node_svc(node_id, svcname, app=None):
-    if node_id is None or svcname is None:
-        return
-    svcname = svcname.strip("'")
-    if svcname == "":
-        return
-    cluster_id = node_cluster_id(node_id)
 
-    responsibles = node_responsibles(node_id)
-
+def search_node_svc(node_id, svcname, responsibles, cluster_id):
     q = db.services.svcname == svcname
     q &= db.services.cluster_id == cluster_id
     q &= db.services.svc_app == db.apps.app
@@ -42,10 +34,10 @@ def node_svc(node_id, svcname, app=None):
     )
     if len(rows) > 1:
         raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster %(cluster_id)s responsibility zone: %(svc_ids)s" % dict(
-          svcname=svcname,
-          cluster_id=cluster_id,
-          node_id=node_id,
-          svc_ids=', '.join([r.svc_id for r in rows]),
+            svcname=svcname,
+            cluster_id=cluster_id,
+            node_id=node_id,
+            svc_ids=', '.join([r.svc_id for r in rows]),
         ))
 
     if len(rows) == 1:
@@ -71,9 +63,9 @@ def node_svc(node_id, svcname, app=None):
     )
     if len(rows) > 1:
         raise Exception("multiple services found matching the service name '%(svcname)s' in the encap node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
-          svcname=svcname,
-          node_id=node_id,
-          svc_ids=', '.join([r.svc_id for r in rows]),
+            svcname=svcname,
+            node_id=node_id,
+            svc_ids=', '.join([r.svc_id for r in rows]),
         ))
 
     if len(rows) == 1:
@@ -124,14 +116,29 @@ def node_svc(node_id, svcname, app=None):
     )
     if len(rows) > 1:
         raise Exception("multiple orphan services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster 'empty' responsibility zone: %(svc_ids)s" % dict(
-          svcname=svcname,
-          node_id=node_id,
-          svc_ids=', '.join([r.svc_id for r in rows]),
+            svcname=svcname,
+            node_id=node_id,
+            svc_ids=', '.join([r.svc_id for r in rows]),
         ))
     elif len(rows) == 1:
         return rows.first()
 
-    return create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
+
+def node_svc(node_id, svcname, app=None):
+    if node_id is None or svcname is None:
+        return
+    svcname = svcname.strip("'")
+    if svcname == "":
+        return
+    cluster_id = node_cluster_id(node_id)
+    responsibles = node_responsibles(node_id)
+
+    found = search_node_svc(node_id, svcname, responsibles, cluster_id)
+
+    if found:
+        return found
+    else:
+        return create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
 
 
 def node_svc_id(node_id, svcname):
@@ -141,8 +148,8 @@ def node_svc_id(node_id, svcname):
     return svc["svc_id"]
 
 def create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
-    name = "create_svc_%s_%s" % (svcname, app)
-    lock_id = acquire_lock(name, timeout=10)
+    name = "create_svc_%s" % svcname
+    lock_id = acquire_lock(name, timeout=20)
     if lock_id:
         result = _create_svc(node_id, cluster_id, svcname, app=app, responsibles=responsibles)
         release_lock(name, lock_id)
@@ -169,50 +176,37 @@ def _create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
     if row is None:
         return
 
-    if responsibles:
-        q = db.services.svcname == svcname
-        q &= db.services.cluster_id == cluster_id
-        q &= db.services.svc_app == db.apps.app
-        q &= db.apps.id == db.apps_responsibles.app_id
-        q &= db.apps_responsibles.group_id.belongs(responsibles)
-        rows = db(q).select(
-            db.services.svcname,
-            db.services.svc_id,
-            db.services.svc_app,
-            db.services.svc_env,
-            db.services.svc_availstatus,
-            db.services.svc_status,
-            groupby=db.services.svc_id
-        )
-        if len(rows) == 1:
-            _log('create_svc',
-                 'skip already present service %s cluster_id:%s app:%s responsibles:%s' % (
-                     svcname, cluster_id, app, responsibles
-                 ),
-                 dict(),
-                 node_id=node_id,
-                 svcname=svcname,
-                 user="feed",
-                 level="warning")
-            return rows.first()
-        elif len(rows) > 1:
-            raise Exception("skip create_svc, multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster %(cluster_id)s responsibility zone: %(svc_ids)s" % dict(
-                svcname=svcname,
-                cluster_id=cluster_id,
-                node_id=node_id,
-                svc_ids=', '.join([r.svc_id for r in rows]),
-            ))
+    # Last retry search, in lock mode, perhaps changes during last search
+    db.commit()  # ensure start from fresh db
+    found = search_node_svc(node_id, svcname, responsibles, cluster_id)
+    if found:
+        _log('create_svc',
+             'existing service:%s cluster_id:%s app:%s responsibles:%s' % (svcname, cluster_id, app, responsibles),
+             dict(),
+             node_id=node_id,
+             svc_id=found.svc_id,
+             user="feed",
+             level="info")
+        return found
 
+    svc_id = get_new_svc_id()
     data = {
       "svcname": svcname,
       "svc_app": app,
       "svc_env": node.node_env,
       "svc_availstatus": "undef",
       "svc_status": "undef",
-      "svc_id": get_new_svc_id(),
+      "svc_id": svc_id,
       "cluster_id": cluster_id,
       "updated": datetime.datetime.now()
     }
+    _log('create_svc',
+         'new service:%s cluster_id:%s app:%s responsibles:%s' % (svcname, cluster_id, app, responsibles),
+         dict(),
+         node_id=node_id,
+         svc_id=svc_id,
+         user="feed",
+         level="info")
     db.services.insert(**data)
     db.commit()
     return Storage(data)
