@@ -6835,3 +6835,8 @@ CREATE TABLE  `opensvc`.`clusters` (
   UNIQUE KEY `cluster_id` (`cluster_id`)
 );
 
+# 2021-12-30
+
+CREATE INDEX disk_arrayid_updated ON diskinfo (disk_arrayid, disk_updated);
+
+

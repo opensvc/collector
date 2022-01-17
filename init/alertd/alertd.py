@@ -817,13 +817,13 @@ class Alertd(object):
         conn = get_conn()
         if conn is None:
             return
-        conn.cursor().execute("""update nodes set snooze_till=NULL where snooze_till<NOW()""")
-        conn.cursor().execute("commit")
-
-        conn.cursor().execute("""update services set svc_snooze_till=NULL where svc_snooze_till<NOW()""")
-        conn.cursor().execute("commit")
-
-        conn.close()
+        try:
+            conn.cursor().execute("""update nodes set snooze_till=NULL where snooze_till<NOW()""")
+            conn.cursor().execute("commit")
+            conn.cursor().execute("""update services set svc_snooze_till=NULL where svc_snooze_till<NOW()""")
+            conn.cursor().execute("commit")
+        finally:
+            conn.close()
 
     def run_forever(self):
         while True:
