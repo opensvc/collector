@@ -351,6 +351,7 @@ function service_config(divid, options)
 			"obj_type": "services",
 			"obj_id": o.options.svc_id,
 			"save": o.save,
+			"readonly": true,
 			"callback": o.resize
 		})
 	}

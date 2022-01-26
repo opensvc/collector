@@ -752,11 +752,11 @@ function osvc_editor(divid, options) {
 		button.bind("click", function() {
 			o.options.save(o.editor.getValue())
 		})      
-		if (o.options.privileges && services_ismemberof(o.options.privileges)) {
+		if (!o.options.readonly && o.options.privileges && services_ismemberof(o.options.privileges)) {
 			o.editor.setReadOnly(false)
 			o.div.append(button)
 		}
-		if (o.options.obj_type && o.options.obj_id) {
+		if (!o.options.readonly && o.options.obj_type && o.options.obj_id) {
 			services_osvcgetrest("/"+o.options.obj_type+"/%1/am_i_responsible", [o.options.obj_id], "", function(jd) {
 				if (jd.data) {
 					o.editor.setReadOnly(false)
