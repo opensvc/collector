@@ -118,6 +118,7 @@ def call():
 #
 #########
 @service.xmlrpc
+@service.jsonrpc2
 def begin_action(vars, vals, auth):
     return rpc_begin_action(vars, vals, auth)
 
@@ -126,6 +127,7 @@ def rpc_begin_action(vars, vals, auth):
     rconn.rpush(R_SVCACTIONS, json.dumps(["_begin_action", vars, vals, auth]))
 
 @service.xmlrpc
+@service.jsonrpc2
 def res_action(vars, vals, auth):
     return rpc_res_action(vars, vals, auth)
 
@@ -137,6 +139,7 @@ def rpc_res_action(vars, vals, auth):
     return 0
 
 @service.xmlrpc
+@service.jsonrpc2
 def end_action(vars, vals, auth):
     return rpc_end_action(vars, vals, auth)
 
@@ -145,6 +148,7 @@ def rpc_end_action(vars, vals, auth):
     rconn.rpush(R_SVCACTIONS, json.dumps(["_end_action", vars, vals, auth]))
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_appinfo(vars, vals, auth):
     """
     'svcmgr push resinfo' data feeder.
@@ -155,6 +159,7 @@ def update_appinfo(vars, vals, auth):
     return rpc_update_resinfo(vars, vals, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_resinfo(vars, vals, auth):
     """
     'svcmgr push resinfo' asynchronous data feeder.
@@ -162,6 +167,7 @@ def update_resinfo(vars, vals, auth):
     return rpc_update_resinfo(vars, vals, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_resinfo_sync(vars, vals, auth):
     """
     'svcmgr push resinfo' synchronous data feeder.
@@ -176,6 +182,7 @@ def rpc_update_resinfo(vars, vals, auth):
     rconn.lpush(R_RESINFO, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_service(vars, vals, auth):
     return rpc_update_service(vars, vals, auth)
 
@@ -187,6 +194,7 @@ def rpc_update_service(vars, vals, auth):
     rconn.lpush(R_SVCCONF, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def push_checks(vars, vals, auth):
     return rpc_push_checks(vars, vals, auth)
 
@@ -198,6 +206,7 @@ def rpc_push_checks(vars, vals, auth):
     rconn.lpush(R_CHECKS, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_generic(data, auth):
     return rpc_insert_generic(data, auth)
 
@@ -206,6 +215,7 @@ def rpc_insert_generic(data, auth):
     rconn.rpush(R_GENERIC, json.dumps([data, auth]))
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_asset(vars, vals, auth):
     return rpc_update_asset(vars, vals, auth)
 
@@ -217,6 +227,7 @@ def rpc_update_asset(vars, vals, auth):
     rconn.lpush(R_ASSET, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_asset_sync(vars, vals, auth):
     return rpc_update_asset_sync(vars, vals, auth)
 
@@ -225,6 +236,7 @@ def rpc_update_asset_sync(vars, vals, auth):
     __update_asset(vars, vals, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def res_action_batch(vars, vals, auth):
     return rpc_res_action_batch(vars, vals, auth)
 
@@ -235,6 +247,7 @@ def rpc_res_action_batch(vars, vals, auth):
     generic_insert('svcactions', vars, vals, node_id=auth_to_node_id(auth))
 
 @service.xmlrpc
+@service.jsonrpc2
 def resmon_update(vars, vals, auth):
     return rpc_resmon_update(vars, vals, auth)
 
@@ -243,6 +256,7 @@ def rpc_resmon_update(vars, vals, auth):
     _resmon_update(vars, vals, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     return rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth)
 
@@ -251,6 +265,7 @@ def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     rconn.rpush(R_SVCMON, json.dumps([g_vars, g_vals, r_vars, r_vals, auth]))
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_disks(vars, vals, auth):
     return rpc_register_disks(vars, vals, auth)
 
@@ -310,6 +325,7 @@ def rpc_register_disks(vars, vals, auth):
     table_modified("svcdisks")
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_disk_blacklist(vars, vals, auth):
     return rpc_register_disk_blacklist(vars, vals, auth)
 
@@ -326,6 +342,7 @@ def disk_level(dev_id, level=0):
     return disk_level(rows.first().disk_devid, level+1)
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_diskinfo(vars, vals, auth):
     return rpc_register_diskinfo(vars, vals, auth)
 
@@ -383,6 +400,7 @@ def rpc_register_diskinfo(vars, vals, auth):
     db.commit()
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_disk(vars, vals, auth):
     return rpc_register_disk(vars, vals, auth)
 
@@ -395,6 +413,7 @@ def rpc_register_disk(vars, vals, auth):
 
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_sync(vars, vals, auth):
     return rpc_register_sync(vars, vals, auth)
 
@@ -403,6 +422,7 @@ def rpc_register_sync(vars, vals, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_ip(vars, vals, auth):
     return rpc_register_ip(vars, vals, auth)
 
@@ -411,6 +431,7 @@ def rpc_register_ip(vars, vals, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_fs(vars, vals, auth):
     return rpc_register_fs(vars, vals, auth)
 
@@ -419,6 +440,7 @@ def rpc_register_fs(vars, vals, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_fs_u(vars, vals, auth):
     return rpc_insert_stats_fs_u(vars, vals, auth)
 
@@ -428,6 +450,7 @@ def rpc_insert_stats_fs_u(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="fs_u", options=stats_options.get("fs_u"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_cpu(vars, vals, auth):
     return rpc_insert_stats_cpu(vars, vals, auth)
 
@@ -437,6 +460,7 @@ def rpc_insert_stats_cpu(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="cpu", options=stats_options.get("cpu"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_mem_u(vars, vals, auth):
     return rpc_insert_stats_mem_u(vars, vals, auth)
 
@@ -446,6 +470,7 @@ def rpc_insert_stats_mem_u(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="mem_u", options=stats_options.get("mem_u"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_proc(vars, vals, auth):
     return rpc_insert_stats_proc(vars, vals, auth)
 
@@ -455,6 +480,7 @@ def rpc_insert_stats_proc(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="proc", options=stats_options.get("proc"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_swap(vars, vals, auth):
     return rpc_insert_stats_swap(vars, vals, auth)
 
@@ -464,6 +490,7 @@ def rpc_insert_stats_swap(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="swap", options=stats_options.get("swap"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_block(vars, vals, auth):
     return rpc_insert_stats_block(vars, vals, auth)
 
@@ -473,6 +500,7 @@ def rpc_insert_stats_block(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="block", options=stats_options.get("block"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_blockdev(vars, vals, auth):
     return rpc_insert_stats_blockdev(vars, vals, auth)
 
@@ -482,6 +510,7 @@ def rpc_insert_stats_blockdev(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="blockdev", options=stats_options.get("blockdev"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_netdev(vars, vals, auth):
     return rpc_insert_stats_netdev(vars, vals, auth)
 
@@ -491,6 +520,7 @@ def rpc_insert_stats_netdev(vars, vals, auth):
     timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="netdev", options=stats_options.get("netdev"))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats_netdev_err(vars, vals, auth):
     return rpc_insert_stats_netdev_err(vars, vals, auth)
 
@@ -517,6 +547,7 @@ def get_vcpus(node_id, vmname):
         return
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_stats(data, auth):
     return rpc_insert_stats(data, auth)
 
@@ -553,6 +584,7 @@ def rpc_insert_stats(data, auth):
     rconn.rpush(R_UPDATE_DASH_NETDEV_ERRORS, json.dumps([node_id]))
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_pkg(vars, vals, auth):
     return rpc_insert_pkg(vars, vals, auth)
 
@@ -564,6 +596,7 @@ def rpc_insert_pkg(vars, vals, auth):
     rconn.lpush(R_PACKAGES, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def insert_patch(vars, vals, auth):
     return rpc_insert_patch(vars, vals, auth)
 
@@ -575,6 +608,7 @@ def rpc_insert_patch(vars, vals, auth):
     rconn.lpush(R_PATCHES, key)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_hcs(symid, vars, vals, auth):
     return rpc_update_hcs(symid, vars, vals, auth)
 
@@ -583,6 +617,7 @@ def rpc_update_hcs(symid, vars, vals, auth):
     update_array_xml(symid, vars, vals, auth, "hcs", insert_hcs)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_hds(symid, vars, vals, auth):
     return rpc_update_hds(symid, vars, vals, auth)
 
@@ -591,6 +626,7 @@ def rpc_update_hds(symid, vars, vals, auth):
     update_array_xml(symid, vars, vals, auth, "hds", insert_hds)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_sym_xml(symid, vars, vals, auth):
     return rpc_update_sym_xml(symid, vars, vals, auth)
 
@@ -602,6 +638,7 @@ def rpc_update_sym_xml(symid, vars, vals, auth):
         update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_dorado_xml(name, vars, vals, auth):
     return rpc_update_dorado_xml(name, vars, vals, auth)
 
@@ -613,6 +650,7 @@ def rpc_update_dorado_xml(name, vars, vals, auth):
         update_array_xml(name, vars, vals, auth, "dorado", insert_dorado)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_eva_xml(name, vars, vals, auth):
     return rpc_update_eva_xml(name, vars, vals, auth)
 
@@ -621,6 +659,7 @@ def rpc_update_eva_xml(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "eva", insert_eva)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_nsr(name, vars, vals, auth):
     return rpc_update_nsr(name, vars, vals, auth)
 
@@ -629,6 +668,7 @@ def rpc_update_nsr(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "nsr", insert_nsr)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_netapp(name, vars, vals, auth):
     return rpc_update_netapp(name, vars, vals, auth)
 
@@ -637,6 +677,7 @@ def rpc_update_netapp(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "netapp", insert_netapp)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_hp3par(name, vars, vals, auth):
     return rpc_update_hp3par(name, vars, vals, auth)
 
@@ -645,6 +686,7 @@ def rpc_update_hp3par(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "hp3par", insert_hp3par)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_ibmsvc(name, vars, vals, auth):
     return rpc_update_ibmsvc(name, vars, vals, auth)
 
@@ -653,6 +695,7 @@ def rpc_update_ibmsvc(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_ibmds(name, vars, vals, auth):
     return rpc_update_ibmds(name, vars, vals, auth)
 
@@ -661,6 +704,7 @@ def rpc_update_ibmds(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmds", insert_ibmds)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_brocade(name, vars, vals, auth):
     return rpc_update_brocade(name, vars, vals, auth)
 
@@ -669,6 +713,7 @@ def rpc_update_brocade(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "brocade", insert_brocade)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_vioserver(name, vars, vals, auth):
     return rpc_update_vioserver(name, vars, vals, auth)
 
@@ -677,6 +722,7 @@ def rpc_update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_centera(name, vars, vals, auth):
     return rpc_update_centera(name, vars, vals, auth)
 
@@ -685,6 +731,7 @@ def rpc_update_centera(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "centera", insert_centera)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_emcvnx(name, vars, vals, auth):
     return rpc_update_emcvnx(name, vars, vals, auth)
 
@@ -693,6 +740,7 @@ def rpc_update_emcvnx(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "emcvnx", insert_emcvnx)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_necism(name, vars, vals, auth):
     return rpc_update_necism(name, vars, vals, auth)
 
@@ -701,6 +749,7 @@ def rpc_update_necism(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "necism", insert_necism)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_freenas(name, vars, vals, auth):
     return rpc_update_freenas(name, vars, vals, auth)
 
@@ -709,6 +758,7 @@ def rpc_update_freenas(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "freenas", insert_freenas)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_xtremio(name, vars, vals, auth):
     return rpc_update_xtremio(name, vars, vals, auth)
 
@@ -717,6 +767,7 @@ def rpc_update_xtremio(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "xtremio", insert_xtremio)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_gcedisks(name, vars, vals, auth):
     return rpc_update_gcedisks(name, vars, vals, auth)
 
@@ -725,6 +776,7 @@ def rpc_update_gcedisks(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "gcedisks", insert_gcedisks)
 
 @service.xmlrpc
+@service.jsonrpc2
 def update_dcs(name, vars, vals, auth):
     return rpc_update_dcs(name, vars, vals, auth)
 
@@ -778,6 +830,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     db.executesql(sql)
 
 @service.xmlrpc
+@service.jsonrpc2
 def send_sysreport(fname, binary, deleted, auth):
     return rpc_send_sysreport(fname, binary, deleted, auth)
 
@@ -850,26 +903,32 @@ def insert_dorados():
     return insert_dorado()
 
 @service.xmlrpc
+@service.jsonrpc2
 def delete_pkg(node, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def delete_patch(node, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def delete_syncs(svcname, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def delete_ips(svcname, node, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def delete_fss(svcname, auth):
     pass
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_node(node):
     if config_get("refuse_anon_register", False):
         return ["This collector refuses anonymous register. Please use 'nodemgr register --user <user>'."]
@@ -907,6 +966,7 @@ def _register_node(node):
     return u
 
 @service.xmlrpc
+@service.jsonrpc2
 def svcmon_update(vars, vals, auth):
     return rpc_svcmon_update(vars, vals, auth)
 
@@ -930,6 +990,7 @@ def str_to_datetime(s):
     return d
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_tags(cmd, auth):
     return rpc_collector_list_tags(cmd, auth)
 
@@ -951,6 +1012,7 @@ def rpc_collector_list_tags(cmd, auth):
     return {"ret": 0, "msg": "", "data": tags}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_show_tags(cmd, auth):
     return rpc_collector_show_tags(cmd, auth)
 
@@ -974,6 +1036,7 @@ def rpc_collector_show_tags(cmd, auth):
     return {"ret": 0, "msg": "", "data": tags}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_create_tag(data, auth):
     return rpc_collector_create_tag(data, auth)
 
@@ -1031,6 +1094,7 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
     return True
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_tag(data, auth):
     return rpc_collector_tag(data, auth)
 
@@ -1090,6 +1154,7 @@ def rpc_collector_tag(data, auth):
     return {"ret": 0, "msg": "tag successfully attached"}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_untag(data, auth):
     return rpc_collector_untag(data, auth)
 
@@ -1141,6 +1206,7 @@ def rpc_collector_untag(data, auth):
 
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_update_root_pw(data, auth):
     return rpc_collector_update_root_pw(data, auth)
 
@@ -1174,6 +1240,7 @@ def rpc_collector_update_root_pw(data, auth):
     return {"ret": 0, "msg": "password updated succesfully"}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_ack_action(cmd, auth):
     return rpc_collector_ack_action(cmd, auth)
 
@@ -1239,6 +1306,7 @@ def rpc_collector_ack_action(cmd, auth):
     return {"ret": 0, "msg": ""}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_ack_unavailability(cmd, auth):
     return rpc_collector_ack_unavailability(cmd, auth)
 
@@ -1297,6 +1365,7 @@ def rpc_collector_ack_unavailability(cmd, auth):
     return {"ret": 0, "msg": ""}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_unavailability_ack(cmd, auth):
     return rpc_collector_list_unavailability_ack(cmd, auth)
 
@@ -1356,6 +1425,7 @@ def rpc_collector_list_unavailability_ack(cmd, auth):
     return {"ret": 0, "msg": "", "data":str(rows)}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_show_actions(cmd, auth):
     return rpc_collector_show_actions(cmd, auth)
 
@@ -1440,6 +1510,7 @@ def rpc_collector_show_actions(cmd, auth):
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_update_action_queue(data, auth):
     return rpc_collector_update_action_queue(data, auth)
 
@@ -1455,6 +1526,7 @@ def rpc_collector_update_action_queue(data, auth):
     table_modified("action_queue")
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_get_action_queue(nodename, auth):
     return rpc_collector_get_action_queue(nodename, auth)
 
@@ -1474,6 +1546,7 @@ def rpc_collector_get_action_queue(nodename, auth):
     return data
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_update_action_queue_received(data, auth):
     return rpc_collector_update_action_queue_received(data, auth)
 
@@ -1489,6 +1562,7 @@ def rpc_collector_update_action_queue_received(data, auth):
     table_modified("action_queue")
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_get_action_queue_v2(nodename, auth):
     return rpc_collector_get_action_queue_v2(nodename, auth)
 
@@ -1520,6 +1594,7 @@ def rpc_collector_get_action_queue_v2(nodename, auth):
     return data
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_actions(cmd, auth):
     return rpc_collector_list_actions(cmd, auth)
 
@@ -1595,6 +1670,7 @@ def rpc_collector_list_actions(cmd, auth):
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_status(cmd, auth):
     return rpc_collector_status(cmd, auth)
 
@@ -1654,6 +1730,7 @@ def rpc_collector_status(cmd, auth):
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_networks(cmd, auth):
     return rpc_collector_networks(cmd, auth)
 
@@ -1721,6 +1798,7 @@ def rpc_collector_networks(cmd, auth):
 
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_asset(cmd, auth):
     return rpc_collector_asset(cmd, auth)
 
@@ -1884,6 +1962,7 @@ def rpc_collector_asset(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_checks(cmd, auth):
     return rpc_collector_checks(cmd, auth)
 
@@ -1949,6 +2028,7 @@ def rpc_collector_checks(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_alerts(cmd, auth):
     return rpc_collector_alerts(cmd, auth)
 
@@ -2012,6 +2092,7 @@ def rpc_collector_alerts(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_events(cmd, auth):
     return rpc_collector_events(cmd, auth)
 
@@ -2081,6 +2162,7 @@ def rpc_collector_events(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_service_status(cmd, auth):
     return rpc_collector_service_status(cmd, auth)
 
@@ -2097,6 +2179,7 @@ def rpc_collector_service_status(cmd, auth):
     return {"ret": 0, "msg": "", "data": d}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_disks(cmd, auth):
     return rpc_collector_disks(cmd, auth)
 
@@ -2155,6 +2238,7 @@ def rpc_collector_disks(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_nodes(cmd, auth):
     return rpc_collector_list_nodes(cmd, auth)
 
@@ -2163,6 +2247,7 @@ def rpc_collector_list_nodes(cmd, auth):
     return {"ret": 1, "msg": "This feature is no longer supported. Please use the collector Rest API."}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_services(cmd, auth):
     return rpc_collector_list_services(cmd, auth)
 
@@ -2171,6 +2256,7 @@ def rpc_collector_list_services(cmd, auth):
     return {"ret": 1, "msg": "This feature is no longer supported. Please use the collector Rest API."}
 
 @service.xmlrpc
+@service.jsonrpc2
 def collector_list_filtersets(cmd, auth):
     return rpc_collector_list_filtersets(cmd, auth)
 
@@ -2197,6 +2283,7 @@ def batch_async_post_insert_nsr():
     async_post_insert_nsr()
 
 @service.xmlrpc
+@service.jsonrpc2
 def sysreport_lstree(auth):
     return rpc_sysreport_lstree(auth)
 
@@ -2208,6 +2295,7 @@ def rpc_sysreport_lstree(auth):
     return map(lambda d: d['fpath'], tree_data)
 
 @service.xmlrpc
+@service.jsonrpc2
 def push_status(svcname, data, auth):
     return _push_status(svcname, data, auth)
 
@@ -2217,6 +2305,7 @@ def push_status(svcname, data, auth):
 #
 ##############################################################################
 @service.xmlrpc
+@service.jsonrpc2
 def daemon_ping(auth):
     return rpc_daemon_ping(auth)
 
@@ -2231,6 +2320,7 @@ def rpc_daemon_ping(auth):
     rconn.rpush(R_DAEMON_PING, elem)
 
 @service.xmlrpc
+@service.jsonrpc2
 def push_daemon_status(data, changes, auth):
     return rpc_push_daemon_status(data, changes, auth)
 

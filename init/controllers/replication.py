@@ -7,20 +7,24 @@ def call():
     return service()
 
 @service.xmlrpc
+@service.jsonrpc2
 def replication_push(data, mirror):
     merge_data(data, mirror)
 
 @service.xmlrpc
+@service.jsonrpc2
 def serve_table_current_status(tables):
     return table_current_status(tables)
 
 @service.xmlrpc
+@service.jsonrpc2
 def serve_common(fullname, common):
     sql = "select distinct %s from %s" % (common, fullname)
     rows = db.executesql(sql)
     return [r[0] for r in rows]
 
 @service.xmlrpc
+@service.jsonrpc2
 def replication_pull(sql):
     rows = list(db.executesql(sql))
     for i, row in enumerate(rows):

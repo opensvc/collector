@@ -1664,6 +1664,7 @@ def user():
     return auth()
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_moduleset_modules(moduleset, auth):
     return rpc_comp_get_moduleset_modules(moduleset, auth)
 
@@ -1726,6 +1727,7 @@ def mangle_lib_result(d):
     return d
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
     return rpc_comp_attach_svc_ruleset(svcname, ruleset, auth)
 
@@ -1743,6 +1745,7 @@ def rpc_comp_attach_svc_ruleset(svcname, ruleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_attach_svc_moduleset(svcname, moduleset, auth):
     return rpc_comp_attach_svc_moduleset(svcname, moduleset, auth)
 
@@ -1760,6 +1763,7 @@ def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_attach_moduleset(nodename, moduleset, auth):
     return rpc_comp_attach_moduleset(nodename, moduleset, auth)
 
@@ -1775,6 +1779,7 @@ def rpc_comp_attach_moduleset(nodename, moduleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_detach_svc_ruleset(svcname, ruleset, auth):
     return rpc_comp_detach_svc_ruleset(svcname, ruleset, auth)
 
@@ -1797,6 +1802,7 @@ def rpc_comp_detach_svc_ruleset(svcname, ruleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_detach_svc_moduleset(svcname, moduleset, auth):
     return rpc_comp_detach_svc_moduleset(svcname, moduleset, auth)
 
@@ -1819,6 +1825,7 @@ def rpc_comp_detach_svc_moduleset(svcname, moduleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_detach_moduleset(nodename, moduleset, auth):
     return rpc_comp_detach_moduleset(nodename, moduleset, auth)
 
@@ -1839,6 +1846,7 @@ def rpc_comp_detach_moduleset(nodename, moduleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_attach_ruleset(nodename, ruleset, auth):
     return rpc_comp_attach_ruleset(nodename, ruleset, auth)
 
@@ -1854,6 +1862,7 @@ def rpc_comp_attach_ruleset(nodename, ruleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_detach_ruleset(nodename, ruleset, auth):
     return rpc_comp_detach_ruleset(nodename, ruleset, auth)
 
@@ -1874,6 +1883,7 @@ def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     return mangle_lib_result(d)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     return rpc_comp_list_rulesets(pattern=pattern, nodename=nodename, auth=auth)
 
@@ -1892,6 +1902,7 @@ def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_list_modulesets(pattern='%', auth=("", "")):
     return rpc_comp_list_modulesets(pattern=pattern, auth=auth)
 
@@ -1908,6 +1919,7 @@ def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
     return sorted([r.modset_name for r in rows])
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_show_status(svcname="", pattern='%', auth=("", "")):
     return rpc_comp_show_status(svcname=svcname, pattern=pattern, auth=auth)
 
@@ -1928,6 +1940,7 @@ def rpc_comp_show_status(svcname="", pattern='%', auth=("", "")):
     return l
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_moduleset(svcname, auth):
     return rpc_comp_get_svc_moduleset(svcname, auth)
 
@@ -1939,10 +1952,12 @@ def rpc_comp_get_svc_moduleset(svcname, auth):
     return _comp_get_svc_moduleset(svc_id, slave=slave)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_data_v2(nodename, svcname, modulesets, auth):
     return rpc_comp_get_svc_data(nodename, svcname, modulesets, True, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_data(nodename, svcname, modulesets, auth):
     return rpc_comp_get_svc_data(nodename, svcname, modulesets, False, auth)
 
@@ -1953,10 +1968,12 @@ def rpc_comp_get_svc_data(nodename, svcname, modulesets, var_class, auth):
     return _comp_get_svc_data(node_id, svc_id, modulesets=modulesets, var_class=var_class)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_data_v2(nodename, modulesets, auth):
     return rpc_comp_get_data(nodename, modulesets, True, auth)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_data(nodename, modulesets, auth):
     return rpc_comp_get_data(nodename, modulesets, False, auth)
 
@@ -1995,6 +2012,7 @@ def test_comp_get_svc_ruleset():
     return _comp_get_svc_ruleset("unxdevweb01", 1137921)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_moduleset_data(nodename, auth):
     node_id = auth_to_node_id(auth)
     return rpc_comp_get_moduleset_data(node_id, auth)
@@ -2004,6 +2022,7 @@ def rpc_comp_get_moduleset_data(node_id, auth):
     return _comp_get_moduleset_data(node_id)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_data_moduleset(nodename, auth):
     node_id = auth_to_node_id(auth)
     return rpc_comp_get_data_moduleset(node_id, auth)
@@ -2017,6 +2036,7 @@ def rpc_comp_get_data_moduleset(node_id, auth):
     }
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_data_moduleset(svcname, auth):
     return rpc_comp_get_svc_data_moduleset(svcname, auth)
 
@@ -2032,6 +2052,7 @@ def rpc_comp_get_svc_data_moduleset(svcname, auth):
     }
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_moduleset_data(svcname, auth):
     return rpc_comp_get_svc_moduleset_data(svcname, auth)
 
@@ -2069,6 +2090,7 @@ def _comp_get_all_module():
     return [(r.id, r.modset_mod_name) for r in rows]
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_moduleset(nodename, auth):
     return rpc_comp_get_moduleset(auth)
 
@@ -2230,6 +2252,7 @@ def _comp_get_moduleset(node_id, modulesets=[]):
     return [r.modset_name for r in rows]
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_log_action(vars, vals, auth):
     return rpc_comp_log_action(vars, vals, auth)
 
@@ -2260,6 +2283,7 @@ def rpc_comp_log_action(vars, vals, auth):
 
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_log_actions(vars, vals, auth):
     return rpc_comp_log_actions(vars, vals, auth)
 
@@ -2538,6 +2562,7 @@ def ruleset_add_var(d, rset_name, var, val):
     return d
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_ruleset_md5(rset_md5, auth):
     return rpc_comp_get_ruleset_md5(rset_md5, auth)
 
@@ -2572,6 +2597,7 @@ def node_team_responsible_id(node_id):
     return rows[0].id
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_ruleset(nodename, auth):
     return rpc_comp_get_ruleset(auth)
 
@@ -2581,6 +2607,7 @@ def rpc_comp_get_ruleset(auth):
     return _comp_get_ruleset(node_id)
 
 @service.xmlrpc
+@service.jsonrpc2
 def comp_get_svc_ruleset(svcname, auth):
     return rpc_comp_get_svc_ruleset(svcname, auth)
 
@@ -2983,6 +3010,7 @@ def show_diff(svc_id):
     return l
 
 @service.xmlrpc
+@service.jsonrpc2
 def register_node(node):
     """ placeholder to signal the registration support
     """

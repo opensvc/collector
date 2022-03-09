@@ -3,6 +3,7 @@ def call():
     return service()
 
 @service.xmlrpc
+@service.jsonrpc2
 @auth.requires_membership('ReplicationManager')
 def relay_rest_request(user_id, action, path, data):
     auth.impersonate(user_id=user_id)
