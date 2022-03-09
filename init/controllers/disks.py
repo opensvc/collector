@@ -216,7 +216,7 @@ def ajax_disks_col_values():
     table_id = request.vars.table_id
     t = table_disks(table_id, 'ajax_disks')
     col = request.args[0]
-    o = db[t.colprops[col].table][col]
+    o = db[t.colprops[col].table][t.colprops[col].field]
     q = db.svcdisks.id>0
     q |= db.stor_array.id>0
     l0 = db.svcdisks.on(db.svcdisks.disk_id == db.diskinfo.disk_id)
