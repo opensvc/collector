@@ -20,6 +20,10 @@ def quote_wrap(x):
             return x
         elif x[0] == '"' and x[-1] == '"':
             return x
+        elif x.startswith('u"') and x[-1] == '"':
+            return x[1:]
+        elif x.startswith("u'") and x[-1] == "'":
+            return x[1:]
         else:
             return "'%s'"%x.replace("'", '"')
     elif x is None:
