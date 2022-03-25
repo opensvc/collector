@@ -41,8 +41,14 @@ def send_sysreport_archive(fname, binary, sysreport_d, node_id):
         return False
 
     try:
+        # jsonrpc doesn't use xmlrpclib.Binary
+        binary = binary.data
+    except:
+        binary = base64.b64decode(binary)
+
+    try:
         f = codecs.open(fpath, "wb")
-        f.write(binary.data)
+        f.write(binary)
         f.close()
     except Exception as e:
         print e
