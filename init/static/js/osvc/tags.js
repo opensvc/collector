@@ -274,7 +274,6 @@ function tags(options) {
 			fval = '%'
 		} else {
 			fval = fval.replace(/\//, "_")
-			fval = encodeURIComponent(fval)
 			if (fval[0] != '%') {
 				fval = '%' + fval
 			}

@@ -931,7 +931,6 @@ def prepare_data(
         if type(filters) in (str, unicode):
             filters = [filters]
         for f in filters:
-            f = unquote(f)
             f_prop = re.findall(r'[\.\w]+', f)[0]
             f_val = f[len(f_prop):].strip()
             if '.' in f_prop:
