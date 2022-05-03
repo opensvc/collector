@@ -1756,6 +1756,12 @@ function form(divid, options) {
 			ret.op = ">"
 		} else if (d.Constraint.match(/^</)) {
 			ret.op = "<"
+		} else if (d.Constraint.match(/^>=/)) {
+			ret.op = ">="
+		} else if (d.Constraint.match(/^<=/)) {
+			ret.op = "<="
+		} else if (d.Constraint.match(/^==/)) {
+			ret.op = "=="
 		} else if (d.Constraint.match(/^match\s+/)) {
 			ret.op = "match"
 		}
@@ -1764,6 +1770,7 @@ function form(divid, options) {
 			ret.ref = d.Constraint.split(ret.op)[1]
 		} else {
 			ret.ref = d.Constraint
+			ret.op = "match"
 		}
 
 		// strip
@@ -1795,6 +1802,17 @@ function form(divid, options) {
 					// foo > bar
 					return false
 				}
+			} else if (c.op == ">=") {
+				if (c.ref == "empty") {
+					// foo >= empty
+					return false
+				} else if (val >= c.ref) {
+					// foo >= foo
+					return true
+				} else {
+					// foo >= bar
+					return false
+				}
 			} else if (c.op == "<") {
 				if (c.ref == "empty") {
 					// foo < empty
@@ -1806,12 +1824,34 @@ function form(divid, options) {
 					// foo < bar
 					return false
 				}
+			} else if (c.op == "<=") {
+				if (c.ref == "empty") {
+					// foo <= empty
+					return false
+				} else if (val <= c.ref) {
+					// foo <= foo
+					return true
+				} else {
+					// foo <= bar
+					return false
+				}
+			} else if (c.op == "==") {
+				if (c.ref == "empty") {
+					// foo == empty
+					return false
+				} else if (val == c.ref) {
+					// foo == foo
+					return true
+				} else {
+					// foo == bar
+					return false
+				}
 			} else if (c.op == "match") {
 				let re = RegExp(c.ref)
 				return re.exec(val)
 			}
 		} else {
-			if (c.op == "") {
+			if (c.op == "==") {
 				if (c.ref == "empty") {
 					// empty == empty
 					return true
@@ -1819,9 +1859,7 @@ function form(divid, options) {
 					// empty == foo
 					return false
 				}
-			} else if (c.op == ">") {
-				return false
-			} else if (c.op == "<") {
+			} else {
 				return false
 			}
 		}
