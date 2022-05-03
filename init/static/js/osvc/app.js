@@ -354,6 +354,9 @@ function app_bindings() {
 
 		// ESC closes pop-ups and blur inputs
 		if ( event.which == 27 ) {
+			if (event.target.closest(".select2-dropdown") != null) {
+				return
+			}
 			$("input:focus").blur()
 			$("textarea:focus").blur()
 			osvc.search.e_search_input.val("")

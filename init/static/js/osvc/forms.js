@@ -143,7 +143,7 @@ function form(divid, options) {
 		if (!data) {
 			data = ""
 		}
-                var _data = {}
+		var _data = {}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			var key = "%%"+d.Id.toUpperCase()+"%%"
@@ -203,6 +203,51 @@ function form(divid, options) {
 			}
 			if (d.Default == "__user_email__") {
 				o.form_data.form_definition.Inputs[i].Default = _self.email
+			}
+		}
+	}
+
+	let getUrlFunc = function(input, d) {
+		return function(params) {
+			let fn = subst_refs(input, d.Function)
+			if (fn.match(/^\//) && fn.match(/\/\//)) {
+				console.log("missing data in rest path")
+				return
+			}
+			if (fn.match(/\/undefined\//) || fn.match(/\/$/) || fn.match(/#/)) {
+				console.log("cancel rest get on", fn, ": missing parameters")
+				return
+			}
+			return services_getaccessurl(fn)
+		}
+	}
+
+	let getProcessResultFunc = function(input, d) {
+		return function (data) {
+			let id_prop = get_id_prop(input, d)
+			let l = data.data.map(function(data){
+				ndata = {
+					option_data: data,
+					id: subst_refs_from_data(data, "#"+id_prop)
+				}
+				if ("Format" in d) {
+					ndata.text = subst_refs_from_data(data, d.Format)
+				} else {
+					ndata.text = ndata.id
+				}
+				return ndata
+			})
+			let more
+			if ("meta" in data) {
+				more = (data.meta.total > (data.meta.offset + data.meta.count))
+			} else {
+				more = false
+			}
+			return {
+				results: l,
+				pagination: {
+					more: more
+				}
 			}
 		}
 	}
@@ -427,7 +472,7 @@ function form(divid, options) {
 		o.area.empty().append(o.area_table)
 		o.render_display_digest_header()
 		if ((o.form_data.form_definition.Outputs[0].Format == "list") ||
-                    (o.form_data.form_definition.Outputs[0].Format == "list of dict")) {
+		    (o.form_data.form_definition.Outputs[0].Format == "list of dict")) {
 			for (var i=0; i<o.options.data.length; i++) {
 				o.render_display_digest_line(o.options.data[i])
 			} 
@@ -498,7 +543,7 @@ function form(divid, options) {
 				line.append(value)
 			}
 
-                        if (d.Type == "form") {
+			if (d.Type == "form") {
 				if (data && (input_key_id in data) && data[input_key_id]) {
 					if ((is_dict(data[input_key_id]) || Array.isArray(data[input_key_id])) && Object.keys(data[input_key_id]).length==0) {
 						// save space not displaying empty data
@@ -546,7 +591,7 @@ function form(divid, options) {
 
 	o.render_form_group = function(data) {
 		var t = o.form_data.form_definition.Outputs[0].Template
-                if (t) {
+		if (t) {
 			data = o.template_data_to_dict(t, data)
 		}
 
@@ -587,28 +632,29 @@ function form(divid, options) {
 					}
 				})
 			}
+			let content = ""
 			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {
-					var content = _self.email
+					content = _self.email
 				} else if (d.Default == "__user_primary_group__") {
-					var content = _self.primary_group
+					content = _self.primary_group
 				} else if (d.Default == "__user_phone_work__") {
-					var content = _self.phone_work
+					content = _self.phone_work
 				} else if (d.Default == "__user_name__") {
-					var content = _self.first_name + " " + _self.last_name
+					content = _self.first_name + " " + _self.last_name
 				} else if (typeof d.Default !== "undefined") {
-					var content = d.Default
+					content = d.Default
 				} else if (d.Type == "form") {
-					var content = undefined
+					content = undefined
 				} else {
-					var content = ""
+					content = ""
 				}
 			} else if (d.var_class=="raw" || (typeof(data) === "string") || (typeof(data) === "number")) {
-				var content = data
+				content = data
 			} else if (is_dict(data) && input_key_id in data) {
-				var content = data[input_key_id]
+				content = data[input_key_id]
 			} else {
-				var content = ""
+				content = ""
 			}
 
 			if (d.Type == "date") {
@@ -729,6 +775,7 @@ function form(divid, options) {
 			form_group.append(new_group)
 			form_group.insertAfter(ref)
 			o.init_sortable()
+			o.reinit_select2()
 		})
 	}
 
@@ -819,7 +866,18 @@ function form(divid, options) {
 		} else {
 			console.log("render_form: unsupported format", f) 
 		}
+		o.reinit_select2()
 		o.update_submit()
+	}
+
+	o.reinit_select2 = function() {
+		// select2 added when the element is not attached to the DOM are not rendered
+		o.area.find("select[data-select2-id]:visible,input[data-select2-id]:visible").each(function(){
+			let w = $(this)
+			let options = $.data(this, "s2options");
+			//w.select2("destroy")
+			w.select2(options)
+		})
 	}
 
 	o.render_result = function() {
@@ -944,7 +1002,7 @@ function form(divid, options) {
 			return
 		}
 		var button = $("<button class='icon_fixed_width fa-code button_div'>")
-                o.test_tool = button
+		o.test_tool = button
 		button.text(i18n.t("forms.test"))
 		button.css({"margin-top": "1em"})
 		o.area.append(button)
@@ -976,7 +1034,7 @@ function form(divid, options) {
 			return
 		}
 		var button = $("<button class='icon_fixed_width fa-save button_div'>")
-                o.submit_tool = button
+		o.submit_tool = button
 		button.text(i18n.t("forms.submit"))
 		button.css({"margin-top": "1em"})
 		o.area.append(button)
@@ -1076,91 +1134,230 @@ function form(divid, options) {
 		}
 	}
 	o.render_select_static = function(d, content) {
-		var input = $("<input class='oi aci'>")
-		if (d.ReadOnly == true) {
-			input.prop("disabled", true)
+		let input = $("<select class='oi aci' />")
+
+		// prepare candidates
+		let data = []
+		if (d.DisableAutoDefault) {
+			// dummy entry selected as a placeholder
+			data.push({
+				"id": "",
+			})
 		}
-		var opts = []
-		var acid = content
 		for (var i=0; i<d.Candidates.length; i++) {
 			var _d = d.Candidates[i]
 			if (typeof(_d) === "string") {
-				opts.push({
+				data.push({
 					"id": _d,
-					"label": _d
+					"text": _d
 				})
 			} else if (("Label" in _d) && ("Value" in _d)) {
-				opts.push({
+				data.push({
 					"id": _d.Value,
-					"label": _d.Label
+					"text": _d.Label
 				})
-				if (_d.Value == content) {
-					acid = _d.Value
-					content = _d.Label
-				}
 			}
 		}
-		input.autocomplete({
-			mustMatch: true,
-			source: opts,
-			minLength: 0,
-			response: function(event, ui) {
-				o.update_candidates_violation(d, input, opts)
-			},
-			change: function(event, ui) {
-				if (ui.item) {
-					input.prop("acid", ui.item.id)
-					input.removeClass("candidates_violation")
-				} else {
-					input.removeProp("acid")
-				}
-				o.update_candidates_violation(d, input, opts)
-				input.change()
-			},
-			focus: function(event, ui) {
-				return false
-			},
-			select: function(event, ui) {
-				input.prop("acid", ui.item.id)
-				input.removeClass("candidates_violation")
-				input.change()
-			}
-		})
-		input.bind("click", function(event) {
-			$(this).autocomplete("search", $(this).val())
-		})
-		input.bind("blur", function(event) {
-			o.update_candidates_violation(d, input, opts)
-			input.change()
-		})
-		input.bind("keyup", function(event) {
-			if (input.val() == "") {
-				input.removeProp("acid")
-			}
-			o.update_candidates_violation(d, input, opts)
-			input.change()
-		})
-		if (content && (content.length > 0)) {
-			input.prop("acid", acid)
-			input.val(content)
+
+		let options = {
+			dropdownParent: o.div,
+			minimumResultsForSearch: 3,
+			selectionCssClass: "ois2selection",
+			dropdownCssClass: "ois2dropdown",
+			width: o.form_data.form_definition.Width || "17em",
+			data: data
 		}
-		input.change()
+		if (d.Multiple) {
+			options.multiple = true
+		}
+		if (d.ReadOnly == true) {
+			options.disabled = true
+		}
+		if (d.DisableAutoDefault) {
+			options.placeholder = "Select a candidate"
+			//options.allowClear = true
+		}
+
+		// save options
+		$.data(input[0], "s2options", options)
+		input.select2(options)
+
+		o.select_static_set_content(input, d, content)
 		return input
 	}
 
-	o.render_select_rest = function(d, content) {
-		var input = $("<input class='oi aci'>")
-		if (d.ReadOnly == true) {
-			input.prop("disabled", true)
+	o.select_static_set_content = function(input, d, content) {
+		if (content && (content.length > 0)) {
+			input.val(content)
+			input.change()
+		} else {
+			o.select_static_set_autodef(input, d)
 		}
-		input.val(content)
+	}
+
+	o.select_static_set_autodef = function(input, d) {
+		if (d.DisableAutoDefault) {
+			input.val(null)
+			input.change()
+		}
+	}
+
+	let get_id_prop = function(input, d) {
+		let s
+		if ("Value" in d) {
+			s = d.Value
+		} else {
+			let props = prepare_args(input, d.Args).props
+			if ((typeof(props) === "string")) {
+				s = props.split(",")[0]
+			} else {
+				return get_dict_id(d)
+			}
+		}
+		return s.replace("#", "")
+	}
+
+	o.render_select_rest = function(d, content) {
+		let input = $("<select class='oi aci' />")
+		let fmt = function(data) {
+			if (data.id == "") {
+				return "Select candidate"
+			}
+			return data.text || data.id
+		}
+		let transport = function (params, success, failure) {
+			let args = prepare_args(input, d.Args, params.data)
+			return $.ajax({
+				type: "GET",
+				url: params.url,
+				data: args,
+				dataType: "json",
+				error: failure,
+				success: success
+			})
+		}
+
+		let options = {
+			ajax: {
+				delay: 100,
+				dataType: "json",
+				url: getUrlFunc(input, d),
+				processResults: getProcessResultFunc(input, d),
+				transport: transport
+			},
+			//allowClear: true,
+			//placeholder: "Select candidate",
+			//minimumResultsForSearch: 1,
+			dropdownParent: o.div,
+			selectionCssClass: "ois2selection",
+			dropdownCssClass: "ois2dropdown",
+			width: o.form_data.form_definition.Width || "17em",
+			templateResult: fmt,
+			templateSelection: fmt
+		}
+		if (d.Multiple) {
+			options.multiple = true
+		}
+		if (d.ReadOnly == true) {
+			options.disabled = true
+		}
+
+		// save options
+		$.data(input[0], "s2options", options)
+		input.select2(options)
+
 		if (fn_has_refs(d)) {
 			o.add_fn_triggers(d)
-			return input
 		}
-		fn_init(input, d, content)
+		o.select_rest_set_content(input, d, content)
+
 		return input
 	}
+
+	o.select_rest_set_autodef = function(input, d) {
+		if (d.DisableAutoDefault == true) {
+			console.log("autodef", d.Id, "skip")
+			return
+		}
+		let url = getUrlFunc(input, d)()
+		if (!url) {
+			return
+		}
+		let id_prop = get_id_prop(input, d)
+		let initArgs = prepare_args(input, d.Args)
+		if (!("filters" in initArgs)) {
+			initArgs.filters = []
+		}
+		initArgs.limit = 1
+		initOpts = {
+			type: "GET",
+			url: url,
+			data: initArgs,
+			dataType: "json",
+			error: function(e){console.log("ajax error:", d.Id, url, e)}
+		}
+		$.ajax(initOpts).then(function(data){
+			let normData = getProcessResultFunc(input, d)(data)
+			if (normData.results.length == 0) {
+				return
+			}
+			normData.results.forEach(function(e) {
+				// TODO: BUG: option_data is not returned by .select2("data") after this load
+				let option = new Option(e.text, e.id, true, true)
+				$.data(option, "data", e)
+				input.append(option).trigger("change")
+				input.trigger({
+					type: "select2:select",
+					params: {
+						data: e,
+					}
+				})
+			})
+		})
+	}
+
+	o.select_rest_set_content = function(input, d, content) {
+		if ((typeof(content) === "undefined") || (content == "")) {
+			o.select_rest_set_autodef(input, d)
+			return
+		}
+		let url = getUrlFunc(input, d)()
+		if (!url) {
+			return
+		}
+		let id_prop = get_id_prop(input, d)
+		let initArgs = prepare_args(input, d.Args)
+		if (!("filters" in initArgs)) {
+			initArgs.filters = []
+		}
+		initArgs.filters.push(id_prop + " " + content)
+		initOpts = {
+			type: "GET",
+			url: url,
+			data: initArgs,
+			dataType: "json",
+			error: function(e){console.log("ajax error:", d.Id, url, e)},
+		}
+		$.ajax(initOpts).then(function(data){
+			console.log("def", d.Id, id_prop, data)
+			data = getProcessResultFunc(input, d)(data)
+			if (data.results.length == 0) {
+				return
+			}
+			data.results.forEach(function(e){
+				let option = new Option(e.text, e.id, true, true)
+				$.data(option, "data", e)
+				input.append(option).trigger("change")
+				input.trigger({
+					type: "select2:select",
+					params: {
+						data: e,
+					}
+				})
+			})
+		})
+	}
+
 
 	o.render_boolean = function(d, content) {
 		var input = $("<input type='checkbox' data-toggle='toggle' data-onstyle='success' data-offstyle='danger'>")
@@ -1244,10 +1441,18 @@ function form(divid, options) {
 		} else {
 			var fn_callback = autocomplete_callback
 		}
-		if (d.Function.match(/^\//) || d.Function.match(/^http/)) {
-			return rest_init(input, d, content, fn_callback)
+		if ((d.Function.match(/^\//)) || (d.Function.match(/^http/))) {
+			if (input.is("select.select2-hidden-accessible")) {
+				o.select_rest_set_content(input, d, content)
+			} else {
+				return rest_init(input, d, content, fn_callback)
+			}
 		} else {
-			return jsonrpc_init(input, d, content, fn_callback)
+			if (input.is("select.select2-hidden-accessible")) {
+				o.select_static_set_content(input, d, content)
+			}else {
+				return jsonrpc_init(input, d, content, fn_callback)
+			}
 		}
 	}
 
@@ -1355,7 +1560,7 @@ function form(divid, options) {
 			if (typeof(_d) === "string") {
 				opts.push({
 					"id": _d,
-					"label": _d
+					"text": _d
 				})
 			} else if (("Format" in d) && ("Value" in d)) {
 				var label = d.Format
@@ -1364,7 +1569,7 @@ function form(divid, options) {
 				value = subst_refs_from_data(_d, value)
 				opts.push({
 					"id": value,
-					"label": label,
+					"text": label,
 					"option_data": _d
 				})
 			} else {
@@ -1372,14 +1577,9 @@ function form(divid, options) {
 				var value = subst_refs_from_data(_d, "#"+prop)
 				opts.push({
 					"id": value,
-					"label": value,
+					"text": value,
 					"option_data": _d
 				})
-			}
-			if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
-				var acid = opts[0].id
-				content = opts[0].label
-				var option_data = opts[0].option_data
 			}
 		}
 
@@ -1389,7 +1589,7 @@ function form(divid, options) {
 			}
 			var l = []
 			for (var i=0; i<opts.length; i++) {
-				l.push(opts[i].label)
+				l.push(opts[i].text)
 			}
 			return l.join("\n")
 		}
@@ -1398,62 +1598,6 @@ function form(divid, options) {
 			input.text(opts_to_text(opts))
 		} else if (input.is("textarea")) {
 			input.val(opts_to_text(opts))
-		} else {
-			if ($.data(input[0], "ui-autocomplete") != undefined) {
-				input.autocomplete("destroy")
-			}
-			input.val("")
-			input.removeProp("acid")
-			input.removeProp("option_data")
-			input.autocomplete({
-				mustMatch: true,
-				source: opts,
-				minLength: 0,
-				response: function(event, ui) {
-					o.update_candidates_violation(d, input, opts)
-				},
-				change: function(event, ui) {
-					if (ui.item) {
-						$(this).prop("acid", ui.item.id)
-						$(this).prop("option_data", ui.item.option_data)
-						input.removeClass("candidates_violation")
-					} else {
-						input.removeProp("acid")
-						input.removeProp("option_data")
-					}
-					o.update_candidates_violation(d, input, opts)
-					$(this).change()
-				},
-				focus: function(event, ui) {
-					return false
-				},
-				select: function(event, ui) {
-					$(this).prop("acid", ui.item.id)
-					$(this).prop("option_data", ui.item.option_data)
-					input.removeClass("candidates_violation")
-					$(this).change()
-				}
-			})
-			input.bind("click", function(event) {
-				$(this).autocomplete("search", $(this).val())
-			})
-			input.bind("blur", function(event) {
-				o.update_candidates_violation(d, input, opts)
-				$(this).change()
-			})
-			input.bind("keyup", function(event) {
-				if ($(this).val() == "") {
-					$(this).removeProp("acid")
-					$(this).removeProp("option_data")
-				}
-				o.update_candidates_violation(d, input, opts)
-				$(this).change()
-			})
-			if (opts.length == 1) {
-				input.removeClass("aci")
-			} else {
-				input.addClass("aci")
-			}
 		}
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
@@ -1463,7 +1607,7 @@ function form(divid, options) {
 						continue
 					}
 					input.prop("option_data", content)
-					input.val(opts[j].label)
+					input.val(opts[j].text)
 					break
 				}
 			}
@@ -1593,9 +1737,11 @@ function form(divid, options) {
 			trigger($(this))
 		})
 		function trigger(e) {
-			var s = e.val()
-			var re = RegExp(d.Constraint.replace(/^match\s+/, ""))
-			if (!re.exec(s)) {
+			let val = o.get_converted_val(d, input)
+			let c = o.parse_constraint(d)
+			let ret = o.eval_constraint(c, val)
+			console.log("constraint:", d.Id, val , d.Constraint, "=>", ret)
+			if (!ret) {
 				e.addClass("constraint_violation")
 			} else {
 				e.removeClass("constraint_violation")
@@ -1604,10 +1750,87 @@ function form(divid, options) {
 		}
 	}
 
+	o.parse_constraint = function(d) {
+		let ret = {}
+		if (d.Constraint.match(/^>/)) {
+			ret.op = ">"
+		} else if (d.Constraint.match(/^</)) {
+			ret.op = "<"
+		} else if (d.Constraint.match(/^match\s+/)) {
+			ret.op = "match"
+		}
+
+		if (ret.op) {
+			ret.ref = d.Constraint.split(ret.op)[1]
+		} else {
+			ret.ref = d.Constraint
+		}
+
+		// strip
+		ret.ref = ret.ref.replace(/^\s+/, "").replace(/\s+$/, "")
+		return ret
+	}
+
+	o.eval_constraint = function(c, val) {
+		if (typeof val === "undefined") {
+			return false
+		}
+		else if (typeof val === "number") {
+			try {
+				c.ref = parseInt(c.ref)
+			} catch(e) {}
+		}
+		else if (typeof val === "boolean") {
+			c.ref = (c.ref.toLowerCase() == 'true')
+		}
+		if (((val != "") && (val != null)) || (typeof val === "number")) {
+			if (c.op == ">") {
+				if (c.ref == "empty") {
+					// foo > empty
+					return false
+				} else if (val > c.ref) {
+					// foo > foo
+					return true
+				} else {
+					// foo > bar
+					return false
+				}
+			} else if (c.op == "<") {
+				if (c.ref == "empty") {
+					// foo < empty
+					return false
+				} else if (val < c.ref) {
+					// foo < foo
+					return true
+				} else {
+					// foo < bar
+					return false
+				}
+			} else if (c.op == "match") {
+				let re = RegExp(c.ref)
+				return re.exec(val)
+			}
+		} else {
+			if (c.op == "") {
+				if (c.ref == "empty") {
+					// empty == empty
+					return true
+				} else {
+					// empty == foo
+					return false
+				}
+			} else if (c.op == ">") {
+				return false
+			} else if (c.op == "<") {
+				return false
+			}
+		}
+	}
+
 	o.install_mandatory_triggers = function(table) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
-			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
+			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input,select")
 			o.install_mandatory_trigger(input, d)
 		}
 	}
@@ -1619,15 +1842,15 @@ function form(divid, options) {
 
 		function is_candidate(v, opts) {
 			for (var i=0; i<opts.length; i++) {
-				if (opts[i].label==v) {
+				if (opts[i].text==v) {
 					return true
 				}
 			}
 			return false
 		}
 
-		var v = input.val()
-		console.log(v, opts)
+		var v = o.get_val(input)
+		console.log("update_candidates_violation:", v, opts)
 		if (is_candidate(v, opts)) {
 			input.removeClass("candidates_violation")
 		} else {
@@ -1678,18 +1901,23 @@ function form(divid, options) {
 		if (d.Type == "boolean") {
 			return
 		}
-		trigger(input)
-		input.bind("keyup change", function() {
-			trigger($(this))
-		})
-		function trigger(e) {
-			if (e.val() == "") {
-				e.addClass("mandatory_violation")
+		function trigger() {
+			let val = o.get_val(input)
+			if (typeof(val) === "undefined") {
+				input.addClass("mandatory_violation")
+			} else if (val == "") {
+				input.addClass("mandatory_violation")
+			} else if ((val instanceof Array) && (val.length == 0)) {
+				input.addClass("mandatory_violation")
 			} else {
-				e.removeClass("mandatory_violation")
+				input.removeClass("mandatory_violation")
 			}
 			o.update_submit()
 		}
+		trigger()
+		input.bind("keyup change", function(e) {
+			trigger()
+		})
 	}
 
 	o.hide_input = function(table, d, initial) {
@@ -1719,12 +1947,16 @@ function form(divid, options) {
 		}
 		console.log("show", d.Id)
 		tr.removeClass("hidden")
-		var input = tr.find("[name=val]").children("input,textarea,.form_input_info")
+		var input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
 		if (d.Function && fn_has_refs(d)) {
-			fn_init(input, d, null, autocomplete_callback)
 			var data = $.data(input[0])
-			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
-				input.val(data.autocomplete.options.source[0].label)
+			if (input.is("select.select2-hidden-accessible")) {
+				//input.select2("destroy")
+				let options = data.s2options
+				input.select2(options)
+				input.change()
+			} else if (data.autocomplete && data.autocomplete.options.source.length > 0) {
+				input.val(data.autocomplete.options.source[0].text)
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
 			}
@@ -1744,7 +1976,7 @@ function form(divid, options) {
 			var line = table.find("[iid="+input_id+"]")
 		}
 		var head = line.children("[name=val]")
-		var cell = head.find("input,textarea")
+		var cell = head.find("select,input,textarea")
 		trigger(true)
 		cell.bind("change", function() {
 			trigger(false)
@@ -1805,7 +2037,7 @@ function form(divid, options) {
 		else if (typeof val === "boolean") {
 			c.ref = (c.ref.toLowerCase() == 'true')
 		}
-		if ((val != "") || (typeof val === "number")) {
+		if (((val != "") && (val != null)) || (typeof val === "number")) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
@@ -1921,13 +2153,15 @@ function form(divid, options) {
 
 	o.install_fn_trigger = function(table, key, d) {
 		console.log("install fn trigger", key, "->", d.Id)
-		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
+		var cell = table.find("[iid="+key+"]").children("[name=val]").children("select,input,textarea")
 		cell.bind("change", function() {
-			var input = table.find("[iid="+d.Id+"]").find("input:not([type=checkbox]),textarea,.form_input_info")
+			var input = table.find("[iid="+d.Id+"]").find("select,input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
 				return
 			}
 			console.log("fn:", key, "->", d.Id)
+			input.val(null)
+			input.change()
 			fn_init(input, d)
 			o.update_submit()
 		})
@@ -1992,7 +2226,7 @@ function form(divid, options) {
 		return key
 	}
 
-	function prepare_args(input, l) {
+	function prepare_args(input, l, s2params) {
 		var d = {}
 		if (!l) {
 			return d
@@ -2003,6 +2237,12 @@ function form(divid, options) {
 			var key = s.slice(0, idx).replace(/\s+/g, "")
 			var val = s.slice(idx+1, s.length).replace(/^\s+/, "")
 			val = subst_refs(input, val)
+			if ((typeof(s2params) !== "undefined") && (typeof(s2params.term) !== "undefined")) {
+				val = val.replace("__term__", s2params.term)
+			} else if (val.match(/__term__/)) {
+				console.log("drop missing __term__ filter")
+				continue
+			}
 			if (key in d) {
 				// support multiple occurence of the same key
 				if (!Array.isArray(d[key])) {
@@ -2013,10 +2253,23 @@ function form(divid, options) {
 				d[key] = val
 			}
 		}
+		if (typeof(s2params) !== "undefined") {
+			let page = 1
+			let limit = 10
+			if (s2params.page != null) {
+				page = s2params.page
+			}
+			d.meta = 1
+			d.limit = limit
+			d.offset = (page-1) * limit
+		}
 		return d
 	}
 
 	o.form_to_data = function() {
+		if (!o.form_data) {
+			return
+		}
 		var t = o.form_data.form_definition.Outputs[0].Template
 		var f = o.form_data.form_definition.Outputs[0].Format
 		if (t) {
@@ -2035,7 +2288,12 @@ function form(divid, options) {
 	}
 
 	o.get_val = function(td) {
-		var input = td.find("input,textarea,div")
+		let input
+		if (td.is("input,textarea,div,select")) {
+			input = td
+		} else {
+			input = td.children("input,textarea,div,select")
+		}
 		if (input.is("div")) {
 			var cbs = input.find("input[type=checkbox]")
 			if (cbs.length > 0) {
@@ -2055,6 +2313,16 @@ function form(divid, options) {
 			}
 			return input.text()
 		}
+		if (input.is("select.select2-hidden-accessible")) {
+			val = input.select2("data")
+			if (input.prop("multiple") == true) {
+				return val.map(x => x.id)
+			} else if (val.length > 0) {
+				return val[0].id
+			} else {
+				return undefined
+			}
+		}
 		var val = input.prop("acid")
 		if ((typeof(val) === "undefined") || (typeof(input.attr("autocomplete")) === "undefined")) {
 			val = input.val()
@@ -2066,7 +2334,17 @@ function form(divid, options) {
 	}
 
 	o.get_option_data = function(td) {
-		var input = td.find("input,textarea,div")
+		var input = td.children("input,textarea,div,select")
+		if (input.is("select.select2-hidden-accessible")) {
+			let val = input.select2("data")
+			if (input.prop("multiple") == true) {
+				return val.map(x => x.option_data)
+			} else if (val.length > 0) {
+				return val[0].option_data
+			} else {
+				return undefined
+			}
+		}
 		return input.prop("option_data")
 	}
 
@@ -2085,15 +2363,47 @@ function form(divid, options) {
 		return data
 	}
 
+	o.get_converted_val = function(formDef, td) {
+			let val = o.get_val(td)
+			if (formDef.Type == "list of string") {
+				val = val.split(",")
+			} else
+			if (formDef.Type == "list of size") {
+				val = val.split(",")
+				val = convert_size(val)
+			} else
+			if ((formDef.Type == "boolean")) {
+				val = convert_boolean(val)
+			} else
+			if ((formDef.Type == "string or integer") || (formDef.Type == "size") || (formDef.Type == "integer")) {
+				val = convert_size(val, formDef.Unit)
+			} else
+			if (formDef.Type == "form") {
+				val = o.sub_forms[formDef.Id].form_to_data()
+			}
+			return val
+	}
+
 	o.table_to_dict = function(table) {
-		var data = {}
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
-			var input_key_id = get_dict_id(d)
+		let data = {}
+		var kv = function(key_def, option_data) {
+			let idx = key_def.indexOf("=")
+			let keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
+			let keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
+			if (keyval.match(/#/)) {
+				if (option_data) {
+					keyval = subst_refs_from_data(option_data, keyval)
+				}
+			}
+			return {k: keyname, v: keyval}
+		}
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let formDef = o.form_data.form_definition.Inputs[i]
+			let input_key_id = get_dict_id(formDef)
 			if (!input_key_id) {
 				continue
 			}
-			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
+			let td = table.find("tr[iid="+formDef.Id+"] > [name=val]")
 			if (!td.is(":visible")) {
 				if (input_key_id in data) {
 					continue
@@ -2105,39 +2415,64 @@ function form(divid, options) {
 			if (td.length == 0) {
 				continue
 			}
-			var val = o.get_val(td)
-			if (d.Type == "list of string") {
-				val = val.split(",")
-			} else
-			if (d.Type == "list of size") {
-				val = val.split(",")
-				val = convert_size(val)
-			} else
-			if ((d.Type == "boolean")) {
-				val = convert_boolean(val)
-			} else
-			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
-				val = convert_size(val, d.Unit)
-			} else
-			if (d.Type == "form") {
-				val = o.sub_forms[d.Id].form_to_data()
-			}
-			data[input_key_id] = val
+			let val = o.get_converted_val(formDef, td)
 
-			if (d.Keys) {
-				var option_data = o.get_option_data(td)
-				for (var j=0; j<d.Keys.length; j++) {
-					var key_def = d.Keys[j]
-					var idx = key_def.indexOf("=")
-					var keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
-					var keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
-					if (keyval.match(/#/)) {
-						if (option_data) {
-							data[keyname] = subst_refs_from_data(option_data, keyval)
+			if (formDef.Multiple) {
+				if (formDef.Keys) {
+					//
+					// {
+					//   <id>: [
+					//     { <k>: <v> },
+					//     { <k>: <v> },
+					//     ...
+					//   ]
+					// }
+					//
+					let option_data = o.get_option_data(td)
+					data[input_key_id] = []
+					for (let k=0; k<val.length; k++) {
+						let od = option_data[k]
+						let rd = {}
+						for (let j=0; j<formDef.Keys.length; j++) {
+							let d = kv(formDef.Keys[j], od)
+							rd[d.k] = d.v
 						}
-					} else {
-						data[keyname] = keyval
+						data[input_key_id].push(rd)
 					}
+				} else {
+					//
+					// {
+					//   <id>: [
+					//     <v>,
+					//     <v>,
+					//     ...
+					//   ]
+					// }
+					//
+					data[input_key_id] = val
+				}
+			} else {
+				if (formDef.Keys) {
+					//
+					// {
+					//   <k>: <v>,
+					//   <k>: <v>,
+					//   ...
+					// }
+					//
+					data[input_key_id] = val
+					let option_data = o.get_option_data(td)
+					for (let j=0; j<formDef.Keys.length; j++) {
+						let d = kv(formDef.Keys[j], option_data)
+						data[d.k] = d.v
+					}
+				} else {
+					//
+					// {
+					//   <id>: <v>
+					// }
+					//
+					data[input_key_id] = val
 				}
 			}
 		}
