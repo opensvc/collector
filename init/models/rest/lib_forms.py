@@ -1003,6 +1003,8 @@ def lib_form_add_to_git(form_id, yaml):
 def lib_form_revision(form_id, cid):
     o = gittrack.gittrack(otype='forms')
     data = o.lstree_data(cid, form_id)
+    if not data:
+        return {"data": ""}
     oid = data[0]["oid"]
     return {"data": o.show_file_unvalidated(cid, oid, form_id)}
 
