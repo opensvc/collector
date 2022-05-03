@@ -955,6 +955,8 @@ def prepare_data(
         if search:
             if search_props:
                 search_props = search_props.split(",")
+            elif props:
+                search_props = props.split(",")
             else:
                 search_props = [c.name for c in all_cols]
             f_val = "%" + search + "%"
@@ -969,7 +971,8 @@ def prepare_data(
                 if sq is None:
                     sq = db[t].id < 0
                 sq = _where(sq, t, "|"+f_val, f_col, depth=1, db=db)
-            q &= sq
+            if sq:
+                q &= sq
         if query:
             try:
                 q &= pydal.helpers.methods.smart_query(all_cols, query)
