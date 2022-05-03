@@ -760,8 +760,9 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<div class='icon_fixed_width add16 form_tool col-12'>")
+		var div = $("<button class='button_div icon_fixed_width add16'>")
 		div.text(i18n.t("forms.add_group"))
+		div.css({"margin-top": "1em"})
 		o.area.append(div)
 		div.bind("click", function() {
 			var ref = o.area.children(".form_group").last()
