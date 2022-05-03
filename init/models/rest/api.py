@@ -668,6 +668,16 @@ A comma-separated list of properties.
 Group the resultset using the specified properties.
 """,
           },
+          "search": {
+            "desc": """
+A substring searched in all search_props, or all props if search_props is not set.
+""",
+          },
+          "search_props": {
+            "desc": """
+The props to search the <search> substring into. If not set, search props.
+""",
+          },
           "orderby": {
             "desc": """
 A comma-separated list of properties.
@@ -789,6 +799,8 @@ def prepare_data(
      db=db,
      groupby=None,
      orderby=None,
+     search=None,
+     search_props=None,
      left=None,
      cols=[],
      offset=0,
@@ -940,6 +952,24 @@ def prepare_data(
                 t = tables[0]
                 f_col = f_prop
             q = _where(q, t, f_val, f_col, db=db)
+        if search:
+            if search_props:
+                search_props = search_props.split(",")
+            else:
+                search_props = [c.name for c in all_cols]
+            f_val = "%" + search + "%"
+            sq = None
+            for f_prop in search_props:
+                if '.' in f_prop:
+                    t, f_col = f_prop.split(".")
+                    find_prop(t, f_prop)
+                else:
+                    t = tables[0]
+                    f_col = f_prop
+                if sq is None:
+                    sq = db[t].id < 0
+                sq = _where(sq, t, "|"+f_val, f_col, depth=1, db=db)
+            q &= sq
         if query:
             try:
                 q &= pydal.helpers.methods.smart_query(all_cols, query)

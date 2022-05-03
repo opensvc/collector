@@ -2266,7 +2266,9 @@ function form(divid, options) {
 	}
 
 	function prepare_args(input, l, s2params) {
-		var d = {}
+		var d = {
+			filters: []
+		}
 		if (!l) {
 			return d
 		}
@@ -2276,12 +2278,6 @@ function form(divid, options) {
 			var key = s.slice(0, idx).replace(/\s+/g, "")
 			var val = s.slice(idx+1, s.length).replace(/^\s+/, "")
 			val = subst_refs(input, val)
-			if ((typeof(s2params) !== "undefined") && (typeof(s2params.term) !== "undefined")) {
-				val = val.replace("__term__", s2params.term)
-			} else if (val.match(/__term__/)) {
-				console.log("drop missing __term__ filter")
-				continue
-			}
 			if (key in d) {
 				// support multiple occurence of the same key
 				if (!Array.isArray(d[key])) {
@@ -2301,6 +2297,7 @@ function form(divid, options) {
 			d.meta = 1
 			d.limit = limit
 			d.offset = (page-1) * limit
+			d.search = s2params.term
 		}
 		return d
 	}
