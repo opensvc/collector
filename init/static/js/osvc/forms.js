@@ -421,9 +421,7 @@ function form(divid, options) {
 				continue
 			}
 			if (d.Condition) {
-				var c = o.parse_condition(d)
-				var val = data[c.id]
-				var ret = o.eval_condition(c, val)
+				var ret = o.eval_conditions(d, data)
 				console.log("render condition:", input_key_id, "->", d.Id, ":", val, d.Condition, "=>", ret)
 				if (!ret) {
 					continue
@@ -507,14 +505,7 @@ function form(divid, options) {
 				continue
 			}
 			if (d.Condition) {
-				var c = o.parse_condition(d)
-				try {
-					var val = data[c.id]
-				} catch(e) {
-					var val = null
-				}
-				var ret = o.eval_condition(c, val)
-				console.log("render condition:", input_key_id, "->", d.Id, ":", val, d.Condition, "=>", ret)
+				var ret = o.eval_conditions(d, data)
 				if (!ret) {
 					continue
 				}
@@ -684,9 +675,7 @@ function form(divid, options) {
 				input.css({"min-width": o.form_data.form_definition.MinWidth})
 			}
 
-			if (d.Condition && d.Condition.match(/#/)) {
-				o.add_cond_triggers(d)
-			}
+			o.add_cond_triggers(d)
 
 			value.append(input)
 			table.append(line)
@@ -1303,7 +1292,6 @@ function form(divid, options) {
 				return
 			}
 			normData.results.forEach(function(e) {
-				// TODO: BUG: option_data is not returned by .select2("data") after this load
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
 				input.append(option).trigger("change")
@@ -1987,14 +1975,15 @@ function form(divid, options) {
 		console.log("show", d.Id)
 		tr.removeClass("hidden")
 		var input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
-		if (d.Function && fn_has_refs(d)) {
+		if (input.is("select.select2-hidden-accessible")) {
+			let data = $.data(input[0])
+			let options = data.s2options
+			//input.select2("destroy")
+			input.select2(options)
+			input.change()
+		} else if (d.Function && fn_has_refs(d)) {
 			var data = $.data(input[0])
-			if (input.is("select.select2-hidden-accessible")) {
-				//input.select2("destroy")
-				let options = data.s2options
-				input.select2(options)
-				input.change()
-			} else if (data.autocomplete && data.autocomplete.options.source.length > 0) {
+			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
 				input.val(data.autocomplete.options.source[0].text)
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
@@ -2021,15 +2010,9 @@ function form(divid, options) {
 			trigger(false)
 		})
 		function trigger(initial) {
-			if (key in o.form_inputs) {
-				var val = o.get_val(head)
-			} else {
-				var data = o.form_to_data()
-				var val = data[key]
-			}
-			var c = o.parse_condition(d)
-			var ret = o.eval_condition(c, val)
-			console.log("condition:", key, "->", d.Id, val , d.Condition, "=>", ret)
+			var data = o.form_to_data()
+			var ret = o.eval_conditions(d, data)
+			console.log("condition trigger:", d.Id, ret, o.cond_triggers)
 			if (ret) {
 				o.show_input(table, d)
 			} else {
@@ -2038,25 +2021,25 @@ function form(divid, options) {
 		}
 	}
 
-	o.parse_condition = function(d) {
-		if (d.Condition.match(/!=/)) {
+	o.parse_condition = function(cond) {
+		if (cond.match(/!=/)) {
 			var op = "!="
-		} else if (d.Condition.match(/==/)) {
+		} else if (cond.match(/==/)) {
 			var op = "=="
-		} else if (d.Condition.match(/NOT IN/)) {
+		} else if (cond.match(/NOT IN/)) {
 			var op = "NOT IN"
-		} else if (d.Condition.match(/IN/)) {
+		} else if (cond.match(/IN/)) {
 			var op = "IN"
-		} else if (d.Condition.match(/>/)) {
+		} else if (cond.match(/>/)) {
 			var op = ">"
-		} else if (d.Condition.match(/</)) {
+		} else if (cond.match(/</)) {
 			var op = "<"
 		} else {
-			console.log(d.Id, "unsupported condition operator:", d.Condition)
+			console.log("unsupported condition operator:", cond)
 		}
 
-		var ref = d.Condition.split(op)[1]
-		var id = d.Condition.split(op)[0]
+		var ref = cond.split(op)[1]
+		var id = cond.split(op)[0]
 
 		// strip
 		id = id.replace(/^\s+/, "").replace(/\s+$/, "").replace(/^#/, "")
@@ -2064,7 +2047,28 @@ function form(divid, options) {
 		return {"id": id, "op": op, "ref": ref}
 	}
 
-	o.eval_condition = function(c, val) {
+	o.eval_conditions = function(d, data) {
+		if (typeof(d.Condition) === "string") {
+			let c = o.parse_condition(d.Condition)
+			return o.eval_condition(c, data)
+		}
+		if (Array.isArray(d.Condition)) {
+			for (var i=0; i<d.Condition.length; i++) {
+				let cond = d.Condition[i]
+				let c = o.parse_condition(cond)
+				if (o.eval_condition(c, data) == false) {
+					console.log(" - condition:", c, "data:", data, "=> false")
+					return false
+				}
+				console.log(" - condition:", c, "data:", data, "=> true")
+			}
+			return true
+		}
+		return false
+	}
+
+	o.eval_condition = function(c, data) {
+		let val = data[c.id]
 		if (typeof val === "undefined") {
 			return false
 		}
@@ -2076,7 +2080,7 @@ function form(divid, options) {
 		else if (typeof val === "boolean") {
 			c.ref = (c.ref.toLowerCase() == 'true')
 		}
-		if (((val != "") && (val != null)) || (typeof val === "number")) {
+		if ((val != "") && (val != null)) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
@@ -2176,18 +2180,35 @@ function form(divid, options) {
 	}
 
 	o.add_cond_triggers = function(d) {
-		var re = RegExp(/#\w+/g)
-		do {
-			var m = re.exec(d.Condition)
-			if (m) {
-				var key = m[0].replace("#", "")
-				if (key in o.cond_triggers) {
-					o.cond_triggers[key].push(d)
-				} else {
-					o.cond_triggers[key] = [d]
+		let re = RegExp(/#\w+/g)
+		let repl = cond => {
+			do {
+				var m = re.exec(cond)
+				if (m) {
+					var key = m[0].replace("#", "")
+					ids = o.resolve_keys(key)
+					for (var i=0; i<ids.length; i++) {
+						let id = ids[i]
+						if (id in o.cond_triggers) {
+							o.cond_triggers[id].push(d)
+						} else {
+							o.cond_triggers[id] = [d]
+						}
+					}
 				}
+			} while (m)
+		}
+		if (!d.Condition) {
+			return
+		}
+		if ((typeof(d.Condition) === "string") && d.Condition.match(/#/)) {
+			repl(d.Condition)
+		}
+		if (Array.isArray(d.Condition)) {
+			for (var i=0; i<d.Condition.length; i++) {
+				repl(d.Condition[i])
 			}
-		} while (m)
+		}
 	}
 
 	o.install_fn_trigger = function(table, key, d) {
@@ -2223,17 +2244,20 @@ function form(divid, options) {
 				var m = re.exec(s)
 				if (m) {
 					var key = m[0].replace("#", "")
-					key = o.resolve_key(key)
-					var sign = key + "-" + d.Id
-					if (o.fn_triggers_signs.indexOf(sign) >= 0) {
-						continue
-					} else {
-						o.fn_triggers_signs.push(sign)
-					}
-					if (key in o.fn_triggers) {
-						o.fn_triggers[key].push(d)
-					} else {
-						o.fn_triggers[key] = [d]
+					ids = o.resolve_keys(key)
+					for (var i=0; i<ids.length; i++) {
+						let id = ids[i]
+						var sign = id + "-" + d.Id
+						if (o.fn_triggers_signs.indexOf(sign) >= 0) {
+							continue
+						} else {
+							o.fn_triggers_signs.push(sign)
+						}
+						if (id in o.fn_triggers) {
+							o.fn_triggers[id].push(d)
+						} else {
+							o.fn_triggers[id] = [d]
+						}
 					}
 				}
 			} while (m)
@@ -2245,24 +2269,39 @@ function form(divid, options) {
 	}
 
 	o.resolve_key = function(key) {
+		let ids = o.resolve_keys(key)
+		try {
+			return ids[0]
+		} catch(e) {
+			return
+		}
+	}
+
+	o.resolve_keys = function(key) {
+		let ids = []
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			d = o.form_data.form_definition.Inputs[i]
-			if (d.Id == key) {
-				return key
-			}
-			if (!d.Keys) {
+			if (d.Key == key) {
+				ids.push(d.Id)
 				continue
 			}
-			for (var j=0; j<d.Keys.length; j++) {
-				var key_def = d.Keys[j]
-				var l = key_def.split("=")
-				var keyname = l[0].replace(/^\s+/, "").replace(/\s+$/, "")
-				if (keyname == key) {
-					return d.Id
+			if (d.Id == key) {
+				ids.push(d.Id)
+				continue
+			}
+			if (d.Keys) {
+				for (var j=0; j<d.Keys.length; j++) {
+					var key_def = d.Keys[j]
+					var l = key_def.split("=")
+					var keyname = l[0].replace(/^\s+/, "").replace(/\s+$/, "")
+					if (keyname == key) {
+						ids.push(d.Id)
+						break
+					}
 				}
 			}
 		}
-		return key
+		return ids
 	}
 
 	function prepare_args(input, l, s2params) {
