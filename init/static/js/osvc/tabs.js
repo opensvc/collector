@@ -91,7 +91,8 @@ function tabs(divid) {
 				}
 				current_tab_active = o.tabs[i]
 				current_tab_active.tab.removeClass("tab_active")
-				current_tab_active.tab.removeAttr("title").tooltipster('destroy')
+				current_tab_active.tab.removeAttr("title")
+				try { current_tab_active.tab.tooltipster('destroy') } catch(e) {}
 				current_tab_active.div.hide()
 			}
 			data.tab.addClass("tab_active")
