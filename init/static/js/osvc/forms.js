@@ -2010,9 +2010,13 @@ function form(divid, options) {
 			trigger(false)
 		})
 		function trigger(initial) {
-			var data = o.form_to_data()
-			var ret = o.eval_conditions(d, data)
-			console.log("condition trigger:", d.Id, ret, o.cond_triggers)
+			let data = o.form_to_data()
+			if (Array.isArray(data) && (data.length > 0)) {
+				let i = table.parent().prevAll(".form_group").length
+				data = data[i]
+			}
+			let ret = o.eval_conditions(d, data)
+			console.log("conditions:", d.Id+":", d.Condition, "->", ret, "with data", data)
 			if (ret) {
 				o.show_input(table, d)
 			} else {
