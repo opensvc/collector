@@ -81,8 +81,12 @@ function requests(divid, options) {
 		o.e_inputs.empty()
 		o.e_target.empty()
 		if (o.options && o.options.form_name) {
-			var d = osvc.forms.data[o.options.form_name]
-			o.e_list.append(o.render_form(d))
+			let d = osvc.forms.data[o.options.form_name]
+			if (d) {
+				o.e_list.append(o.render_form(d))
+			} else {
+				console.log("init_list:", o.options.form_name, "not found")
+			}
 		} else {
 			o.render_folders()
 			o.render_forms()
