@@ -634,6 +634,7 @@ function fset_designer(divid, options) {
 
 	o.f_field_input = function(table, current) {
 		var fields = {
+			'node_ip': [].concat(["id", "node_id", "intf", "mac", "type", "addr", "mask", "updated"]),
 			'nodes': [].concat(['id', 'nodename', 'node_id'], objcols.node, ["updated"]),
 			'services': [].concat(['id', 'svc_id', 'svcname'], objcols.service, ["updated"]),
 			'svcmon': [].concat(["id"], objcols.service_instance),

@@ -831,6 +831,14 @@ def prepare_data(
                     left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
                     tables.append("nodes")
                     return prop
+        elif t == "node_ip":
+            for table in tables:
+                if "node_id" in db[table].fields:
+                    if "node_ip" in tables:
+                        return prop
+                    left.append(db.nodes.on(db.node_ip.node_id==db[table].node_id))
+                    tables.append("node_ip")
+                    return prop
         elif t == "services":
             for table in tables:
                 if "svc_id" in db[table].fields:

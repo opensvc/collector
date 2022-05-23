@@ -51,6 +51,12 @@ var db_tables = {
 		"name": "nodes",
 		"title": "nodes"
 	},
+	"node_ip": {
+		"cl": "net16",
+		"hide": false,
+		"name": "node_ip",
+		"title": "nodes ip addresses"
+	},
 	"apps": {
 		"cl": "svc",
 		"hide": false,

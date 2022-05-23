@@ -253,6 +253,16 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
                               cacheable=True)
         n_nodes = set(map(lambda x: x.nodes.node_id, rows)) - set([None])
         n_services = set(map(lambda x: x.svcmon.svc_id, rows)) - set([None])
+    elif v.f_table == 'node_ip':
+        if svc_id is not None:
+            qry &= db.svcmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.node_ip.node_id == node_id
+        rows = db(qry).select(db.svcmon.svc_id, db.node_ip.node_id,
+                              left=db.svcmon.on(db.node_ip.node_id==db.svcmon.node_id),
+                              cacheable=True)
+        n_nodes = set(map(lambda x: x.node_ip.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcmon.svc_id, rows)) - set([None])
     elif v.f_table == 'packages':
         if svc_id is not None:
             qry &= db.svcmon.svc_id == svc_id
@@ -431,6 +441,7 @@ joins = {
     'v_svcmon': None,
     'v_svcactions': None,
     'checks_live': db.nodes.node_id == db.checks_live.node_id,
+    'node_ip': db.nodes.node_id == db.node_ip.node_id,
     'resinfo': db.nodes.node_id == db.resinfo.node_id,
     'packages': db.nodes.node_id == db.packages.node_id,
     'patches': db.nodes.node_id == db.patches.node_id,

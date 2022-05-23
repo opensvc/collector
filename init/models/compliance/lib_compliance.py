@@ -2121,6 +2121,7 @@ def delete_filter(f_id):
 def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
     tables = [
         'nodes',
+        'node_ip',
         'services',
         'svcmon',
         'resmon',
