@@ -253,10 +253,13 @@ function form(divid, options) {
 	}
 
 	function input_has_default(d) {
-		if (is_numeric(d.Default) && (d.Default == 0)) {
+		return is_valid_default(d.Default)
+	}
+	function is_valid_default(v) {
+		if (is_numeric(v) && (v == 0)) {
 			return true
 		}
-		if (d.Default) {
+		if (v) {
 			return true
 		}
 		return false
@@ -588,7 +591,7 @@ function form(divid, options) {
 
 		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
+			let d = o.form_data.form_definition.Inputs[i]
 			var input_key_id = get_dict_id(d)
 			var line = $("<tr></tr>")
 			var label = $("<th style='white-space:nowrap'></th>")
@@ -648,24 +651,25 @@ function form(divid, options) {
 				content = ""
 			}
 
+			let input
 			if (d.Type == "date") {
-				var input = o.render_date(d, content)
+				input = o.render_date(d, content)
 			} else if (d.Type == "datetime") {
-				var input = o.render_datetime(d, content)
+				input = o.render_datetime(d, content)
 			} else if (d.Type == "time") {
-				var input = o.render_time(d, content)
+				input = o.render_time(d, content)
 			} else if (d.Type == "info") {
-				var input = o.render_info(d, content)
+				input = o.render_info(d, content)
 			} else if (d.Type == "text") {
-				var input = o.render_text(d, content)
+				input = o.render_text(d, content)
 			} else if (d.Type == "boolean") {
-				var input = o.render_boolean(d, content)
+				input = o.render_boolean(d, content)
 			} else if (d.Type == "checklist") {
-				var input = o.render_checklist(d, content)
+				input = o.render_checklist(d, content)
 			} else if (d.Type == "form") {
-				var input = o.render_sub_form(d, content)
+				input = o.render_sub_form(d, content)
 			} else {
-				var input = o.render_input(d, content)
+				input = o.render_input(d, content)
 			}
 
 			if (o.form_data.form_definition.Width) {
@@ -707,7 +711,7 @@ function form(divid, options) {
 	o.render_expert_toggle = function() {
 		var n = 0
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
+			let d = o.form_data.form_definition.Inputs[i]
 			if (d.ExpertMode) {
 				n++
 			}
@@ -724,8 +728,8 @@ function form(divid, options) {
 			} else {
 				div.removeClass("fa-lock").addClass("fa-unlock")
 			}
-			for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-				var d = o.form_data.form_definition.Inputs[i]
+			for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+				let d = o.form_data.form_definition.Inputs[i]
 				if (!d.ExpertMode) {
 					continue
 				}
@@ -910,11 +914,11 @@ function form(divid, options) {
 	}
 
 	o.submit_output_compliance = function(data) {
-		var _data = {}
+		let _data = {}
 		if (typeof(data) === "string") {
 			_data.var_value = data
 		} else {
-			for (var key in data) {
+			for (let key in data) {
 				if (!Array.isArray(data[key]) && (typeof(data[key]) === "string") && (data[key] == "")) {
 					delete(data[key])
 				}
@@ -939,7 +943,7 @@ function form(divid, options) {
 	}
 
 	o.submit_output_tag_data = function(data) {
-		var _data = {}
+		let _data = {}
 		if (typeof(data) === "string") {
 			var tag_data = data
 		} else {
@@ -950,8 +954,8 @@ function form(divid, options) {
 			}
 			var tag_data = JSON.stringify(data)
 		}
-		var path = "/tags/%1"
-		var params = [o.options.tag_id]
+		let path = "/tags/%1"
+		let params = [o.options.tag_id]
 		if (o.options.node_id) {
 			path += "/nodes/%2"
 			params.push(o.options.node_id)
@@ -991,18 +995,18 @@ function form(divid, options) {
 		if (o.options.test == false) {
 			return
 		}
-		var button = $("<button class='icon_fixed_width fa-code button_div'>")
+		let button = $("<button class='icon_fixed_width fa-code button_div'>")
 		o.test_tool = button
 		button.text(i18n.t("forms.test"))
 		button.css({"margin-top": "1em"})
 		o.area.append(button)
 
 		button.bind("click", function() {
-			var data = o.form_to_data()
-			var data_title = $("<h2>"+i18n.t("forms.test_title")+"</h2>")
-			var data_pre = $("<pre style='text-align:left'>"+JSON.stringify(data, null, 4)+"</pre>")
-			var render_title = $("<h2>"+i18n.t("forms.test_render_title")+"</h2>")
-			var render_div = $("<div></div>")
+			let data = o.form_to_data()
+			let data_title = $("<h2>"+i18n.t("forms.test_title")+"</h2>")
+			let data_pre = $("<pre style='text-align:left'>"+JSON.stringify(data, null, 4)+"</pre>")
+			let render_title = $("<h2>"+i18n.t("forms.test_render_title")+"</h2>")
+			let render_div = $("<div></div>")
 			o.result.empty().append(data_title)
 					.append(data_pre)
 					.append(render_title)
@@ -1023,7 +1027,7 @@ function form(divid, options) {
 		if (o.options.submit == false) {
 			return
 		}
-		var button = $("<button class='icon_fixed_width fa-save button_div'>")
+		let button = $("<button class='icon_fixed_width fa-save button_div'>")
 		o.submit_tool = button
 		button.text(i18n.t("forms.submit"))
 		button.css({"margin-top": "1em"})
@@ -1035,7 +1039,7 @@ function form(divid, options) {
 				return
 			}
 			o.result.empty()
-			var data = o.form_to_data()
+			let data = o.form_to_data()
 			o.submit_action(data)
 		})
 	}
@@ -1043,8 +1047,8 @@ function form(divid, options) {
 	o.submit_action = function(data) {
 		o.need_submit_form_data = false
 		o.results = {}
-		for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
-			var output = o.form_data.form_definition.Outputs[i]
+		for (let i=0; i<o.form_data.form_definition.Outputs.length; i++) {
+			let output = o.form_data.form_definition.Outputs[i]
 			o.submit_output(output, data)
 		}
 		if (o.need_submit_form_data == true) {
@@ -1054,7 +1058,7 @@ function form(divid, options) {
 	}
 
 	o.render_time = function(d, content) {
-		var input = $("<input class='oi'>")
+		let input = $("<input class='oi'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
@@ -1064,7 +1068,7 @@ function form(divid, options) {
 		return input
 	}
 	o.render_datetime = function(d, content) {
-		var input = $("<input class='oi'>")
+		let input = $("<input class='oi'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
@@ -1074,7 +1078,7 @@ function form(divid, options) {
 		return input
 	}
 	o.render_date = function(d, content) {
-		var input = $("<input class='oi'>")
+		let input = $("<input class='oi'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
@@ -1084,7 +1088,7 @@ function form(divid, options) {
 		return input
 	}
 	o.render_info = function(d, content) {
-		var div = $("<div class='form_input_info' style='padding:0.4em'>")
+		let div = $("<div class='form_input_info' style='padding:0.4em'>")
 		div.text(content)
 		if (d.Function && fn_has_refs(d)) {
 			o.add_fn_triggers(d)
@@ -1092,7 +1096,7 @@ function form(divid, options) {
 		return div
 	}
 	o.render_text = function(d, content) {
-		var textarea = $("<textarea class='oi pre' style='padding:0.4em;min-width:17em;min-height:8em'>")
+		let textarea = $("<textarea class='oi pre' style='padding:0.4em;min-width:17em;min-height:8em'>")
 		if (d.ReadOnly == true) {
 			textarea.prop("disabled", true)
 		}
@@ -1103,7 +1107,7 @@ function form(divid, options) {
 		return textarea
 	}
 	o.render_input_simple = function(d, content) {
-		var input = $("<input class='oi'>")
+		let input = $("<input class='oi'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
@@ -1128,14 +1132,15 @@ function form(divid, options) {
 
 		// prepare candidates
 		let data = []
-		if (d.DisableAutoDefault) {
+		let hasDefault = input_has_default(d)
+		if (!hasDefault && d.DisableAutoDefault) {
 			// dummy entry selected as a placeholder
 			data.push({
 				"id": "",
 			})
 		}
-		for (var i=0; i<d.Candidates.length; i++) {
-			var _d = d.Candidates[i]
+		for (let i=0; i<d.Candidates.length; i++) {
+			let _d = d.Candidates[i]
 			if (typeof(_d) === "string") {
 				data.push({
 					"id": _d,
@@ -1163,7 +1168,7 @@ function form(divid, options) {
 		if (d.ReadOnly == true) {
 			options.disabled = true
 		}
-		if (d.DisableAutoDefault) {
+		if (!hasDefault && d.DisableAutoDefault) {
 			options.placeholder = "Select a candidate"
 			//options.allowClear = true
 		}
@@ -1177,7 +1182,7 @@ function form(divid, options) {
 	}
 
 	o.select_static_set_content = function(input, d, content) {
-		if (content && (content.length > 0)) {
+		if (is_valid_default(content)) {
 			input.val(content)
 			input.change()
 		} else {
@@ -1349,7 +1354,7 @@ function form(divid, options) {
 
 
 	o.render_boolean = function(d, content) {
-		var input = $("<input type='checkbox' data-toggle='toggle' data-onstyle='success' data-offstyle='danger'>")
+		let input = $("<input type='checkbox' data-toggle='toggle' data-onstyle='success' data-offstyle='danger'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
@@ -1393,7 +1398,7 @@ function form(divid, options) {
 		if (!d.Form) {
 			return
 		}
-		var div = $("<div></div>")
+		let div = $("<div></div>")
 		o.sub_forms[d.Id] = form(div, {
 			"parent_form": o,
 			"form_name": d.Form,
@@ -1414,7 +1419,7 @@ function form(divid, options) {
 			return true
 		}
 		if (d.Args) {
-			for (var i=0; i<d.Args.length; i++) {
+			for (let i=0; i<d.Args.length; i++) {
 				d.Args[i] = d.Args[i].replace(/#user_id/g, _self.id)
 				if (d.Args[i].match(/#/)) {
 					return true
@@ -1452,10 +1457,10 @@ function form(divid, options) {
 		}
 
 		// add a 'toggle all' master checkbox
-		var line = $("<div style='padding:0.2em'></div>")
-		var master_cb = $("<input type='checkbox' class='ocb'>")
-		var master_cb_label = $("<label></label>")
-		var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
+		let line = $("<div style='padding:0.2em'></div>")
+		let master_cb = $("<input type='checkbox' class='ocb'>")
+		let master_cb_label = $("<label></label>")
+		let e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
 
 		if (!content) {
 			// set a sane default to content
@@ -1479,7 +1484,7 @@ function form(divid, options) {
 			master_cb.prop("disabled", true)
 		}
 		master_cb.bind("change", function() {
-			var state = $(this).prop("checked")
+			let state = $(this).prop("checked")
 			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
 			o.update_submit()
 		})
@@ -1489,8 +1494,8 @@ function form(divid, options) {
 			return ""+el
 		})
 
-		for (var i=0; i<data.length; i++) {
-			var _d = data[i]
+		for (let i=0; i<data.length; i++) {
+			let _d = data[i]
 			if (typeof(_d) === "string") {
 				var value = _d
 				var label = _d
@@ -1503,10 +1508,10 @@ function form(divid, options) {
 				label = subst_refs_from_data(_d, label)
 				value = subst_refs_from_data(_d, value)
 			}
-			var line = $("<div style='padding:0.2em'></div>")
-			var cb = $("<input type='checkbox' class='ocb'>")
-			var cb_label = $("<label></label>")
-			var e_label = $("<span style='padding:0 0.3em'></span>")
+			let line = $("<div style='padding:0.2em'></div>")
+			let cb = $("<input type='checkbox' class='ocb'>")
+			let cb_label = $("<label></label>")
+			let e_label = $("<span style='padding:0 0.3em'></span>")
 			cb.uniqueId()
 			cb.prop("acid", value)
 			cb_label.attr("for", cb.attr("id"))
@@ -1542,10 +1547,10 @@ function form(divid, options) {
 			input.change()
 			return
 		}
-		var opts = []
-		var acid = content
-		for (var i=0; i<data.length; i++) {
-			var _d = data[i]
+		let opts = []
+		let acid = content
+		for (let i=0; i<data.length; i++) {
+			let _d = data[i]
 			if (typeof(_d) === "string") {
 				opts.push({
 					"id": _d,
@@ -1576,8 +1581,8 @@ function form(divid, options) {
 			if (!opts) {
 				return ""
 			}
-			var l = []
-			for (var i=0; i<opts.length; i++) {
+			let l = []
+			for (let i=0; i<opts.length; i++) {
 				l.push(opts[i].text)
 			}
 			return l.join("\n")
@@ -1591,7 +1596,7 @@ function form(divid, options) {
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
 			if (d.Format != d.Value) {
-				for (var j=0; j<opts.length; j++) {
+				for (let j=0; j<opts.length; j++) {
 					if (opts[j].id != content) {
 						continue
 					}
@@ -1609,7 +1614,7 @@ function form(divid, options) {
 	}
 
 	function jsonrpc_init(input, d, content, fn_callback) {
-		var args = prepare_args(input, d.Args)
+		let args = prepare_args(input, d.Args)
 		for (key in args) {
 			if (!args[key]) {
 				console.log("cancel jsonrpc on", d.Function, ": missing parameters", args)
@@ -1627,8 +1632,8 @@ function form(divid, options) {
 	}
 
 	function rest_init(input, d, content, fn_callback) {
-		var args = prepare_args(input, d.Args)
-		var fn = subst_refs(input, d.Function)
+		let args = prepare_args(input, d.Args)
+		let fn = subst_refs(input, d.Function)
 		if (fn.match(/^\//) && fn.match(/\/\//)) {
 			console.log("missing data in rest path")
 			return
@@ -1637,12 +1642,12 @@ function form(divid, options) {
 			console.log("cancel rest get on", fn, ": missing parameters")
 			return
 		}
-		var key = input.attr("id")
+		let key = input.attr("id")
 		if (!key) {
 			input.uniqueId()
-			var key = input.attr("id")
+			key = input.attr("id")
 		}
-		var sign = fn_sign(fn, args)
+		let sign = fn_sign(fn, args)
 		if ((key in o.fn_trigger_last) && (o.fn_trigger_last[key] == sign)) {
 			console.log("cancel rest get on", fn, ": same as last call")
 			return
@@ -1673,22 +1678,21 @@ function form(divid, options) {
 			console.log("skip subst_refs_from_data: data is not a dict.", data)
 			return s
 		}
-		var re = RegExp(/#[\w\.]+/g)
-		var _s = s
-
+		let re = RegExp(/#[\w\.]+/g)
+		let _s = s
 		do {
-			var m = re.exec(s)
+			m = re.exec(s)
 			if (m) {
-				var key = m[0].replace("#", "")
-				var keys = key.split(".")
-				var val = data
-				for (var i=0; i<keys.length; i++) {
+				let key = m[0].replace("#", "")
+				let keys = key.split(".")
+				let val = data
+				for (let i=0; i<keys.length; i++) {
 					if (keys[i] in val) {
-						var val = val[keys[i]]
+						val = val[keys[i]]
 					}
 				}
-				var re1 = RegExp("#"+key, "g")
-				var t = typeof val
+				let re1 = RegExp("#"+key, "g")
+				let t = typeof val
 				if ((t === "number") || (t === "string")) {
 					_s = _s.replace(re1, val)
 				}
@@ -1698,18 +1702,18 @@ function form(divid, options) {
 	}
 
 	function subst_refs(input, s) {
-		var table = input.parents("table").first()
-		var data = o.table_to_dict(table)
+		let table = input.parents("table").first()
+		let data = o.table_to_dict(table)
 		return subst_refs_from_data(data, s)
 	}
 
 	o.install_constraint_triggers = function(table) {
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let d = o.form_data.form_definition.Inputs[i]
 			if (d.Type == "form") {
 				continue
 			}
-			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
+			let input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
 			o.install_constraint_trigger(input, d)
 		}
 	}
@@ -1855,9 +1859,9 @@ function form(divid, options) {
 	}
 
 	o.install_mandatory_triggers = function(table) {
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
-			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input,select")
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let d = o.form_data.form_definition.Inputs[i]
+			let input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input,select")
 			o.install_mandatory_trigger(input, d)
 		}
 	}
@@ -1868,7 +1872,7 @@ function form(divid, options) {
 		}
 
 		function is_candidate(v, opts) {
-			for (var i=0; i<opts.length; i++) {
+			for (let i=0; i<opts.length; i++) {
 				if (opts[i].text==v) {
 					return true
 				}
@@ -1876,7 +1880,7 @@ function form(divid, options) {
 			return false
 		}
 
-		var v = o.get_val(input)
+		let v = o.get_val(input)
 		console.log("update_candidates_violation:", v, opts)
 		if (is_candidate(v, opts)) {
 			input.removeClass("candidates_violation")
@@ -1948,17 +1952,16 @@ function form(divid, options) {
 	}
 
 	o.hide_input = function(table, d, initial) {
-		var tr = table.find("[iid="+d.Id+"]")
+		let tr = table.find("[iid="+d.Id+"]")
 		if (!initial && tr.hasClass("hidden")) {
 			console.log("hide", d.Id, "already not visible")
 			return
 		}
 		console.log("hide", d.Id)
 		tr.addClass("hidden")
-		tr.find("[name=val]").children("input,textarea").val("").prop("acid", "").trigger("change")
 		if (d.Id in o.cond_triggers) {
-			var triggers = o.cond_triggers[d.Id]
-			for (var i=0; i<triggers.length; i++) {
+			let triggers = o.cond_triggers[d.Id]
+			for (let i=0; i<triggers.length; i++) {
 				if (o.div.find("tr[iid="+triggers[i].Id+"]").hasClass("hidden")) {
 					continue
 				}
@@ -1968,13 +1971,13 @@ function form(divid, options) {
 	}
 
 	o.show_input = function(table, d) {
-		var tr = table.find("[iid="+d.Id+"]")
+		let tr = table.find("[iid="+d.Id+"]")
 		if (!tr.hasClass("hidden")) {
 			return
 		}
 		console.log("show", d.Id)
 		tr.removeClass("hidden")
-		var input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
+		let input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
 		if (input.is("select.select2-hidden-accessible")) {
 			let data = $.data(input[0])
 			let options = data.s2options
@@ -2283,8 +2286,8 @@ function form(divid, options) {
 
 	o.resolve_keys = function(key) {
 		let ids = []
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			d = o.form_data.form_definition.Inputs[i]
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let d = o.form_data.form_definition.Inputs[i]
 			if (d.Key == key) {
 				ids.push(d.Id)
 				continue
@@ -2349,8 +2352,8 @@ function form(divid, options) {
 		if (!o.form_data) {
 			return
 		}
-		var t = o.form_data.form_definition.Outputs[0].Template
-		var f = o.form_data.form_definition.Outputs[0].Format
+		let t = o.form_data.form_definition.Outputs[0].Template
+		let f = o.form_data.form_definition.Outputs[0].Format
 		if (t) {
 			return o.form_to_data_template(t)
 		} else if (f == "dict") {
@@ -2428,15 +2431,15 @@ function form(divid, options) {
 	}
 
 	o.form_to_data_template = function(t) {
-		var data = t
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			var d = o.form_data.form_definition.Inputs[i]
-			var input_key_id = get_dict_id(d)
-			var td = o.area.find("tr[iid="+d.Id+"] > [name=val]")
+		let data = t
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let d = o.form_data.form_definition.Inputs[i]
+			let input_key_id = get_dict_id(d)
+			let td = o.area.find("tr[iid="+d.Id+"] > [name=val]")
 			if (td.length == 0) {
 				continue
 			}
-			var re = RegExp("%%"+input_key_id+"%%", "g")
+			let re = RegExp("%%"+input_key_id+"%%", "g")
 			data = data.replace(re, o.get_val(td))
 		}
 		return data
@@ -2477,12 +2480,12 @@ function form(divid, options) {
 			return {k: keyname, v: keyval}
 		}
 		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			let formDef = o.form_data.form_definition.Inputs[i]
-			let input_key_id = get_dict_id(formDef)
+			let inputDef = o.form_data.form_definition.Inputs[i]
+			let input_key_id = get_dict_id(inputDef)
 			if (!input_key_id) {
 				continue
 			}
-			let td = table.find("tr[iid="+formDef.Id+"] > [name=val]")
+			let td = table.find("tr[iid="+inputDef.Id+"] > [name=val]")
 			if (!td.is(":visible")) {
 				if (input_key_id in data) {
 					continue
@@ -2490,14 +2493,18 @@ function form(divid, options) {
 				if (typeof(o.options[input_key_id]) !== "undefined") {
 					data[input_key_id] = o.options[input_key_id]
 				}
+				if (!inputDef.Hidden) {
+					continue
+				}
+				// Explicitely hidden inputs have their value embedded
 			}
 			if (td.length == 0) {
 				continue
 			}
-			let val = o.get_converted_val(formDef, td)
+			let val = o.get_converted_val(inputDef, td)
 
-			if (formDef.Multiple) {
-				if (formDef.Keys) {
+			if (inputDef.Multiple) {
+				if (inputDef.Keys) {
 					//
 					// {
 					//   <id>: [
@@ -2512,8 +2519,8 @@ function form(divid, options) {
 					for (let k=0; k<val.length; k++) {
 						let od = option_data[k]
 						let rd = {}
-						for (let j=0; j<formDef.Keys.length; j++) {
-							let d = kv(formDef.Keys[j], od)
+						for (let j=0; j<inputDef.Keys.length; j++) {
+							let d = kv(inputDef.Keys[j], od)
 							rd[d.k] = d.v
 						}
 						data[input_key_id].push(rd)
@@ -2531,7 +2538,7 @@ function form(divid, options) {
 					data[input_key_id] = val
 				}
 			} else {
-				if (formDef.Keys) {
+				if (inputDef.Keys) {
 					//
 					// {
 					//   <k>: <v>,
@@ -2541,8 +2548,8 @@ function form(divid, options) {
 					//
 					data[input_key_id] = val
 					let option_data = o.get_option_data(td)
-					for (let j=0; j<formDef.Keys.length; j++) {
-						let d = kv(formDef.Keys[j], option_data)
+					for (let j=0; j<inputDef.Keys.length; j++) {
+						let d = kv(inputDef.Keys[j], option_data)
 						data[d.k] = d.v
 					}
 				} else {
