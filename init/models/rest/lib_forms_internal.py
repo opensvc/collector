@@ -331,7 +331,7 @@ form_data_internal = [
                     "Label": "Diskgroup",
                     "Type": "string",
                     "Id": "dg_id",
-                    "Condition": "#array_id > 0"
+                    "Condition": "#array_id != 0"
                 },
                 {
                     "Function": "/apps",
