@@ -1392,6 +1392,9 @@ div.login {
 .lock:before {
 	content: '\f023';
 }
+.unlock:before {
+	content: '\f09c';
+}
 .bookmark16:before {
 	content: '\f02e';
 }
