@@ -100,11 +100,12 @@ function requests(divid, options) {
 		}
 
 		var div = $("<div class='formentry'></div>")
-		var div_icon = $("<div></div>")
-		var div_title = $("<div></div>")
+		var div_content = $("<div class='formentry-content'></div>")
+		var div_icon = $("<div class='formentry-icon icon'></div>")
+		var div_title = $("<div class='formentry-text'></div>")
 		var link = $("<span class='icon link16'></span>")
-		var p1 = $("<h6 class='b'></h6>")
-		var p2 = $("<div style='font-style:italic;padding-left:1em'></div>")
+		var p1 = $("<h6 class='formentry-title'></h6>")
+		var p2 = $("<div class='formentry-desc'></div>")
 
 		div.attr("folder_name", d.form_definition.FolderName)
 		div.addClass("form_folder")
@@ -124,7 +125,8 @@ function requests(divid, options) {
 		p1.prepend(link)
 		div_title.append(p1)
 		div_title.append(p2)
-		div.append([div_icon, div_title])
+		div_content.append([div_icon, div_title])
+		div.append(div_content)
 
 		div.bind("click", function() {
 			var folder_name = div.attr("folder_name")
@@ -142,11 +144,12 @@ function requests(divid, options) {
 
 	o.render_form = function(d) {
 		var div = $("<div class='formentry'></div>")
-		var div_icon = $("<div></div>")
-		var div_title = $("<div></div>")
+		var div_content = $("<div class='formentry-content'></div>")
+		var div_icon = $("<div class='formentry-icon icon'></div>")
+		var div_title = $("<div class='formentry-text'></div>")
 		var link = $("<span class='icon link16'></span>")
-		var p1 = $("<h6 class='b'></h6>")
-		var p2 = $("<div style='font-style:italic;padding-left:1em'></div>")
+		var p1 = $("<h6 class='formentry-title'></h6>")
+		var p2 = $("<div class='formentry-desc'></div>")
 
 		div.attr("form_name", d.form_name)
 		if (!d.form_definition) {
@@ -172,7 +175,8 @@ function requests(divid, options) {
 		p1.prepend(link)
 		div_title.append(p1)
 		div_title.append(p2)
-		div.append([div_icon, div_title])
+		div_content.append([div_icon, div_title])
+		div.append(div_content)
 
 		div.bind("click", function() {
 			$(this).siblings().hide()
