@@ -10,6 +10,10 @@ function convert_boolean(val) {
 	}
 }
 
+function randomId() {
+	return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+}
+
 function forms() {
 	var o = {}
 
@@ -597,9 +601,6 @@ function form(divid, options) {
 			var label = $("<th style='white-space:nowrap'></th>")
 			var value = $("<td name='val'></td>")
 			line.attr("iid", d.Id)
-			if (d.ExpertMode == true) {
-				line.addClass("hidden")
-			}
 			if (d.Hidden == true) {
 				line.addClass("hidden")
 			}
@@ -683,9 +684,6 @@ function form(divid, options) {
 
 			value.append(input)
 			table.append(line)
-			if (d.Type == "boolean") {
-				input.bootstrapToggle()
-			}
 		}
 		o.install_mandatory_triggers(table)
 		o.install_constraint_triggers(table)
@@ -706,36 +704,6 @@ function form(divid, options) {
 			$(this).parent().remove()
 		})
 		return div
-	}
-
-	o.render_expert_toggle = function() {
-		var n = 0
-		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-			let d = o.form_data.form_definition.Inputs[i]
-			if (d.ExpertMode) {
-				n++
-			}
-		}
-		if (n == 0) {
-			return
-		}
-		var div = $("<button class='icon_fixed_width fa-unlock form_tool col-12'></button>")
-		div.text(i18n.t("forms.expert"))
-		o.area.append(div)
-		div.bind("click", function() {
-			if (div.hasClass("fa-unlock")) {
-				div.removeClass("fa-unlock").addClass("fa-lock")
-			} else {
-				div.removeClass("fa-lock").addClass("fa-unlock")
-			}
-			for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
-				let d = o.form_data.form_definition.Inputs[i]
-				if (!d.ExpertMode) {
-					continue
-				}
-				o.div.find("[iid="+d.Id+"]").toggle(500)
-			}
-		})
 	}
 
 	o.init_sortable = function() {
@@ -791,7 +759,6 @@ function form(divid, options) {
 			}
 		}
 		o.render_add_group()
-		o.render_expert_toggle()
 		o.render_submit()
 		o.render_test()
 		o.render_result()
@@ -823,7 +790,6 @@ function form(divid, options) {
 			o.area.append(form_group)
 		}
 		o.render_add_group()
-		o.render_expert_toggle()
 		o.render_submit()
 		o.render_test()
 		o.render_result()
@@ -832,7 +798,6 @@ function form(divid, options) {
 
 	o.render_form_dict = function() {
 		o.area.empty().append(o.render_form_group(o.options.data))
-		o.render_expert_toggle()
 		o.render_submit()
 		o.render_test()
 		o.render_result()
@@ -1354,25 +1319,38 @@ function form(divid, options) {
 
 
 	o.render_boolean = function(d, content) {
-		let input = $("<input type='checkbox' data-toggle='toggle' data-onstyle='success' data-offstyle='danger'>")
+		let id = randomId()
+		let div = $("<div class='formbool'>")
+		let input = $("<input type='checkbox' id='"+id+"' class='btn-check formbool-input' autocomplete='off'>")
+		let label = $("<label class='btn btn-secondary formbool-label' for='"+id+"'>")
+		div.append([input, label])
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
 		if (content == true) {
+			label.text(i18n.t("action_menu.yes"))
+			label.addClass("btn-success").removeClass("btn-secondary")
 			input.prop("checked", true)
 			input.prop("acid", true)
 		} else {
+			label.text(i18n.t("action_menu.no"))
+			label.addClass("btn-secondary").removeClass("btn-success")
 			input.prop("acid", false)
 		}
 		input.bind("change", function(){
 			if ($(this).prop("checked")) {
+				label.text(i18n.t("action_menu.yes"))
+				label.addClass("btn-success").removeClass("btn-secondary")
 				$(this).prop("acid", true)
 			} else {
+				label.text(i18n.t("action_menu.no"))
+				label.addClass("btn-secondary").removeClass("btn-success")
 				$(this).prop("acid", false)
 			}
 		})
-		return input
+		return div
 	}
+
 	o.render_checklist = function(d, content) {
 		if (d.Candidates && (d.Candidates instanceof Array)) {
 			return o.render_checklist_static(d, content)

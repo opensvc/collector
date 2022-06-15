@@ -123,7 +123,6 @@ form_data_internal = [
                     "Label": "TTL",
                     "DisplayModeLabel": "ttl",
                     "LabelCss": "dns16",
-                    "ExpertMode": True,
                     "Type": "integer",
                     "Id": "ttl"
                 },
@@ -132,7 +131,6 @@ form_data_internal = [
                     "Label": "Priority",
                     "DisplayModeLabel": "prio",
                     "LabelCss": "dns16",
-                    "ExpertMode": True,
                     "Type": "integer",
                     "Id": "prio"
                 },
@@ -668,7 +666,6 @@ form_data_internal = [
                     "DisplayModeLabel": "interval"
                 },
                 {
-                    "ExpertMode": True,
                     "Help": "The name of each pollers that should handle this check",
                     "Form": "generic_list",
                     "Label": "Pollers",

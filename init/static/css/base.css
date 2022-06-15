@@ -2329,7 +2329,22 @@ div.formentry.form_folder {
 	color: grey;
 	font-style: italic;
 }
-
+.formbool-input {
+	position: absolute;
+	z-index: -1;
+}
+.formbool-label {
+	width: inherit;
+	margin: 0;
+}
+.formbool-label.btn-secondary {
+    color: #292b2c;
+    background-color: rgb(252,252,252);
+    border-color: lightgray;
+}
+.formbool:focus-within {
+	outline: black auto 2px;
+}
 .perf_plot {
 	flex: 1 1 600px;
 	margin: 0.5em 0;
