@@ -1930,6 +1930,9 @@ function form(divid, options) {
 	}
 
 	o.hide_input = function(table, d, initial) {
+		if (d.Hidden) {
+			return
+		}
 		let tr = table.find("[iid="+d.Id+"]")
 		if (!initial && tr.hasClass("hidden")) {
 			console.log("hide", d.Id, "already not visible")
@@ -1949,6 +1952,9 @@ function form(divid, options) {
 	}
 
 	o.show_input = function(table, d) {
+		if (d.Hidden) {
+			return
+		}
 		let tr = table.find("[iid="+d.Id+"]")
 		if (!tr.hasClass("hidden")) {
 			return
