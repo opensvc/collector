@@ -1754,13 +1754,23 @@ function form(divid, options) {
 			return false
 		}
 		else if (typeof val === "number") {
-			try {
-				c.ref = parseInt(c.ref)
-			} catch(e) {}
+			if (c.op == "match") {
+				val = "" + val
+			} else {
+				try { c.ref = parseInt(c.ref) } catch(e) {}
+			}
 		}
 		else if (typeof val === "boolean") {
 			c.ref = (c.ref.toLowerCase() == 'true')
 		}
+		else if (typeof val === "string") {
+			if (c.op == "match") {
+				c.ref = "" + c.ref
+			} else {
+				return false
+			}
+		}
+				console.log(c, val, typeof(val))
 		if (((val != "") && (val != null)) || (typeof val === "number")) {
 			if (c.op == ">") {
 				if (c.ref == "empty") {
@@ -1819,7 +1829,7 @@ function form(divid, options) {
 				}
 			} else if (c.op == "match") {
 				let re = RegExp(c.ref)
-				return re.exec(val)
+				return re.exec(""+val)
 			}
 		} else {
 			if (c.op == "==") {
