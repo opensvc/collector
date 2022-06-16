@@ -1124,7 +1124,7 @@ function form(divid, options) {
 			minimumResultsForSearch: 3,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
-			width: o.form_data.form_definition.Width || "17em",
+			width: o.form_data.form_definition.Width || "100%",
 			data: data
 		}
 		if (d.Multiple) {
@@ -1211,7 +1211,7 @@ function form(divid, options) {
 			dropdownParent: o.div,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
-			width: o.form_data.form_definition.Width || "17em",
+			width: o.form_data.form_definition.Width || "100%",
 			templateResult: fmt,
 			templateSelection: fmt
 		}

@@ -2334,7 +2334,7 @@ div.formentry.form_folder {
 	z-index: -1;
 }
 .formbool-label {
-	width: inherit;
+	width: 100%;
 	margin: 0;
 }
 .formbool-label.btn-secondary {
