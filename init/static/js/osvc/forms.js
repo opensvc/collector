@@ -1134,7 +1134,7 @@ function form(divid, options) {
 			options.disabled = true
 		}
 		if (!hasDefault && d.DisableAutoDefault) {
-			options.placeholder = "Select a candidate"
+			options.placeholder = d.Placeholder || "Select a candidate"
 			//options.allowClear = true
 		}
 
@@ -1181,7 +1181,7 @@ function form(divid, options) {
 		let input = $("<select class='oi aci' />")
 		let fmt = function(data) {
 			if (data.id == "") {
-				return "Select candidate"
+				return d.Placeholder || "Select a candidate"
 			}
 			return data.text || data.id
 		}
@@ -1205,9 +1205,10 @@ function form(divid, options) {
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
-			//allowClear: true,
-			//placeholder: "Select candidate",
-			//minimumResultsForSearch: 1,
+			allowClear: d.AllowClear,
+			placeholder: d.Placeholder || "Select a candidate",
+			minimumInputLength: d.SearchMinimumInputLength || 0,
+                        delay: d.SearchDelay || 1,
 			dropdownParent: o.div,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
@@ -1222,6 +1223,7 @@ function form(divid, options) {
 			options.disabled = true
 		}
 
+		console.log(d.Id, options)
 		// save options
 		$.data(input[0], "s2options", options)
 		input.select2(options)
