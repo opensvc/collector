@@ -1199,7 +1199,7 @@ function form(divid, options) {
 
 		let options = {
 			ajax: {
-				delay: 100,
+				delay: d.SearchDelay || 100,
 				dataType: "json",
 				url: getUrlFunc(input, d),
 				processResults: getProcessResultFunc(input, d),
@@ -1208,7 +1208,6 @@ function form(divid, options) {
 			allowClear: d.AllowClear,
 			placeholder: d.Placeholder || "Select a candidate",
 			minimumInputLength: d.SearchMinimumInputLength || 0,
-                        delay: d.SearchDelay || 1,
 			dropdownParent: o.div,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
