@@ -1,3 +1,8 @@
+const userLocale =
+  navigator.languages && navigator.languages.length
+    ? navigator.languages[0]
+    : navigator.language;
+
 function convert_boolean(val) {
 	try {
 		if (String(val)[0].toLowerCase().match(/[1ty]/)) {
@@ -1205,6 +1210,7 @@ function form(divid, options) {
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
+			language: userLocale,
 			allowClear: d.AllowClear,
 			placeholder: d.Placeholder || "Select a candidate",
 			minimumInputLength: d.SearchMinimumInputLength || 0,
