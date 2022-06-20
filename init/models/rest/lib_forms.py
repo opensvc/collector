@@ -70,7 +70,7 @@ def check_input_condition(indef, _d=None):
     if "Condition" not in indef:
         return True
     cond = indef['Condition']
-    return check_condition(cond, _d=_d)
+    return check_conditions(cond, _d=_d)
 
 def check_output_condition(outdef, _d=None):
     if "Condition" not in outdef:
@@ -79,6 +79,16 @@ def check_output_condition(outdef, _d=None):
     if outdef.get('Format') != "dict":
         raise Exception("Output condition can only be set on dict-format output")
     return check_condition(cond, _d=_d)
+
+def check_conditions(cond, _d=None):
+    if isinstance(cond, list):
+        for c in cond:
+            v = check_condition(c, _d=_d)
+            if not v:
+                return False
+        return True
+    else:
+        return check_condition(cond, _d=_d)
 
 def check_condition(cond, _d=None):
     if cond == '':
