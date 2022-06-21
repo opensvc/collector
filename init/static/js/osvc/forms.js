@@ -1897,7 +1897,55 @@ function form(divid, options) {
 	}
 
 	o.submit_disabled = function() {
-		return o.submit_tool.hasClass("nok")
+		o.submit_tool.hasClass("nok")
+	}
+
+	o.violations = function() {
+		let m = {
+			constraint: [],
+			mandatory: [],
+			candidates: [],
+		}
+		o.div.find(".constraint_violation").parents("tr[iid]:not(.hidden)").each(function() {
+			m["constraint"].push($(this).attr("iid"))
+		})
+		o.div.find(".mandatory_violation").parents("tr[iid]:not(.hidden)").each(function() {
+			m["mandatory"].push($(this).attr("iid"))
+		})
+		o.div.find(".candidates_violation").parents("tr[iid]:not(.hidden)").each(function() {
+			m["candidates"].push($(this).attr("iid"))
+		})
+		return m
+	}
+
+	o.violations_report = function() {
+		let m = o.violations()
+		console.log("violations:", m)
+		div = $("<div>")
+		let t = $("<h4>")
+		t.text("violations")
+		div.append(t)
+		fmt = (cat) => {
+			let l = m[cat]
+			if (!l || l.length == 0) {
+				return
+			}
+			let t = $("<h5>")
+			let d = o.get_input_definition(id)
+			t.text(cat)
+			div.append(t)
+			let u = $("<ul>")
+			div.append(u)
+			for (let i=0; i<l.length; i++) {
+				let e = $("<li>")
+				e.text(o.get_input_definition(l[i]).Label)
+				u.append(e)
+			}
+		}
+		fmt("constraint")
+		fmt("mandatory")
+		fmt("candidates")
+		return div
 	}
 
 	o.disable_submit = function() {
@@ -1905,6 +1953,7 @@ function form(divid, options) {
 			return
 		}
 		o.submit_tool.addClass("nok").removeClass("fa-save")
+		//o.result.empty().append(o.violations_report())
 	}
 
 	o.enable_submit = function() {
@@ -1912,6 +1961,7 @@ function form(divid, options) {
 			return
 		}
 		o.submit_tool.addClass("fa-save").removeClass("nok")
+		//o.result.empty()
 	}
 
 	o.install_mandatory_trigger = function(input, d) {
@@ -1966,6 +2016,7 @@ function form(divid, options) {
 				o.hide_input(table, triggers[i], initial)
 			}
 		}
+		o.update_submit()
 	}
 
 	o.show_input = function(table, d) {
@@ -1997,6 +2048,7 @@ function form(divid, options) {
 			input.prop("acid", d.Default)
 			input.change()
 		}
+		o.update_submit()
 	}
 
 	o.install_cond_trigger = function(table, key, d) {
@@ -2465,6 +2517,15 @@ function form(divid, options) {
 				val = o.sub_forms[formDef.Id].form_to_data()
 			}
 			return val
+	}
+
+	o.get_input_definition = function(id) {
+		for (let i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			let inputDef = o.form_data.form_definition.Inputs[i]
+			if (inputDef.Id == id) {
+				return inputDef
+			}
+		}
 	}
 
 	o.table_to_dict = function(table) {
