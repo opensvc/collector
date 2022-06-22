@@ -821,8 +821,11 @@ def validate_input_data(form_definition, data, _input):
                 kwargs[entry[:idx].strip()] = entry[idx+1:].strip()
             for kwarg, _val in kwargs.items():
                 kwargs[kwarg] = form_dereference(_val, data)
-            candidates = handler.handle(*args, **kwargs)["data"]
             key = key.lstrip("#")
+            kwargs["limit"] = 1
+            kwargs["search"] = val
+            kwargs["search_props"] = key
+            candidates = handler.handle(*args, **kwargs)["data"]
             try:
                 candidates = [form_get_val(candidate, key) for candidate in candidates]
             except ValueError:
