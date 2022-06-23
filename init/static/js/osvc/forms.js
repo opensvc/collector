@@ -1293,10 +1293,7 @@ function form(divid, options) {
 		}
 		let id_prop = get_id_prop(input, d)
 		let initArgs = prepare_args(input, d.Args)
-		if (!("filters" in initArgs)) {
-			initArgs.filters = []
-		}
-		initArgs.filters.push(id_prop + " " + content)
+		initArgs.search = content
 		initOpts = {
 			type: "GET",
 			url: url,
@@ -1311,6 +1308,9 @@ function form(divid, options) {
 				return
 			}
 			data.results.forEach(function(e){
+				if (e.id != content) {
+					return
+				}
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
 				input.append(option).trigger("change")
