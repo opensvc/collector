@@ -1294,6 +1294,7 @@ function form(divid, options) {
 		let id_prop = get_id_prop(input, d)
 		let initArgs = prepare_args(input, d.Args)
 		initArgs.search = content
+		initArgs.search_props = ""
 		initOpts = {
 			type: "GET",
 			url: url,
