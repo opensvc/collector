@@ -2068,7 +2068,7 @@ function form(divid, options) {
 		function trigger(initial) {
 			let data
 			if (initial) {
-				data = o.options.data
+				data = o.options.data || {}
 			} else {
 				data = o.form_to_data()
 			}
