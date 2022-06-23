@@ -2066,7 +2066,12 @@ function form(divid, options) {
 			trigger(false)
 		})
 		function trigger(initial) {
-			let data = o.form_to_data()
+			let data
+			if (initial) {
+				data = o.options.data
+			} else {
+				data = o.form_to_data()
+			}
 			if (Array.isArray(data) && (data.length > 0)) {
 				let i = table.parent().prevAll(".form_group").length
 				data = data[i]
