@@ -643,7 +643,7 @@ class rest_get_report_definition(rest_get_line_handler):
             raise HTTP(404, "no report found")
 
         import yaml
-        d = yaml.load(data.report_yaml)
+        d = yaml.load(data.report_yaml or "")
 
         return dict(data=d)
 
@@ -709,7 +709,7 @@ class rest_get_reports_chart_samples(rest_get_handler):
             raise HTTP(404, "chart %s not found" % str(id))
 
         try:
-            definition = yaml.load(chart.chart_yaml)
+            definition = yaml.load(chart.chart_yaml or "")
         except Exception:
             raise HTTP(500, "chart %s definition is corrupted" % str(id))
 
@@ -782,7 +782,10 @@ class rest_get_report_export(rest_get_handler):
         if report is None:
             return {"error": "Report not found"}
 
-        report_definition = yaml.load(report.report_yaml)
+        if report.report_yaml is None:
+            report_definition = {}
+        else:
+            report_definition = yaml.load(report.report_yaml)
         report_data = {
           "report_name": report.report_name,
           "report_definition": report_definition
@@ -812,7 +815,7 @@ class rest_get_report_export(rest_get_handler):
         chart_name = {}
 
         for row in chart_rows:
-            chart_definition = yaml.load(row.chart_yaml)
+            chart_definition = yaml.load(row.chart_yaml or "")
             chart_data = {
               "chart_name": row.chart_name,
               "chart_definition": chart_definition

@@ -112,6 +112,8 @@ def get_report_id(report_id):
 
 #
 def lib_reports_add_to_git(report_id, content, otype="reports"):
+    if content is None:
+        return
     o = gittrack.gittrack(otype=otype)
     r = o.commit(report_id, content, author=user_name(email=True))
 
