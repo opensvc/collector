@@ -678,12 +678,7 @@ function form(divid, options) {
 				input = o.render_input(d, content)
 			}
 
-			if (o.form_data.form_definition.Width) {
-				input.width(o.form_data.form_definition.Width)
-			}
-			if (o.form_data.form_definition.MinWidth) {
-				input.css({"min-width": o.form_data.form_definition.MinWidth})
-			}
+			o.set_input_width(d, input)
 
 			o.add_cond_triggers(d)
 
@@ -695,6 +690,20 @@ function form(divid, options) {
 		o.install_cond_triggers(table)
 		o.install_fn_triggers(table)
 		return table
+	}
+
+	o.set_input_width = function(d, input) {
+		let width = o.input_width(d)
+		if (width) {
+			input.width(width)
+		}
+		if (o.form_data.form_definition.MinWidth) {
+			input.css({"min-width": o.form_data.form_definition.MinWidth})
+		}
+	}
+
+	o.input_width = function(d) {
+		return d.Width || o.form_data.form_definition.Width
 	}
 
 	o.render_move_group = function() {
@@ -1139,7 +1148,7 @@ function form(divid, options) {
 			minimumResultsForSearch: 3,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
-			width: o.form_data.form_definition.Width || "100%",
+			width: o.input_width(d) || "100%",
 			data: data
 		}
 		if (d.Multiple) {
@@ -1227,7 +1236,7 @@ function form(divid, options) {
 			dropdownParent: o.div,
 			selectionCssClass: "ois2selection",
 			dropdownCssClass: "ois2dropdown",
-			width: o.form_data.form_definition.Width || "100%",
+			width: o.input_width(d) || "100%",
 			templateResult: fmt,
 			templateSelection: fmt
 		}
