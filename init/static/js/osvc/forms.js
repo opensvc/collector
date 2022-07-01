@@ -711,6 +711,12 @@ function form(divid, options) {
 		return div
 	}
 
+	o.init_events = function() {
+		// to call when inputs are displayed
+		console.log("send initial change events")
+		o.area.find("[iid]").find("select,input:not([type=checkbox]),textarea,.form_input_info").change()
+	}
+
 	o.init_sortable = function() {
 			o.area.sortable({
 				helper: "clone",
@@ -742,6 +748,7 @@ function form(divid, options) {
 			form_group.append(new_group)
 			form_group.insertAfter(ref)
 			o.init_sortable()
+			o.init_events()
 			o.reinit_select2()
 		})
 	}
@@ -768,6 +775,7 @@ function form(divid, options) {
 		o.render_test()
 		o.render_result()
 		o.init_sortable()
+		o.init_events()
 	}
 
 	o.render_form_dict_of_dict = function() {
@@ -799,6 +807,7 @@ function form(divid, options) {
 		o.render_test()
 		o.render_result()
 		o.init_sortable()
+		o.init_events()
 	}
 
 	o.render_form_dict = function() {
@@ -806,6 +815,7 @@ function form(divid, options) {
 		o.render_submit()
 		o.render_test()
 		o.render_result()
+		o.init_events()
 	}
 
 	o.render_form = function() {
@@ -1228,7 +1238,6 @@ function form(divid, options) {
 			options.disabled = true
 		}
 
-		console.log(d.Id, options)
 		// save options
 		$.data(input[0], "s2options", options)
 		input.select2(options)
