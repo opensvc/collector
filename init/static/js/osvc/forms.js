@@ -1907,7 +1907,7 @@ function form(divid, options) {
 	}
 
 	o.submit_disabled = function() {
-		o.submit_tool.hasClass("nok")
+		return o.submit_tool.hasClass("nok")
 	}
 
 	o.violations = function() {
