@@ -740,7 +740,8 @@ def _validate_data(form_definition, data):
 
 def validate_input_data(form_definition, data, _input):
     input_id = _input.get("Id")
-    val = data.get(input_id)
+    key_id = _input.get("Key")
+    val = data.get(key_id or input_id)
 
     if not check_input_condition(_input, data):
         return
@@ -764,12 +765,12 @@ def validate_input_data(form_definition, data, _input):
     #
     key_defs = _input.get("Keys", [])
     for key_def in key_defs:
-        key, val = key_def.split("=", 1)
+        key, _val = key_def.split("=", 1)
         key = key.strip()
-        val = form_dereference(val.strip(), data)
+        _val = form_dereference(val.strip(), data)
         if key not in data:
             raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
-        if "#" not in val and val != data[key]:
+        if "#" not in _val and _val != data[key]:
             # verify the submitted key value is aligned with the forced value in the form definition
             raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(val), input_id))
 
@@ -822,7 +823,7 @@ def validate_input_data(form_definition, data, _input):
             for kwarg, _val in kwargs.items():
                 kwargs[kwarg] = form_dereference(_val, data)
             key = key.lstrip("#")
-            kwargs["limit"] = 1
+            kwargs["limit"] = 0
             kwargs["search"] = val
             kwargs["search_props"] = key
             candidates = handler.handle(*args, **kwargs)["data"]
