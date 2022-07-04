@@ -767,12 +767,12 @@ def validate_input_data(form_definition, data, _input):
     for key_def in key_defs:
         key, _val = key_def.split("=", 1)
         key = key.strip()
-        _val = form_dereference(val.strip(), data)
+        _val = form_dereference(_val.strip(), data)
         if key not in data:
             raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
         if "#" not in _val and _val != data[key]:
             # verify the submitted key value is aligned with the forced value in the form definition
-            raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(val), input_id))
+            raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(_val), input_id))
 
     #
     # Validate strict candidates in static input
