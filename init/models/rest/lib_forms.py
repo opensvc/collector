@@ -848,8 +848,9 @@ def validate_input_data(form_definition, data, _input):
                 kwargs[kwarg] = form_dereference(_val, data)
             key = key.lstrip("#")
             kwargs["limit"] = 0
-            kwargs["search"] = val
             kwargs["search_props"] = key
+            if not isinstance(val, (list, dict)):
+                kwargs["search"] = val
             candidates = handler.handle(*args, **kwargs)["data"]
             try:
                 candidates = [form_get_val(candidate, key) for candidate in candidates]
