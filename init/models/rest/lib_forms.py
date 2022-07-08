@@ -764,15 +764,39 @@ def validate_input_data(form_definition, data, _input):
     # Validate input keys
     #
     key_defs = _input.get("Keys", [])
-    for key_def in key_defs:
-        key, _val = key_def.split("=", 1)
-        key = key.strip()
-        _val = form_dereference(_val.strip(), data)
-        if key not in data:
-            raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
-        if "#" not in _val and _val != data[key]:
-            # verify the submitted key value is aligned with the forced value in the form definition
-            raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(_val), input_id))
+    if isinstance(val, list):
+        #
+        # Example format for input "list_vms" with Multiple=yes:
+        #
+        # {
+        #   "action": "poweroff",
+        #   "list_vms": [
+        #     {
+        #       "hostname": "n3",
+        #       "uuid": "xxxxxxxx-99c1-7554-6373-77cabe5e9605",
+        #       "powerstate": "poweredOn"
+        #     },
+        #     {
+        #       "hostname": "n4",
+        #       "uuid": "xxxxxxxx-5945-296d-07fd-6fa7fc2588de",
+        #       "powerstate": "poweredOn"
+        #     }
+        #   ]
+        # }
+        #
+        ref_data = val
+    else:
+        ref_data = [data]
+    for _ref_data in ref_data:
+        for key_def in key_defs:
+            key, _val = key_def.split("=", 1)
+            key = key.strip()
+            _val = form_dereference(_val.strip(), _ref_data)
+            if key not in _ref_data:
+                raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
+            if "#" not in _val and _val != _ref_data[key]:
+                # verify the submitted key value is aligned with the forced value in the form definition
+                raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(_ref_data[key]), str(_val), input_id))
 
     #
     # Validate strict candidates in static input
@@ -808,38 +832,42 @@ def validate_input_data(form_definition, data, _input):
         key = _input.get("Value")
 
     fn = _input.get("Function")
-    if fn is not None and key is not None:
+    if fn is not None and key is not None and _input.get("StrictCandidates"):
         fn = form_dereference(fn, data)
         if fn.startswith("/"):
-            handler = get_handler("GET", fn)
-            if handler is None:
-                raise HTTP(400, "Unknown handler '%s': can not verify the submitted value is a valid candidates" % fn)
-            args = form_rest_args(fn, data)
-            kwargs = {}
-            for entry in _input.get("Args", []):
-                entry = form_dereference(entry, data)
-                idx = entry.index("=")
-                kwargs[entry[:idx].strip()] = entry[idx+1:].strip()
-            for kwarg, _val in kwargs.items():
-                kwargs[kwarg] = form_dereference(_val, data)
-            key = key.lstrip("#")
-            kwargs["limit"] = 0
-            kwargs["search"] = val
-            kwargs["search_props"] = key
-            candidates = handler.handle(*args, **kwargs)["data"]
-            try:
-                candidates = [form_get_val(candidate, key) for candidate in candidates]
-            except ValueError:
-                raise HTTP(400, "Key '%s' not in candidates" % key)
             for val in vals:
+                handler = get_handler("GET", fn)
+                if handler is None:
+                    raise HTTP(400, "Unknown handler '%s': can not verify the submitted value is a valid candidates" % fn)
+                args = form_rest_args(fn, data)
+                kwargs = {}
+                for entry in _input.get("Args", []):
+                    entry = form_dereference(entry, data)
+                    idx = entry.index("=")
+                    kwargs[entry[:idx].strip()] = entry[idx+1:].strip()
+                for kwarg, _val in kwargs.items():
+                    kwargs[kwarg] = form_dereference(_val, data)
+                key = key.lstrip("#")
+                if isinstance(val, dict):
+                    key_val = val.get(key)
+                else:
+                    key_val = val
+                kwargs["limit"] = 0
+                kwargs["search"] = key_val
+                kwargs["search_props"] = key
+                candidates = handler.handle(*args, **kwargs)["data"]
                 try:
-                    int_val = int(val)
+                    candidates = [form_get_val(candidate, key) for candidate in candidates]
                 except ValueError:
-                    int_val = val
-                if not val and not _input.get("Mandatory"):
+                    raise HTTP(400, "Key '%s' not in candidates" % key)
+                if not key_val and not _input.get("Mandatory"):
                     continue
-                if val not in candidates and int_val not in candidates and unicode(val) not in candidates:
-                    raise HTTP(400, "Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
+                try:
+                    int_val = int(key_val)
+                except (TypeError, ValueError):
+                    int_val = key_val
+                if key_val not in candidates and int_val not in candidates and unicode(key_val) not in candidates:
+                    raise HTTP(400, "Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(key_val), str(candidates), "/"+"/".join(args)))
 
 def form_dereference(s, data, prefix=""):
     for key in sorted(data.keys(), reverse=True):
