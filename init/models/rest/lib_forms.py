@@ -764,15 +764,39 @@ def validate_input_data(form_definition, data, _input):
     # Validate input keys
     #
     key_defs = _input.get("Keys", [])
-    for key_def in key_defs:
-        key, _val = key_def.split("=", 1)
-        key = key.strip()
-        _val = form_dereference(_val.strip(), data)
-        if key not in data:
-            raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
-        if "#" not in _val and _val != data[key]:
-            # verify the submitted key value is aligned with the forced value in the form definition
-            raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(data[key]), str(_val), input_id))
+    if isinstance(val, list):
+        #
+        # Example format for input "list_vms" with Multiple=yes:
+        #
+        # {
+        #   "action": "poweroff",
+        #   "list_vms": [
+        #     {
+        #       "hostname": "n3",
+        #       "uuid": "xxxxxxxx-99c1-7554-6373-77cabe5e9605",
+        #       "powerstate": "poweredOn"
+        #     },
+        #     {
+        #       "hostname": "n4",
+        #       "uuid": "xxxxxxxx-5945-296d-07fd-6fa7fc2588de",
+        #       "powerstate": "poweredOn"
+        #     }
+        #   ]
+        # }
+        #
+        ref_data = val
+    else:
+        ref_data = [data]
+    for _ref_data in ref_data:
+        for key_def in key_defs:
+            key, _val = key_def.split("=", 1)
+            key = key.strip()
+            _val = form_dereference(_val.strip(), _ref_data)
+            if key not in _ref_data:
+                raise HTTP(400, "missing key '%s', from input %s" % (key, input_id))
+            if "#" not in _val and _val != _ref_data[key]:
+                # verify the submitted key value is aligned with the forced value in the form definition
+                raise HTTP(400, "unallowed key value '%s=%s', expecting '%s', from input %s" % (key, str(_ref_data[key]), str(_val), input_id))
 
     #
     # Validate strict candidates in static input
