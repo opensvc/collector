@@ -858,7 +858,7 @@ def validate_input_data(form_definition, data, _input):
             for val in vals:
                 try:
                     int_val = int(val)
-                except ValueError:
+                except (TypeError, ValueError):
                     int_val = val
                 if not val and not _input.get("Mandatory"):
                     continue
