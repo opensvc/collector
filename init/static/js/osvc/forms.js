@@ -1144,6 +1144,7 @@ function form(divid, options) {
 		}
 
 		let options = {
+			tags: !d.StrictCandidates,
 			dropdownParent: o.div,
 			minimumResultsForSearch: 3,
 			selectionCssClass: "ois2selection",
@@ -1229,6 +1230,7 @@ function form(divid, options) {
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
+			tags: !d.StrictCandidates,
 			language: userLocale,
 			allowClear: d.AllowClear,
 			placeholder: d.Placeholder || "Select a candidate",
