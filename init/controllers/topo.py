@@ -1292,7 +1292,8 @@ def json_startup_data():
 
             family = s.split("#")[0]
 
-            if family == "task":
+            matches = ["task", "vhost", "certificate", "route", "expose"]
+            if any(x in family for x in matches):
                 continue
 
             if family in disk_types:
