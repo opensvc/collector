@@ -1203,7 +1203,7 @@ def ajax_comp_svc_status():
     q = db.comp_svc_status.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("comp_svc_status.", "u.")
+    where = str(q).replace("comp_svc_status", "u")
 
     mt.setup_pager(-1)
     mt.additional_inputs = t.ajax_inputs()
@@ -1272,7 +1272,7 @@ def ajax_comp_node_status():
     q = db.comp_node_status.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("comp_node_status.", "u.")
+    where = str(q).replace("comp_node_status", "u")
 
     mt.setup_pager(-1)
     mt.additional_inputs = t.ajax_inputs()
@@ -1520,7 +1520,7 @@ def ajax_comp_mod_status():
     q = db.comp_mod_status.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("comp_mod_status.", "u.")
+    where = str(q).replace("comp_mod_status", "u")
 
     mt.setup_pager(-1)
     mt.additional_inputs = t.ajax_inputs()
