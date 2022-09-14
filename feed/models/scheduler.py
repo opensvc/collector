@@ -1314,6 +1314,103 @@ def insert_freenas(name=None, node_id=None):
         db.executesql(sql)
         db.commit()
 
+def insert_pure(name=None, node_id=None):
+    import glob
+    import os
+    from applications.init.modules import pure
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='pure'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        print d
+        s = pure.get_pure(d)
+        if s is None :
+            print "error parsing data"
+            continue
+
+        name = s.arrays[0]["name"]
+        version = s.arrays[0]["version"]
+        used = int(s.arrays[0]["space"]["total_physical"])/1024/1024
+        total = int(s.arrays[0]["capacity"])/1024/1024
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, name)
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        vals.append([name,
+                     "Pure",
+                     "0",
+                     version,
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """ % name
+        array_id = str(db.executesql(sql)[0][0])
+
+        """
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for pod in s.pods:
+            used = pod["total_physical"]
+            vals.append([name,
+                         pod["name"],
+                         str(total-used),
+                         str(used),
+                         str(total),
+                         now])
+        generic_insert('stor_array_dg', vars, vals)
+        purge_array_dg(vals)
+        """
+
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        for port in s.ports:
+            tgt_id = port["wwn"].replace(":", "").lower()
+            vals.append([array_id, tgt_id])
+        generic_insert('stor_array_tgtid', vars, vals)
+        purge_array_tgtid(vals)
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_name',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+
+        vals = []
+        wwid_prefix = "624a9370"
+        for d in s.volumes:
+            vals.append([
+                wwid_prefix + d["serial"].lower(),
+                name,
+                d["name"],
+                d["id"],
+                int(d["space"]["total_physical"]) / 1024 // 1024,
+                int(d["provisioned"]) / 1024 // 1024,
+                d["subtype"],
+                "",
+                now
+        ])
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
+        db.executesql(sql)
+        db.commit()
+
 def insert_xtremio(name=None, node_id=None):
     import glob
     import os

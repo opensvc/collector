@@ -759,6 +759,15 @@ def rpc_update_freenas(name, vars, vals, auth):
 
 @service.xmlrpc
 @service.jsonrpc2
+def update_pure(name, vars, vals, auth):
+    return rpc_update_pure(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_pure(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "pure", insert_pure)
+
+@service.xmlrpc
+@service.jsonrpc2
 def update_xtremio(name, vars, vals, auth):
     return rpc_update_xtremio(name, vars, vals, auth)
 
@@ -853,6 +862,9 @@ def insert_gcediskss():
 
 def insert_freenass():
     return insert_freenas()
+
+def insert_pures():
+    return insert_pure()
 
 def insert_xtremios():
     return insert_xtremio()

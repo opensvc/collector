@@ -64,6 +64,10 @@ data = {
        'comment': "Insert IBM VirtualIO arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_pures'),
+       'comment': "Insert Pure Storage arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_xtremios'),
        'comment': "Insert XtremIO arrays data from uploads",
      },
