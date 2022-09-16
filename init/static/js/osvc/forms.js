@@ -2018,16 +2018,13 @@ function form(divid, options) {
 	}
 
 	o.hide_input = function(table, d, initial) {
-		if (d.Hidden) {
-			return
-		}
 		let tr = table.find("[iid="+d.Id+"]")
 		if (!initial && tr.hasClass("hidden")) {
 			console.log("hide", d.Id, "already not visible")
-			return
+		} else if (!d.Hidden) {
+			console.log("hide", d.Id)
+			tr.addClass("hidden")
 		}
-		console.log("hide", d.Id)
-		tr.addClass("hidden")
 		if (d.Id in o.cond_triggers) {
 			let triggers = o.cond_triggers[d.Id]
 			for (let i=0; i<triggers.length; i++) {
@@ -2041,15 +2038,13 @@ function form(divid, options) {
 	}
 
 	o.show_input = function(table, d) {
-		if (d.Hidden) {
-			return
-		}
 		let tr = table.find("[iid="+d.Id+"]")
 		if (!tr.hasClass("hidden")) {
-			return
+			console.log("show", d.Id, "already visible")
+		} else if (!d.Hidden) {
+			console.log("show", d.Id)
+			tr.removeClass("hidden")
 		}
-		console.log("show", d.Id)
-		tr.removeClass("hidden")
 		let input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
 		if (input.is("select.select2-hidden-accessible")) {
 			let data = $.data(input[0])
@@ -2064,7 +2059,7 @@ function form(divid, options) {
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
 			}
-		} else if ((d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
+		} else if ((!d.Type || d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
 			input.val(d.Default)
 			input.prop("acid", d.Default)
 			input.change()
@@ -2582,6 +2577,9 @@ function form(divid, options) {
 					data[input_key_id] = o.options[input_key_id]
 				}
 				if (!inputDef.Hidden) {
+					continue
+				} else if (inputDef.Condition && !o.eval_conditions(inputDef, data)) {
+					// all depending inputs must be located before
 					continue
 				}
 				// Explicitely hidden inputs have their value embedded
