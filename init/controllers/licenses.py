@@ -4,19 +4,19 @@ data = {
    'licences': [
      {
        'prj_name': 'OpenSVC - Agent',
-       'prj_www': 'http://www.opensvc.com',
-       'link': 'http://www.opensvc.com',
+       'prj_www': 'https://www.opensvc.com',
+       'link': 'https://www.opensvc.com',
      },
      {
        'prj_name': 'OpenSVC - Collector',
-       'prj_www': 'http://www.opensvc.com',
-       'link': 'http://www.opensvc.com/init/static/eval/evaluation_agreement.txt',
+       'prj_www': 'https://www.opensvc.com',
+       'link': 'https://www.opensvc.com/init/static/LICENSE-2.0.txt',
      },
      {
        'prj_name': 'OpenSVC - Collector',
-       'prj_www': 'http://www.opensvc.com',
+       'prj_www': 'https://www.opensvc.com',
        'link_type': 'privacy policy',
-       'link': 'http://www.opensvc.com/init/static/views/privacypolicy.html',
+       'link': 'https://www.opensvc.com/init/static/views/privacypolicy.html',
      },
    ],
  },
