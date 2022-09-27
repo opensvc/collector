@@ -22,6 +22,7 @@ viz*.dot
 /www_opensvc_com
 __init__.py
 *.log
+*.pdf
 *.log.*
 init/modules/replication_config.py
 init/static/custom.css
