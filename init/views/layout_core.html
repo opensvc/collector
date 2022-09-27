@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{=T.accepted_language or 'en'}}">
+	<head>
+		<title>{{=response.title or request.application}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />     
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+		{{include 'web2py_ajax.html'}}
+		<link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
+	</head>
+	<body>
+		{{if 'MSIE 6' in request.env.http_user_agent:}}
+		{{=redirect(URL(r=request, c='unsupported', f='index'))}}
+		{{pass}}
+		<div class="header">
+			<div id="login_location"></div>
+		</div>
+		<div class="layout" id="layout">
+			{{include}}
+		</div>
+		<div class=footer>
+			<span>&copy; 2009-2022 </span>
+			<span class="header_logo">{{=A("OpenSVC", _href="https://www.opensvc.com", _class="icon www16 hide_text_on_small", _target="_blank")}}</span>
+			<span> - </span>
+			<span class="header_logo">{{=A('Licenses & Privacy', callback=URL(c='licenses', f='licenses'), _class='icon fa-balance-scale hide_text_on_small')}}</span>
+			<span> - </span>
+			<span class="header_logo">{{=A("Docs", _href="https://docs.opensvc.com", _class="icon fa-book hide_text_on_small", _target="_blank")}}</span>
+		</div>
+		<script> app_start() </script>
+	</body>
+</html>
+
