@@ -1023,10 +1023,29 @@ function form(divid, options) {
 		o.area.append(button)
 
 		button.bind("click", function() {
+			width = button.width()
 			if (o.submit_disabled()) {
 				o.area.find(".constraint_violation,.mandatory_violation").effect("highlight", 600)
 				return
 			}
+			button.prop("disabled", true)
+			timeout = o.form_data.form_definition.ResubmitDelay || 2000
+			delay = 1000
+			tick = function() {
+				setTimeout(function() {
+					if (timeout > 0) {
+						timeout -= delay
+						button.width(width)
+						button.text(Math.floor(timeout/1000) + "s")
+						tick()
+					} else {
+						button.width("auto")
+						button.text(i18n.t("forms.submit"))
+						button.prop("disabled", false)
+					}
+				}, delay)
+			}
+			tick()
 			o.result.empty()
 			let data = o.form_to_data()
 			o.submit_action(data)
