@@ -229,6 +229,10 @@ def forms_admin_load():
     return forms_admin()["table"]
 
 @auth.requires_login()
+def portal():
+    return forms()
+
+@auth.requires_login()
 def forms():
     o = {}
     if "form_name" in request.vars:
