@@ -807,6 +807,8 @@ def cron_alerts_daily():
     purge_alerts_comp_diff()
     print "purge_sessions"
     purge_sessions()
+    print "cron_purge_pdf"
+    cron_purge_pdf()
 
 def cron_alerts_hourly():
     rets = []
@@ -820,6 +822,17 @@ def cron_purge_tempviz():
     import glob
     pattern = os.path.join(os.getcwd(), 'applications', 'init', 'static', 'tempviz*')
     threshold = time.time() - 3600
+    for fpath in glob.glob(pattern):
+        mtime = os.path.getmtime(fpath)
+        if mtime < threshold:
+            print "rm", fpath, "mtime", mtime
+            os.unlink(fpath)
+
+def cron_purge_pdf():
+    import time
+    import glob
+    pattern = os.path.join(os.getcwd(), 'applications', 'init', 'static', '*-*-*-*-*.pdf')
+    threshold = time.time() - 3600*24
     for fpath in glob.glob(pattern):
         mtime = os.path.getmtime(fpath)
         if mtime < threshold:
