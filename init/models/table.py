@@ -229,16 +229,17 @@ class HtmlTable(object):
             _db = self.csv_db
         else:
             _db = db
-        if self.csv_left is None:
-            if self.csv_orderby is None:
-                return _db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit))
-            else:
-                return _db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit))
-        else:
-            if self.csv_orderby is None:
-                return _db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit), left=self.csv_left)
-            else:
-                return _db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
+        cols = self.get_all_columns(db=_db)
+        kwargs = {
+            "cacheable": True,
+        }
+        if self.csv_left is not None:
+            kwargs["left"] = self.csv_left
+        if self.csv_orderby is not None:
+            kwargs["orderby"] = self.csv_orderby
+        if self.csv_limit is not None:
+            kwargs["limitby"] = (0,self.csv_limit)
+        return _db(self.csv_q).select(*cols, **kwargs)
 
     def _csv(self):
         lines = [';'.join(self.cols)]
@@ -302,6 +303,29 @@ class HtmlTable(object):
         top.sort(lambda x, y: cmp(x["percent"], y["percent"]), reverse=True)
         response.headers['Content-Type'] = "application/json"
         return json.dumps({"data": top}, use_decimal=True)
+
+    def get_all_columns(self, fmt="dal", db=db):
+        sorted_columns = []
+        for c in self.cols:
+            if c not in self.colprops:
+                continue
+            cp = self.colprops[c]
+            if cp.table is None:
+                continue
+            if cp.field not in db[cp.table]:
+                continue
+            sorted_columns.append(c)
+        if fmt == "dal":
+            for i, c in enumerate(sorted_columns):
+                cp = self.colprops[c]
+                sorted_columns[i] = db[cp.table][cp.field]
+        elif fmt == "sql":
+            for i, c in enumerate(sorted_columns):
+                cp = self.colprops[c]
+                sorted_columns[i] = cp.table+"."+cp.field
+            sorted_columns = ','.join(sorted_columns)
+
+        return sorted_columns
 
     def get_visible_columns(self, fmt="dal", db=db):
         visible_columns = request.vars.props.split(',')
