@@ -742,7 +742,7 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<button class='button_div icon_fixed_width add16'>")
+		var div = $("<button name='add_group' class='button_div icon_fixed_width add16'>")
 		div.text(i18n.t("forms.add_group"))
 		div.css({"margin-top": "1em"})
 		o.area.append(div)
@@ -756,7 +756,11 @@ function form(divid, options) {
 			form_group.append(move)
 			form_group.append(remove)
 			form_group.append(new_group)
-			form_group.insertAfter(ref)
+			if (ref.length == 1) {
+				form_group.insertAfter(ref)
+			} else {
+				o.area.prepend(form_group)
+			}
 			o.init_sortable()
 			o.init_events()
 			o.reinit_select2()
@@ -765,12 +769,24 @@ function form(divid, options) {
 	}
 
 	o.set_form_group_tools_visibility = function() {
-		// show remove/move group tools if the area has more than one group
+		// show remove/move group tools if the area has more than min_groups group
 		let groups = o.area.children(".form_group")
-		if (groups.length > 1) {
-			groups.children(".form_tool").removeClass("hidden")
-		} else {
+		let min = o.form_data.form_definition.Outputs[0].MinEntries
+		let max = o.form_data.form_definition.Outputs[0].MaxEntries
+		if (typeof(min) === "undefined") {
+			min = 0
+		}
+		let floor = (groups.length <= min)
+		let ceil = ((typeof(max) !== "undefined") && (groups.length >= max))
+		if (floor) {
 			groups.children(".form_tool").addClass("hidden")
+		} else {
+			groups.children(".form_tool").removeClass("hidden")
+		}
+		if (ceil) {
+			o.area.children("button[name=add_group]").addClass("hidden")
+		} else {
+			o.area.children("button[name=add_group]").removeClass("hidden")
 		}
 	}
 
