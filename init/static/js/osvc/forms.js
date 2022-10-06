@@ -707,15 +707,16 @@ function form(divid, options) {
 	}
 
 	o.render_move_group = function() {
-		var div = $("<div class='icon_fixed_width fa-bars form_tool movable'></div>")
+		var div = $("<div class='icon_fixed_width fa-bars form_tool movable hidden'></div>")
 		return div
 	}
 
 	o.render_del_group = function() {
-		var div = $("<div class='icon_fixed_width del16 form_tool nowrap'></div>")
+		var div = $("<div class='icon_fixed_width del16 form_tool nowrap hidden'></div>")
 		div.text(i18n.t("forms.del_group"))
 		div.bind("click", function() {
 			$(this).parent().remove()
+			o.set_form_group_tools_visibility()
 		})
 		return div
 	}
@@ -759,7 +760,18 @@ function form(divid, options) {
 			o.init_sortable()
 			o.init_events()
 			o.reinit_select2()
+			o.set_form_group_tools_visibility()
 		})
+	}
+
+	o.set_form_group_tools_visibility = function() {
+		// show remove/move group tools if the area has more than one group
+		let groups = o.area.children(".form_group")
+		if (groups.length > 1) {
+			groups.children(".form_tool").removeClass("hidden")
+		} else {
+			groups.children(".form_tool").addClass("hidden")
+		}
 	}
 
 	o.render_form_list = function() {
