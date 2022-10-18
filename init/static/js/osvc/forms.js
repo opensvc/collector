@@ -2541,6 +2541,7 @@ function form(divid, options) {
 	o.get_option_data = function(td) {
 		var input = td.children("input,textarea,div,select")
 		if (input.is("select.select2-hidden-accessible")) {
+			input = input.filter("select.select2-hidden-accessible")
 			let val = input.select2("data")
 			if (input.prop("multiple") == true) {
 				return val.map(x => x.option_data)
