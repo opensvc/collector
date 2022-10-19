@@ -67,6 +67,7 @@ class rest_post_form(rest_post_handler):
             except Exception as e:
                 pass
         elif "form_yaml" in vars:
+            # for syntax checking
             form_yaml = yaml.load(vars["form_yaml"])
 
         form_id = db(q).update(**vars)
@@ -79,11 +80,8 @@ class rest_post_form(rest_post_handler):
         ws_send('forms_change', {'id': form.id})
 
         ret = rest_get_form().handler(form.id)
-        if "form_definition" in ret["data"][0]:
-            content = yaml.safe_dump(ret["data"][0]["form_definition"], default_flow_style=False, allow_unicode=True)
-        else:
-            content = ""
-        lib_form_add_to_git(id, content)
+        if vars.get("form_yaml"):
+            lib_form_add_to_git(id, vars["form_yaml"])
         ret["info"] = fmt % d
         self.cache_clear(["rest_get_forms"])
         return ret
