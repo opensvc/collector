@@ -225,7 +225,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
     try:
         raise_if_no_form_data(_d)
         d = _d
-    except Exception, e:
+    except Exception as e:
         results = form_log(output_id, results, 1, "form.submit", str(e), dict())
         return results
     try:
@@ -409,8 +409,8 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
           create_date=now,
         )
         table_modified("workflows")
-	results["outputs"][output_id] = {"workflow_id": wfid, "head_form_id": record_id}
-	update_results(results)
+    results["outputs"][output_id] = {"workflow_id": wfid, "head_form_id": record_id}
+    update_results(results)
 
     if next_id != 0 and output.get('Mail', False):
         results = output_mail(output, form_definition, form, to=form_assignee, record_id=record_id, _d=_d, results=results)
@@ -441,7 +441,7 @@ def output_db(output, form_definition, _d=None, results=None):
         db[table].insert(**d)
         table_modified(table)
         results = form_log(output_id, results, 0, "form.submit", "Data inserted in database table", dict())
-    except Exception, e:
+    except Exception as e:
         results = form_log(output_id, results, 1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e)))
     return results
 
@@ -914,12 +914,24 @@ def form_submit(form, _d=None, prev_wfid=None):
 
     validate_data(form_definition, _d)
 
-    results["results_id"] = db.form_output_results.insert(
-        user_id=auth.user_id if auth.user_id > 0 else None,
-        node_id=auth.user.node_id if "node_id" in auth.user else None,
-        svc_id=auth.user.svc_id if "svc_id" in auth.user else None,
-        results=sjson.dumps(results, default=datetime.datetime.isoformat)
-    )
+    def dbdo():
+        results["results_id"] = db.form_output_results.insert(
+            user_id=auth.user_id if auth.user_id > 0 else None,
+            node_id=auth.user.node_id if "node_id" in auth.user else None,
+            svc_id=auth.user.svc_id if "svc_id" in auth.user else None,
+            results=sjson.dumps(results, default=datetime.datetime.isoformat)
+        )
+    for i in range(3):
+        try:
+            dbdo()
+            break
+        except Exception as exc:
+            errstr = str(exc)
+            if "try restarting" in errstr:
+                if i == 2:
+                    raise exc
+                time.sleep(0.2)
+                continue
 
     if form_definition.get("Async", False):
         rconn.rpush("osvc:q:form_submit", json.dumps([
@@ -1015,7 +1027,7 @@ def __form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None)
             elif dest == "workflow":
                 results = output_workflow(output, form_definition, form, _d=_d,
                                           prev_wfid=prev_wfid, results=results)
-        except Exception, e:
+        except Exception as e:
             results = form_log(output_id, results, 1, "form.submit", str(e), dict())
             results["returncode"] += 1
             break
