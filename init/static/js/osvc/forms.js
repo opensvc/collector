@@ -2349,6 +2349,9 @@ function form(divid, options) {
 			if (input.length == 0) {
 				return
 			}
+			if (key == d.Id) {
+				return
+			}
 			console.log("fn:", key, "->", d.Id)
 			input.val(null)
 			input.change()
