@@ -2342,14 +2342,14 @@ function form(divid, options) {
 	}
 
 	o.install_fn_trigger = function(table, key, d) {
+		if (key == d.Id) {
+			return
+		}
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("select,input,textarea")
 		cell.bind("change", function() {
 			var input = table.find("[iid="+d.Id+"]").find("select,input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
-				return
-			}
-			if (key == d.Id) {
 				return
 			}
 			console.log("fn:", key, "->", d.Id)
