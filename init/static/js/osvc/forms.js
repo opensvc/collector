@@ -1362,8 +1362,10 @@ function form(divid, options) {
 		}
 		let id_prop = get_id_prop(input, d)
 		let initArgs = prepare_args(input, d.Args)
-		initArgs.search = content
-		initArgs.search_props = ""
+		if (!Array.isArray(content)) {
+			initArgs.search = content
+			initArgs.search_props = ""
+		}
 		initOpts = {
 			type: "GET",
 			url: url,
@@ -1378,7 +1380,7 @@ function form(divid, options) {
 				return
 			}
 			data.results.forEach(function(e){
-				if (e.id != content) {
+				if ((e.id != content) && Array.isArray(content) && (content.indexOf(""+e.id) < 0)) {
 					return
 				}
 				let option = new Option(e.text, e.id, true, true)
