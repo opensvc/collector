@@ -1173,7 +1173,7 @@ function form(divid, options) {
 		// prepare candidates
 		let data = []
 		let hasDefault = input_has_default(d)
-		if (!hasDefault && d.DisableAutoDefault) {
+		if (!hasDefault && d.DisableAutoDefault && !d.Multiple) {
 			// dummy entry selected as a placeholder
 			data.push({
 				"id": "",
