@@ -282,7 +282,8 @@ class gittrack(object):
         git_d = os.path.join(self.collect_d, data_id)
         if not os.path.exists(git_d):
             self.init_repo(data_id, author=author)
-        with open(git_d+"/"+self.otype, "w") as text_file:
+        import codecs
+        with codecs.open(git_d+"/"+self.otype, "w", "utf-8") as text_file:
             text_file.write(content)
         if author:
             author = "--author='%s'" % author.encode("utf-8")
