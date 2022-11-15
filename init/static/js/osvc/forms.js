@@ -1382,7 +1382,9 @@ function form(divid, options) {
 				return
 			}
 			data.results.forEach(function(e){
-				if ((e.id != content) && Array.isArray(content) && (content.indexOf(""+e.id) < 0)) {
+				if (e.id != content) {
+					return
+				} else if (Array.isArray(content) && (content.indexOf(""+e.id) < 0)) {
 					return
 				}
 				let option = new Option(e.text, e.id, true, true)
