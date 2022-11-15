@@ -886,9 +886,11 @@ function form(divid, options) {
 		o.area.find("select[data-select2-id]:visible,input[data-select2-id]:visible").each(function(){
 			let w = $(this)
 			let options = $.data(this, "s2options");
+			let initialized = w.prop("initialized")
 			od = o.get_option_data(w.parents("td"))
-			if (typeof(od) === "undefined") {
+			if (!initialized) {
 				w.select2(options)
+				w.prop("initialized", true)
 			}
 		})
 	}
