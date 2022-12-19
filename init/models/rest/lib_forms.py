@@ -166,6 +166,32 @@ def check_condition(cond, _d=None):
             return True
         else:
             return False
+    elif " > " in cond:
+        var, val = get_var_val(">")
+        try:
+            val = float(val)
+        except Exception:
+            return False
+        if var not in _d:
+            return False
+        try:
+            ref = float(_d[var])
+        except Exception:
+            return False
+        return ref > val
+    elif " < " in cond:
+        var, val = get_var_val("<")
+        try:
+            val = float(val)
+        except Exception:
+            return False
+        if var not in _d:
+            return False
+        try:
+            ref = float(_d[var])
+        except Exception:
+            return False
+        return ref < val
 
     raise Exception("operator is not supported in condition %s" % cond)
 

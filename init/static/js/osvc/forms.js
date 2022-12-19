@@ -216,9 +216,9 @@ function form(divid, options) {
 		}
 	}
 
-	let getUrlFunc = function(input, d) {
+	let getUrlFunc = function(input, func) {
 		return function(params) {
-			let fn = subst_refs(input, d.Function)
+			let fn = subst_refs(input, func)
 			if (fn.match(/^\//) && fn.match(/\/\//)) {
 				console.log("missing data in rest path")
 				return
@@ -1277,7 +1277,7 @@ function form(divid, options) {
 			ajax: {
 				delay: d.SearchDelay || 100,
 				dataType: "json",
-				url: getUrlFunc(input, d),
+				url: getUrlFunc(input, d.Function),
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
@@ -1315,7 +1315,7 @@ function form(divid, options) {
 			console.log("autodef", d.Id, "skip")
 			return
 		}
-		let url = getUrlFunc(input, d)()
+		let url = getUrlFunc(input, d.Function)()
 		if (!url) {
 			return
 		}
@@ -1342,7 +1342,7 @@ function form(divid, options) {
 			normData.results.forEach(function(e) {
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
-				input.append(option).trigger("change")
+				input.append(option)
 				input.trigger({
 					type: "select2:select",
 					params: {
@@ -1350,21 +1350,74 @@ function form(divid, options) {
 					}
 				})
 			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
+		})
+	}
+
+	o.select_rest_set_autodef_from_default_func = function(input, d) {
+		let url = getUrlFunc(input, d.DefaultFunction)()
+		if (!url) {
+			return
+		}
+		let id_prop = get_id_prop(input, d)
+		let initArgs = prepare_args(input, d.DefaultArgs || d.Args)
+		if (!("filters" in initArgs)) {
+			initArgs.filters = []
+		}
+		initOpts = {
+			type: "GET",
+			url: url,
+			data: initArgs,
+			dataType: "json",
+			error: function(e){console.log("ajax error:", d.Id, url, e)}
+		}
+		$.ajax(initOpts).then(function(data){
+			let normData = getProcessResultFunc(input, d)(data)
+			if (normData.results.length == 0) {
+				return
+			}
+			normData.results.forEach(function(e) {
+				let option = new Option(e.text, e.id, true, true)
+				$.data(option, "data", e)
+				input.append(option)
+				input.trigger({
+					type: "select2:select",
+					params: {
+						data: e,
+					}
+				})
+			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 		})
 	}
 
 	o.select_rest_set_content = function(input, d, content) {
+		if (d.DefaultFunction) {
+			o.select_rest_set_autodef_from_default_func(input, d)
+			return
+		}
 		if ((typeof(content) === "undefined") || (content == "")) {
 			o.select_rest_set_autodef(input, d)
 			return
 		}
-		let url = getUrlFunc(input, d)()
+		let url = getUrlFunc(input, d.Function)()
 		if (!url) {
 			return
 		}
 		let id_prop = get_id_prop(input, d)
 		let initArgs = prepare_args(input, d.Args)
-		if (!Array.isArray(content)) {
+		if (Array.isArray(content)) {
+			// in case content has element beyond the 1st page
+			initArgs.limit = 0
+		} else {
 			initArgs.search = content
 			initArgs.search_props = ""
 		}
@@ -1381,19 +1434,23 @@ function form(divid, options) {
 			if (data.results.length == 0) {
 				return
 			}
+			let strcontent = []
+			content.forEach(function(e) {
+				strcontent.push(""+e)
+			})
 			data.results.forEach(function(e){
 				if (Array.isArray(content)) {
-					if (content.indexOf(""+e.id) < 0) {
+					if (strcontent.indexOf(""+e.id) < 0) {
 						return
 					}
 				} else {
-					if (e.id != content) {
+					if (e.id != strcontent) {
 						return
 					}
 				}
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
-				input.append(option).trigger("change")
+				input.append(option)
 				input.trigger({
 					type: "select2:select",
 					params: {
@@ -1401,6 +1458,11 @@ function form(divid, options) {
 					}
 				})
 			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 		})
 	}
 
@@ -2368,7 +2430,7 @@ function form(divid, options) {
 			console.log("fn:", key, "->", d.Id)
 			input.val(null)
 			input.change()
-			fn_init(input, d)
+			fn_init(input, d, d.Default)
 			o.update_submit()
 		})
 	}
@@ -2409,11 +2471,21 @@ function form(divid, options) {
 			} while (m)
 		}
 		parse(d.Function)
-		if (!Array.isArray(d.Args)) {
-			return
+		parse(d.DefaultFunction)
+		let args = []
+		if (Array.isArray(d.Args)) {
+			args = args.concat(d.Args)
 		}
-		for (var i=0; i<d.Args.length; i++) {
-			parse(d.Args[i])
+		if (Array.isArray(d.DefaultArgs)) {
+			args = args.concat(d.DefaultArgs)
+		}
+		if (Array.isArray(d.Condition)) {
+			args = args.concat(d.Condition)
+		} else {
+			parse(d.Condition)
+		}
+		for (var i=0; i<args.length; i++) {
+			parse(args[i])
 		}
 	}
 

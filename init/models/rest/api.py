@@ -976,6 +976,10 @@ def prepare_data(
                 else:
                     t = tables[0]
                     f_col = f_prop
+                if db[t][f_col].type in ("string"):
+                    f_val = "%" + search + "%"
+                else:
+                    f_val = search
                 if sq is None:
                     sq = db[t].id < 0
                 sq = _where(sq, t, "|"+f_val, f_col, depth=1, db=db)
