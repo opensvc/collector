@@ -1313,6 +1313,9 @@ function form(divid, options) {
 	o.select_rest_set_autodef = function(input, d) {
 		if (d.DisableAutoDefault == true) {
 			console.log("autodef", d.Id, "skip")
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 			return
 		}
 		let url = getUrlFunc(input, d.Function)()
