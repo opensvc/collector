@@ -216,9 +216,9 @@ function form(divid, options) {
 		}
 	}
 
-	let getUrlFunc = function(input, d) {
+	let getUrlFunc = function(input, func) {
 		return function(params) {
-			let fn = subst_refs(input, d.Function)
+			let fn = subst_refs(input, func)
 			if (fn.match(/^\//) && fn.match(/\/\//)) {
 				console.log("missing data in rest path")
 				return
@@ -1277,7 +1277,7 @@ function form(divid, options) {
 			ajax: {
 				delay: d.SearchDelay || 100,
 				dataType: "json",
-				url: getUrlFunc(input, d),
+				url: getUrlFunc(input, d.Function),
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
@@ -1304,9 +1304,7 @@ function form(divid, options) {
 		$.data(input[0], "s2options", options)
 		input.select2(options)
 
-		if (fn_has_refs(d)) {
-			o.add_fn_triggers(d)
-		}
+		o.add_fn_triggers(d)
 		o.select_rest_set_content(input, d, content)
 
 		return input
@@ -1315,9 +1313,12 @@ function form(divid, options) {
 	o.select_rest_set_autodef = function(input, d) {
 		if (d.DisableAutoDefault == true) {
 			console.log("autodef", d.Id, "skip")
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 			return
 		}
-		let url = getUrlFunc(input, d)()
+		let url = getUrlFunc(input, d.Function)()
 		if (!url) {
 			return
 		}
@@ -1326,7 +1327,9 @@ function form(divid, options) {
 		if (!("filters" in initArgs)) {
 			initArgs.filters = []
 		}
-		initArgs.limit = 1
+		if (d.CheckOnLoad != "all") {
+			initArgs.limit = 1
+		}
 		initOpts = {
 			type: "GET",
 			url: url,
@@ -1337,12 +1340,15 @@ function form(divid, options) {
 		$.ajax(initOpts).then(function(data){
 			let normData = getProcessResultFunc(input, d)(data)
 			if (normData.results.length == 0) {
+				data = $.data(input[0])
+				let options = data.s2options
+				input.select2(options)
 				return
 			}
 			normData.results.forEach(function(e) {
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
-				input.append(option).trigger("change")
+				input.append(option)
 				input.trigger({
 					type: "select2:select",
 					params: {
@@ -1350,21 +1356,77 @@ function form(divid, options) {
 					}
 				})
 			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
+		})
+	}
+
+	o.select_rest_set_autodef_from_default_func = function(input, d) {
+		let url = getUrlFunc(input, d.DefaultFunction)()
+		if (!url) {
+			return
+		}
+		let id_prop = get_id_prop(input, d)
+		let initArgs = prepare_args(input, d.DefaultArgs || d.Args)
+		if (!("filters" in initArgs)) {
+			initArgs.filters = []
+		}
+		initOpts = {
+			type: "GET",
+			url: url,
+			data: initArgs,
+			dataType: "json",
+			error: function(e){console.log("ajax error:", d.Id, url, e)}
+		}
+		$.ajax(initOpts).then(function(data){
+			let normData = getProcessResultFunc(input, d)(data)
+			if (normData.results.length == 0) {
+				data = $.data(input[0])
+				let options = data.s2options
+				input.select2(options)
+				return
+			}
+			normData.results.forEach(function(e) {
+				let option = new Option(e.text, e.id, true, true)
+				$.data(option, "data", e)
+				input.append(option)
+				input.trigger({
+					type: "select2:select",
+					params: {
+						data: e,
+					}
+				})
+			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 		})
 	}
 
 	o.select_rest_set_content = function(input, d, content) {
+		if (d.DefaultFunction) {
+			o.select_rest_set_autodef_from_default_func(input, d)
+			return
+		}
 		if ((typeof(content) === "undefined") || (content == "")) {
 			o.select_rest_set_autodef(input, d)
 			return
 		}
-		let url = getUrlFunc(input, d)()
+		let url = getUrlFunc(input, d.Function)()
 		if (!url) {
 			return
 		}
 		let id_prop = get_id_prop(input, d)
 		let initArgs = prepare_args(input, d.Args)
-		if (!Array.isArray(content)) {
+		if (Array.isArray(content)) {
+			// in case content has element beyond the 1st page
+			initArgs.limit = 0
+		} else {
 			initArgs.search = content
 			initArgs.search_props = ""
 		}
@@ -1381,15 +1443,23 @@ function form(divid, options) {
 			if (data.results.length == 0) {
 				return
 			}
+			let strcontent = []
+			content.forEach(function(e) {
+				strcontent.push(""+e)
+			})
 			data.results.forEach(function(e){
-				if (e.id != content) {
-					return
-				} else if (Array.isArray(content) && (content.indexOf(""+e.id) < 0)) {
-					return
+				if (Array.isArray(content)) {
+					if (strcontent.indexOf(""+e.id) < 0) {
+						return
+					}
+				} else {
+					if (e.id != strcontent) {
+						return
+					}
 				}
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
-				input.append(option).trigger("change")
+				input.append(option)
 				input.trigger({
 					type: "select2:select",
 					params: {
@@ -1397,6 +1467,11 @@ function form(divid, options) {
 					}
 				})
 			})
+			input.trigger("change")
+
+			data = $.data(input[0])
+			let options = data.s2options
+			input.select2(options)
 		})
 	}
 
@@ -2100,25 +2175,28 @@ function form(divid, options) {
 			console.log("show", d.Id)
 			tr.removeClass("hidden")
 		}
-		let input = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
-		if (input.is("select.select2-hidden-accessible")) {
-			let data = $.data(input[0])
-			let options = data.s2options
-			//input.select2("destroy")
-			input.select2(options)
-			input.change()
-		} else if (d.Function && fn_has_refs(d)) {
-			var data = $.data(input[0])
-			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
-				input.val(data.autocomplete.options.source[0].text)
-				input.prop("acid", data.autocomplete.options.source[0].id)
+		let inputs = tr.find("[name=val]").children("select,input,textarea,.form_input_info")
+		inputs.each(function(){
+			input = $(this)
+			if (input.is("select.select2-hidden-accessible")) {
+				let data = $.data(input)
+				let options = data.s2options
+				//input.select2("destroy")
+				input.select2(options)
+				input.change()
+			} else if (d.Function && fn_has_refs(d)) {
+				var data = $.data(input)
+				if (data.autocomplete && data.autocomplete.options.source.length > 0) {
+					input.val(data.autocomplete.options.source[0].text)
+					input.prop("acid", data.autocomplete.options.source[0].id)
+					input.change()
+				}
+			} else if ((!d.Type || d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
+				input.val(d.Default)
+				input.prop("acid", d.Default)
 				input.change()
 			}
-		} else if ((!d.Type || d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
-			input.val(d.Default)
-			input.prop("acid", d.Default)
-			input.change()
-		}
+		})
 		o.update_submit()
 	}
 
@@ -2361,7 +2439,7 @@ function form(divid, options) {
 			console.log("fn:", key, "->", d.Id)
 			input.val(null)
 			input.change()
-			fn_init(input, d)
+			fn_init(input, d, d.Default)
 			o.update_submit()
 		})
 	}
@@ -2402,8 +2480,21 @@ function form(divid, options) {
 			} while (m)
 		}
 		parse(d.Function)
-		for (var i=0; i<d.Args.length; i++) {
-			parse(d.Args[i])
+		parse(d.DefaultFunction)
+		let args = []
+		if (Array.isArray(d.Args)) {
+			args = args.concat(d.Args)
+		}
+		if (Array.isArray(d.DefaultArgs)) {
+			args = args.concat(d.DefaultArgs)
+		}
+		if (Array.isArray(d.Condition)) {
+			args = args.concat(d.Condition)
+		} else {
+			parse(d.Condition)
+		}
+		for (var i=0; i<args.length; i++) {
+			parse(args[i])
 		}
 	}
 
