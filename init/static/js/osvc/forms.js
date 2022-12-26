@@ -1340,6 +1340,9 @@ function form(divid, options) {
 		$.ajax(initOpts).then(function(data){
 			let normData = getProcessResultFunc(input, d)(data)
 			if (normData.results.length == 0) {
+				data = $.data(input[0])
+				let options = data.s2options
+				input.select2(options)
 				return
 			}
 			normData.results.forEach(function(e) {
@@ -1381,6 +1384,9 @@ function form(divid, options) {
 		$.ajax(initOpts).then(function(data){
 			let normData = getProcessResultFunc(input, d)(data)
 			if (normData.results.length == 0) {
+				data = $.data(input[0])
+				let options = data.s2options
+				input.select2(options)
 				return
 			}
 			normData.results.forEach(function(e) {
