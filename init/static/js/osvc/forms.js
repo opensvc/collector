@@ -1268,6 +1268,7 @@ function form(divid, options) {
 				url: params.url,
 				data: args,
 				dataType: "json",
+				contentType: "application/json; charset=utf-8",
 				error: failure,
 				success: success
 			})
@@ -1277,6 +1278,7 @@ function form(divid, options) {
 			ajax: {
 				delay: d.SearchDelay || 100,
 				dataType: "json",
+				contentType: "application/json; charset=utf-8",
 				url: getUrlFunc(input, d.Function),
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
@@ -1335,6 +1337,7 @@ function form(divid, options) {
 			url: url,
 			data: initArgs,
 			dataType: "json",
+			contentType: "application/json; charset=utf-8",
 			error: function(e){console.log("ajax error:", d.Id, url, e)}
 		}
 		$.ajax(initOpts).then(function(data){
@@ -1379,6 +1382,7 @@ function form(divid, options) {
 			url: url,
 			data: initArgs,
 			dataType: "json",
+			contentType: "application/json; charset=utf-8",
 			error: function(e){console.log("ajax error:", d.Id, url, e)}
 		}
 		$.ajax(initOpts).then(function(data){
@@ -1435,6 +1439,7 @@ function form(divid, options) {
 			url: url,
 			data: initArgs,
 			dataType: "json",
+			contentType: "application/json; charset=utf-8",
 			error: function(e){console.log("ajax error:", d.Id, url, e)},
 		}
 		$.ajax(initOpts).then(function(data){
