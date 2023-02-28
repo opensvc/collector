@@ -534,7 +534,10 @@ def ldap_auth(server='ldap',
                     'There is no username or email for %s!' % username)
                 raise
             # if old pydal version, assume this is a relational database which can do joins
-            db_can_join = db.can_join() if hasattr(db, 'can_join') else True
+            try:
+                db_can_join = db.can_join()
+            except AttributeError:
+                db_can_join = True
             if db_can_join:
                 db_group_search = \
                     db((db.auth_membership.user_id == db_user_id) &
