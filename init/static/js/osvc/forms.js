@@ -2186,7 +2186,7 @@ function form(divid, options) {
 		inputs.each(function(){
 			input = $(this)
 			if (input.is("select.select2-hidden-accessible")) {
-				let data = $.data(input)
+				let data = $.data(input[0])
 				let options = data.s2options
 				//input.select2("destroy")
 				input.select2(options)
