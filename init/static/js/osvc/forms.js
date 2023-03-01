@@ -1158,6 +1158,7 @@ function form(divid, options) {
 		}
 		input.val(content)
 		input.prop("acid", content)
+		input.prop("placeholder", d.Placeholder)
 		return input
 	}
 	o.render_input = function(d, content) {
