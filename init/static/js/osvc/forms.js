@@ -483,9 +483,11 @@ function form(divid, options) {
 		o.render_display_digest_header()
 		if ((o.form_data.form_definition.Outputs[0].Format == "list") ||
 		    (o.form_data.form_definition.Outputs[0].Format == "list of dict")) {
-			for (var i=0; i<o.options.data.length; i++) {
-				o.render_display_digest_line(o.options.data[i])
-			} 
+			if (o.options.data instanceof Array) {
+				for (var i=0; i<o.options.data.length; i++) {
+					o.render_display_digest_line(o.options.data[i])
+				}
+			}
 		} else if (o.form_data.form_definition.Outputs[0].Format == "dict of dict") {
 			for (key in o.options.data) {
 				o.render_display_digest_line(o.options.data[key], key)
@@ -2184,7 +2186,7 @@ function form(divid, options) {
 		inputs.each(function(){
 			input = $(this)
 			if (input.is("select.select2-hidden-accessible")) {
-				let data = $.data(input)
+				let data = $.data(input[0])
 				let options = data.s2options
 				//input.select2("destroy")
 				input.select2(options)
