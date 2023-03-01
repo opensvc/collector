@@ -918,6 +918,8 @@ def form_submit(form, _d=None, prev_wfid=None):
         pass
 
     results = {
+        "form_id": form["id"],
+        "submitted_data": _d,
         "outputs_order": [],
         "request_data": {},
         "outputs": {},
