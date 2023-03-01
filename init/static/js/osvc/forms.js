@@ -1024,7 +1024,7 @@ function form(divid, options) {
 		button.css({"margin-top": "1em"})
 		o.area.append(button)
 
-		button.bind("click", function() {
+		button.bind("click", function() {
 			let data = o.form_to_data()
 			let data_title = $("<h2>"+i18n.t("forms.test_title")+"</h2>")
 			let data_pre = $("<pre style='text-align:left'>"+JSON.stringify(data, null, 4)+"</pre>")
@@ -1056,7 +1056,7 @@ function form(divid, options) {
 		button.css({"margin-top": "1em"})
 		o.area.append(button)
 
-		button.bind("click", function() {
+		button.bind("click", function() {
 			width = button.width()
 			if (o.submit_disabled()) {
 				o.area.find(".constraint_violation,.mandatory_violation").effect("highlight", 600)
@@ -1739,7 +1739,7 @@ function form(divid, options) {
 		}
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
-			if (d.Format != d.Value) {
+			if (d.Format != d.Value) {
 				for (let j=0; j<opts.length; j++) {
 					if (opts[j].id != content) {
 						continue
@@ -1870,18 +1870,23 @@ function form(divid, options) {
 			return
 		}
 		trigger(input)
-		input.bind("keyup change", function() {
+		input.bind("keyup change", function() {
 			trigger($(this))
 		})
 		function trigger(e) {
 			let val = o.get_converted_val(d, input)
 			let c = o.parse_constraint(d)
-			let ret = o.eval_constraint(c, val)
-			console.log("constraint:", d.Id, val , d.Constraint, "=>", ret)
-			if (!ret) {
-				e.addClass("constraint_violation")
-			} else {
+			if (val == "" && !d.Mandatory) {
 				e.removeClass("constraint_violation")
+			} else {
+				let ret = o.eval_constraint(c, val)
+
+				console.log("constraint:", d.Id, val , d.Constraint, "=>", ret)
+				if (!ret) {
+					e.addClass("constraint_violation")
+				} else {
+					e.removeClass("constraint_violation")
+				}
 			}
 			o.update_submit()
 		}
@@ -2044,8 +2049,8 @@ function form(divid, options) {
 		o.update_submit()
 	}
 
-	o.update_submit = function() {
-		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:not(.hidden)").length == 0) {
+	o.update_submit = function() {
+		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:not(.hidden)").length == 0) {
 			o.enable_submit()
 		} else {
 			o.disable_submit()
@@ -2055,7 +2060,7 @@ function form(divid, options) {
 		}
 	}
 
-	o.submit_disabled = function() {
+	o.submit_disabled = function() {
 		return o.submit_tool.hasClass("nok")
 	}
 
@@ -2107,7 +2112,7 @@ function form(divid, options) {
 		return div
 	}
 
-	o.disable_submit = function() {
+	o.disable_submit = function() {
 		if (!o.submit_tool) {
 			return
 		}
@@ -2115,7 +2120,7 @@ function form(divid, options) {
 		//o.result.empty().append(o.violations_report())
 	}
 
-	o.enable_submit = function() {
+	o.enable_submit = function() {
 		if (!o.submit_tool) {
 			return
 		}
@@ -2150,7 +2155,7 @@ function form(divid, options) {
 			o.update_submit()
 		}
 		trigger()
-		input.bind("keyup change", function(e) {
+		input.bind("keyup change", function(e) {
 			trigger()
 		})
 	}
@@ -2714,7 +2719,7 @@ function form(divid, options) {
 			let keyname = key_def.slice(0, idx).replace(/^\s+/, "").replace(/\s+$/, "")
 			let keyval = key_def.slice(idx+1, key_def.length).replace(/^\s+/, "").replace(/\s+$/, "")
 			if (keyval.match(/#/)) {
-				if (option_data) {
+				if (option_data) {
 					keyval = subst_refs_from_data(option_data, keyval)
 				}
 			}
