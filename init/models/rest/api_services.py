@@ -31,7 +31,7 @@ class rest_get_service(rest_get_line_handler):
           "Display an OpenSVC service properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc?props=svcname,app",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc?props=svcname,svc_app",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -60,7 +60,7 @@ class rest_get_services(rest_get_table_handler):
           "List OpenSVC services.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svcname,app",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svcname,svc_app",
         ]
         rest_get_table_handler.__init__(
           self,
