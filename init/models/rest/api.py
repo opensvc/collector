@@ -831,6 +831,14 @@ def prepare_data(
                     left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
                     tables.append("nodes")
                     return prop
+        elif t == "clusters":
+            for table in tables:
+                if "cluster_id" in db[table].fields:
+                    if "clusters" in tables:
+                        return prop
+                    left.append(db.clusters.on(db.clusters.cluster_id==db[table].cluster_id))
+                    tables.append("clusters")
+                    return prop
         elif t == "node_ip":
             for table in tables:
                 if "node_id" in db[table].fields:

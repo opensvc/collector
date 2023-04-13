@@ -437,6 +437,7 @@ joins = {
   },
   'nodes':{
     'nodes': None,
+    'clusters': db.nodes.cluster_id == db.clusters.cluster_id,
     'dashboard': db.nodes.node_id == db.dashboard.node_id,
     'v_svcmon': None,
     'v_svcactions': None,
