@@ -2050,7 +2050,7 @@ function form(divid, options) {
 	}
 
 	o.update_submit = function() {
-		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:not(.hidden)").length == 0) {
+		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:visible").length == 0) {
 			o.enable_submit()
 		} else {
 			o.disable_submit()
