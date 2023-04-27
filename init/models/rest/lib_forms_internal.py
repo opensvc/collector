@@ -452,6 +452,14 @@ form_data_internal = [
                     "Constraint": "match ^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$"
                 },
                 {
+                    "Id": "username",
+                    "Label": "Username",
+                    "LabelCss": "guy16",
+                    "Type": "string",
+                    "Mandatory": False,
+                    "Help": "Needed for LDAP login",
+                },
+                {
                     "Id": "first_name",
                     "Label": "First Name",
                     "LabelCss": "guy16",
