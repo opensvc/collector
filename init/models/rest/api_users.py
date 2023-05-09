@@ -368,7 +368,11 @@ class rest_post_users(rest_post_handler):
         if user is not None:
             return rest_post_user().handler(user.id, **vars)
 
-        row = db.auth_user.validate_and_insert(**vars)
+        custom_auth_table = db[auth.settings.table_user_name]
+        if not vars.get("password"):
+            # allow empty password
+            custom_auth_table.password.requires = []
+        row = custom_auth_table.validate_and_insert(**vars)
         if row.id is None:
             return dict(error=row.errors)
         if "password" in vars:
