@@ -1113,6 +1113,7 @@ def collector_tag(data, auth):
 @auth_uuid
 def rpc_collector_tag(data, auth):
     tag_name = data.get('tag_name')
+    tag_attach_data = data.get('tag_attach_data')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
     q = db.tags.tag_name == tag_name
@@ -1131,18 +1132,32 @@ def rpc_collector_tag(data, auth):
         q &= db.svc_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) > 0:
-            return {"ret": 0, "msg": "tag is already attached"}
-
-        db.svc_tags.insert(
-           svc_id=svc_id,
-           tag_id=tag.tag_id
-        )
-        _log("service.tag",
-             "tag '%(tag_name)s' attached",
-             dict(tag_name=tag_name),
-             svc_id=svc_id)
-        ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'svc_id': svc_id})
-        table_modified("svc_tags")
+            if tag_attach_data is None:
+                return {"ret": 0, "msg": "tag is already attached"}
+            elif rows.first().tag_attach_data == tag_attach_data:
+                return {"ret": 0, "msg": "tag is already attached with the same attach data"}
+            else:
+                db(q).update(tag_attach_data=tag_attach_data)
+                _log("service.tag",
+                     "tag '%(tag_name)s' attach data modified",
+                     dict(tag_name=tag_name),
+                     svc_id=svc_id)
+                ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'svc_id': svc_id})
+                table_modified("svc_tags")
+                return {"ret": 0, "msg": "tag attach data successfully updated"}
+        else:
+            db.svc_tags.insert(
+               svc_id=svc_id,
+               tag_id=tag.tag_id,
+               tag_attach_data=tag_attach_data,
+            )
+            _log("service.tag",
+                 "tag '%(tag_name)s' attached",
+                 dict(tag_name=tag_name),
+                 svc_id=svc_id)
+            ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'svc_id': svc_id})
+            table_modified("svc_tags")
+            return {"ret": 0, "msg": "tag successfully attached"}
     else:
         node_id = auth_to_node_id(auth)
         if not tag_allowed(node_id=node_id, tag_name=tag_name):
@@ -1151,19 +1166,32 @@ def rpc_collector_tag(data, auth):
         q &= db.node_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) > 0:
-            return {"ret": 0, "msg": "tag is already attached"}
-
-        db.node_tags.insert(
-           node_id=node_id,
-           tag_id=tag.tag_id
-        )
-        _log("node.tag",
-             "tag '%(tag_name)s' attached",
-             dict(tag_name=tag_name),
-             node_id=node_id)
-        ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'node_id': node_id})
-        table_modified("node_tags")
-    return {"ret": 0, "msg": "tag successfully attached"}
+            if tag_attach_data is None:
+                return {"ret": 0, "msg": "tag is already attached"}
+            elif  rows.first().tag_attach_data == tag_attach_data:
+                return {"ret": 0, "msg": "tag is already attached with the same attach data"}
+            else:
+                db(q).update(tag_attach_data=tag_attach_data)
+                _log("node.tag",
+                     "tag '%(tag_name)s' attach data modified",
+                     dict(tag_name=tag_name),
+                     node_id=node_id)
+                ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'node_id': node_id})
+                table_modified("node_tags")
+                return {"ret": 0, "msg": "tag attach data successfully updated"}
+        else:
+            db.node_tags.insert(
+               node_id=node_id,
+               tag_id=tag.tag_id,
+               tag_attach_data=tag_attach_data,
+            )
+            _log("node.tag",
+                 "tag '%(tag_name)s' attached",
+                 dict(tag_name=tag_name),
+                 node_id=node_id)
+            ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'node_id': node_id})
+            table_modified("node_tags")
+            return {"ret": 0, "msg": "tag successfully attached"}
 
 @service.xmlrpc
 @service.jsonrpc2

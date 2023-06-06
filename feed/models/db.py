@@ -640,17 +640,20 @@ db.define_table('tags',
     Field('tag_id','string'),
     Field('tag_exclude','string'),
     Field('tag_created','datetime'),
+    Field('tag_data','text'),
     migrate=False)
 
 db.define_table('node_tags',
     Field('node_id', 'string', length=36),
     Field('tag_id','string'),
+    Field('tag_attach_data','text'),
     Field('created','datetime'),
     migrate=False)
 
 db.define_table('svc_tags',
     Field('svc_id', 'string', length=36),
     Field('tag_id','string'),
+    Field('tag_attach_data','text'),
     Field('created','datetime'),
     migrate=False)
 
