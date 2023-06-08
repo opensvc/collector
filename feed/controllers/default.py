@@ -1032,19 +1032,31 @@ def collector_show_tags(cmd, auth):
 def rpc_collector_show_tags(cmd, auth):
     d = {}
     node_id = auth_to_node_id(auth)
+    full = cmd.get("full", False)
     if "svcname" in cmd:
         svcname = cmd["svcname"]
         svc_id = node_svc_id(node_id, svcname)
         q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.tag_id
-        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+        rows = db(q).select(orderby=db.tags.tag_name)
+        tags = [{
+            "tag_name": r.tags.tag_name.lower(),
+            "tag_data":r.tags.tag_data,
+            "tag_attach_data":r.svc_tags.tag_attach_data,
+        } for r in rows]
     else:
         q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.tag_id
-        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+        rows = db(q).select(orderby=db.tags.tag_name)
+        tags = [{
+            "tag_name": r.tags.tag_name.lower(),
+            "tag_data":r.tags.tag_data,
+            "tag_attach_data":r.node_tags.tag_attach_data,
+        } for r in rows]
     if len(rows) == 0:
-        return {"ret": 1, "msg": "no tags found"}
-    tags = [r.tag_name.lower() for r in rows]
+        return {"ret": 0, "msg": "no tags found", "data": []}
+    if not full:
+        tags = [t["tag_name"] for t in tags]
     return {"ret": 0, "msg": "", "data": tags}
 
 @service.xmlrpc
@@ -1056,40 +1068,48 @@ def collector_create_tag(data, auth):
 def rpc_collector_create_tag(data, auth):
     tag_name = data.get('tag_name')
     tag_exclude = data.get('tag_exclude')
+    tag_data = data.get('tag_data')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
     q = db.tags.tag_name == tag_name
     rows = db(q).select()
     if len(rows) != 0:
-        return {"ret": 0, "msg": "tag already exists"}
-
-    db.tags.insert(
-       tag_name=tag_name,
-       tag_exclude=tag_exclude
-    )
-    _log("tag",
-         "tag '%(tag_name)s' created",
-         dict(tag_name=tag_name)
-    )
-    ws_send("tags_change")
-    table_modified("tags")
-    return {"ret": 0, "msg": "tag successfully created"}
+        if (tag_data is None or rows.first().tag_data == tag_data) and \
+           (tag_exclude is None or rows.first().tag_exclude == tag_exclude):
+            return {"ret": 0, "msg": "tag already exists"}
+        elif tag_exclude is not None:
+            return {"ret": 1, "msg": "tag already exists with different tag exclude"}
+        elif tag_data is not None:
+            return {"ret": 1, "msg": "tag already exists with different tag data"}
+    else:
+        db.tags.insert(
+           tag_name=tag_name,
+           tag_exclude=tag_exclude,
+           tag_data=tag_data,
+        )
+        _log("tag",
+             "tag '%(tag_name)s' created",
+             dict(tag_name=tag_name)
+        )
+        ws_send("tags_change")
+        table_modified("tags")
+        return {"ret": 0, "msg": "tag successfully created"}
 
 def tag_allowed(node_id=None, svc_id=None, tag_name=None):
     if node_id is None and svc_id is None:
         return False
     if tag_name is None:
         return False
-    if node_id:
-        q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == db.tags.tag_id
+    if svc_id:
+        q = db.svc_tags.svc_id == svc_id
+        q &= db.svc_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
-    elif svc_id:
-        q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == db.tags.tag_id
+    elif node_id:
+        q = db.node_tags.node_id == node_id
+        q &= db.node_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
@@ -1097,13 +1117,18 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
     if len(rows) == 0:
         return True
 
-    pattern = '|'.join([r.tag_exclude for r in rows])
+    excludes = [r.tag_exclude for r in rows]
     q = db.tags.tag_name == tag_name
+    rows = db(q).select()
+    row = rows.first()
+    if row and row.tag_exclude:
+        excludes.append(row.tag_exclude)
+    pattern = '|'.join(excludes)
     qx = _where(None, "tags", pattern, "tag_name")
     q &= ~qx
     if db(q).count() == 0:
-        return False
-    return True
+        return True
+    return False
 
 @service.xmlrpc
 @service.jsonrpc2
