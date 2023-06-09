@@ -1105,6 +1105,7 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
         q &= db.svc_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
+        q &= db.tags.tag_name != tag_name
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
     elif node_id:
@@ -1112,6 +1113,7 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
         q &= db.node_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
+        q &= db.tags.tag_name != tag_name
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
     if len(rows) == 0:
@@ -1139,8 +1141,8 @@ def collector_tag(data, auth):
 def rpc_collector_tag(data, auth):
     tag_name = data.get('tag_name')
     tag_attach_data = data.get('tag_attach_data')
-    if tag_name is None:
-        return {"ret": 1, "msg": "misformatted data"}
+    if not tag_name:
+        return {"ret": 1, "msg": "a tag name is required"}
     q = db.tags.tag_name == tag_name
     rows = db(q).select()
     if len(rows) == 0:
