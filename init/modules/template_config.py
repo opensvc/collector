@@ -37,6 +37,8 @@ google_client_secret = "TRuz_acPKuiKApq-OsmOTIqC"
 # ldap / ad
 ldap_mode = "ad"
 ldap_server = "ad.my.corp"
+ldap_port = 636
+ldap_tls = False
 ldap_base_dn = ""
 ldap_allowed_groups = []
 ldap_group_dn = ""

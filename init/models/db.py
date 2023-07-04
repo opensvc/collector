@@ -161,6 +161,8 @@ if ldap_mode:
     kwargs["user_firstname_attrib"] = 'givenName'
     kwargs["user_lastname_attrib"] = 'sn'
     kwargs["server"] = config_get("ldap_server", None)
+    kwargs["port"] = config_get("ldap_port", None)
+    kwargs["tls"] = config_get("ldap_tls", None)
     kwargs["base_dn"] = config_get("ldap_base_dn", None)
     allowed_groups = config_get("ldap_allowed_groups", None)
     group_dn = config_get("ldap_group_dn", None)
