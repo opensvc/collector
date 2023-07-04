@@ -408,10 +408,14 @@ class SymDiskGroup(object):
     def __iadd__(self, o):
         if isinstance(o, SymDisk):
             self.disk.append(o.id)
+            try:
+                sz = o.info['actual_megabytes']
+            except KeyError:
+                sz = str(float(o.info['actual_gigabytes']) * 1024)
             if o.info['hot_spare'] == 'True':
-                key = o.info['actual_megabytes'], o.info['technology'], o.info['speed'], "hot spare"
+                key = sz, o.info['technology'], o.info['speed'], "hot spare"
             else:
-                key = o.info['actual_megabytes'], o.info['technology'], o.info['speed']
+                key = sz, o.info['technology'], o.info['speed']
             if key not in self.diskcount:
                 self.diskcount[key] = 1
             else:
