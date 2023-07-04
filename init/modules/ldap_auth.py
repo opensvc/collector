@@ -611,7 +611,6 @@ def ldap_auth(server='ldap',
                 ldap.set_option(ldap.OPT_X_TLS_CACERTDIR, cacert_path)
                 
             if cacert_file:
-                ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
                 ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, cacert_file)
             if cert_file:
                 ldap.set_option(ldap.OPT_X_TLS_CERTFILE, cert_file)
