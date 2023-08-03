@@ -122,6 +122,13 @@ var am_node_agent_leafs = [
 		'action': 'shutdown'
 	},
 	{
+		'title': 'Drain',
+		'class': 'action_stop_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'drain'
+	},
+	{
 		'title': 'Wake On LAN',
 		'class': 'action_start_16',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
