@@ -307,8 +307,8 @@ def auth_uuid(fn):
             check_auth(nodename, uuid)
         except Exception as e:
             _log('node.auth',
-                 'node authentication error: %(e)s',
-                 dict(e=str(e)),
+                 'node authentication error: %(e)s from %(nodename)s',
+                 dict(e=str(e), nodename=nodename),
                  node_id=node_id,
                  svc_id=svc_id,
                  nodename=nodename,
@@ -354,8 +354,8 @@ def node_auth():
             if not auth_is_user(agent):
                 _log(
                   'node.auth',
-                  'node authentication error: %(e)s',
-                  dict(e=str(e)),
+                  'node authentication error: %(e)s from %(nodename)s',
+                  dict(e=str(e), nodename=nodename),
                   node_id=node_id,
                   svc_id=svc_id,
                   user="feed",
