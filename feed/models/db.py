@@ -124,9 +124,11 @@ db.define_table('svcactions',
     Field('acked_by'),
     Field('acked_comment'),
     Field('acked_date'),
+    Field('rid'),
     Field('pid'),
     Field('sid'),
     Field('status_log'),
+    Field('subset'),
     Field('cron'),
     migrate=False)
 

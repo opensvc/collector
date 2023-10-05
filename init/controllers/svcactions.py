@@ -9,6 +9,8 @@ class table_actions(HtmlTable):
                      'nodename',
                      'sid',
                      'pid',
+                     'rid',
+                     'subset',
                      'action',
                      'status',
                      'begin',
@@ -38,6 +40,14 @@ class table_actions(HtmlTable):
             'nodename': HtmlTableColumn(
                 table = 'nodes',
                 field='nodename',
+            ),
+            'subset': HtmlTableColumn(
+                table = 'svcactions',
+                field='subset',
+            ),
+            'rid': HtmlTableColumn(
+                table = 'svcactions',
+                field='rid',
             ),
             'sid': HtmlTableColumn(
                 table = 'svcactions',

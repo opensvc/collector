@@ -6843,3 +6843,5 @@ CREATE INDEX disk_arrayid_updated ON diskinfo (disk_arrayid, disk_updated);
 
 alter table svcactions add column sid char(36);
 alter table svcactions add key k_sid (sid);
+alter table svcactions add column rid varchar(255);
+alter table svcactions add column subset varchar(255);

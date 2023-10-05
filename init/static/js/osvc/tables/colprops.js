@@ -1988,6 +1988,10 @@ colprops = {
 		"img": "wf16",
 		"title": "Steps"
 	},
+	"subset": {
+		"img": "resource",
+		"title": "Subset"
+	},
 	"svc_app": {
 		"_class": "app",
 		"img": "app16",
