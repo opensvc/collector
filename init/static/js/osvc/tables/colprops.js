@@ -1647,6 +1647,10 @@ colprops = {
 		"img": "guy16",
 		"title": "Work desk phone"
 	},
+	"sid": {
+		"img": "action16",
+		"title": "Session Id"
+	},
 	"pid": {
 		"_class": "action_pid",
 		"img": "action16",

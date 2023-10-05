@@ -1352,9 +1352,7 @@ def rpc_collector_ack_action(cmd, auth):
         if rows[0].status_log is None or rows[0].status_log == "":
             q &= db.svcactions.node_id == node_id
             q &= db.svcactions.svc_id == rows[0].svc_id
-            q &= ((db.svcactions.pid.belongs(rows[0].pid.split(',')))|(db.svcactions.id==rows[0].id))
-            q &= db.svcactions.begin >= rows[0].begin
-            q &= db.svcactions.end <= rows[0].end
+            q &= db.svcactions.sid == rows[0].sid
         else:
             q &= q1
 
@@ -1523,9 +1521,7 @@ def rpc_collector_show_actions(cmd, auth):
             if rows[0].status_log is None or rows[0].status_log == "":
                 q &= db.svcactions.node_id == node_id
                 q &= db.svcactions.svc_id == rows[0].svc_id
-                q &= ((db.svcactions.pid.belongs(rows[0].pid.split(',')))|(db.svcactions.id==rows[0].id))
-                q &= db.svcactions.begin >= rows[0].begin
-                q &= db.svcactions.end <= rows[0].end
+                q &= db.svcactions.sid == rows[0].sid
             else:
                 q &= q1
     else:

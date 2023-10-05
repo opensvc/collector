@@ -273,6 +273,7 @@ db.define_table('svcactions',
     Field('acked_comment'),
     Field('acked_date'),
     Field('pid'),
+    Field('sid', 'string', length=36),
     Field('cron'),
     migrate=False)
 

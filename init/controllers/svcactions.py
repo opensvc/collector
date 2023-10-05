@@ -7,6 +7,7 @@ class table_actions(HtmlTable):
                      'svcname',
                      'node_id',
                      'nodename',
+                     'sid',
                      'pid',
                      'action',
                      'status',
@@ -37,6 +38,10 @@ class table_actions(HtmlTable):
             'nodename': HtmlTableColumn(
                 table = 'nodes',
                 field='nodename',
+            ),
+            'sid': HtmlTableColumn(
+                table = 'svcactions',
+                field='sid',
             ),
             'pid': HtmlTableColumn(
                 table = 'svcactions',

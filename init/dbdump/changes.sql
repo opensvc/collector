@@ -6839,4 +6839,7 @@ CREATE TABLE  `opensvc`.`clusters` (
 
 CREATE INDEX disk_arrayid_updated ON diskinfo (disk_arrayid, disk_updated);
 
+# 2023-10-05
 
+alter table svcactions add column sid char(36);
+alter table svcactions add key k_sid (sid);
