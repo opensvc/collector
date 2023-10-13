@@ -813,6 +813,7 @@ function form(divid, options) {
 		o.render_submit()
 		o.render_test()
 		o.render_result()
+		o.set_form_group_tools_visibility()
 		o.init_sortable()
 		o.init_events()
 	}
