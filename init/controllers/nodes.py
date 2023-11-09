@@ -427,7 +427,7 @@ def ajax_uids_col_values():
     q = db.v_uids.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("v_uids.", "u.")
+    where = str(q).replace("`v_uids`.", "`u`.")
 
     o = 'u.'+col
 
@@ -470,7 +470,7 @@ def ajax_uids():
     q = db.v_uids.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("v_uids.", "u.")
+    where = str(q).replace("`v_uids`.", "`u`.")
 
     mt.setup_pager(-1)
     mt.additional_inputs = t.ajax_inputs()
@@ -525,7 +525,7 @@ def ajax_gids_col_values():
     q = db.v_gids.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("v_gids.", "u.")
+    where = str(q).replace("`v_gids`.", "`u`.")
 
     o = 'u.'+col
 
@@ -568,7 +568,7 @@ def ajax_gids():
     q = db.v_gids.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("v_gids.", "u.")
+    where = str(q).replace("`v_gids`.", "`u`.")
 
     mt.setup_pager(-1)
     mt.additional_inputs = t.ajax_inputs()
