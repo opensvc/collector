@@ -17,20 +17,6 @@ var am_node_agent_leafs = [
 		'action': 'pushdisks'
 	},
 	{
-		'title': 'Update app information',
-		'class': 'svc',
-		"privileges": ["Manager", "NodeManager", "NodeExec"],
-		"min": 1,
-		'action': 'push_resinfo'
-	},
-	{
-		'title': 'Update services information',
-		'class': 'svc',
-		"privileges": ["Manager", "NodeManager", "NodeExec"],
-		"min": 1,
-		'action': 'push_services'
-	},
-	{
 		'title': 'Update installed packages information',
 		'class': 'pkg16',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
@@ -175,6 +161,20 @@ var am_node_agent_leafs = [
 ]
 
 var am_svc_agent_leafs = [
+	{
+		'title': 'Update app information',
+		'class': 'svc',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'push resinfo'
+	},
+	{
+		'title': 'Update services information',
+		'class': 'svc',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'push config'
+	},
 	{
 		'title': 'Start',
 		'class': 'action_start_16',
