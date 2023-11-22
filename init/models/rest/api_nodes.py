@@ -946,7 +946,7 @@ class rest_post_nodes(rest_post_handler):
         desc = [
           "Create a new node",
           "Update nodes matching the specified query.",
-          "If ``team_responsible``:green is not specified, default to user's primary group",
+          "If ``team_responsible`` is not specified, default to user's primary group",
         ]
         examples = [
           """# curl -u %(email)s -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes""",
