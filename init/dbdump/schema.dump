@@ -3105,6 +3105,9 @@ CREATE TABLE `svcactions` (
   `time` int(11) DEFAULT NULL,
   `node_id` char(36) CHARACTER SET ascii DEFAULT '',
   `svc_id` char(36) CHARACTER SET ascii DEFAULT '',
+  `sid` char(36) DEFAULT NULL,
+  `rid` varchar(255) DEFAULT NULL,
+  `subset` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `action` (`action`),
   KEY `end` (`end`),
@@ -3114,7 +3117,8 @@ CREATE TABLE `svcactions` (
   KEY `begin` (`begin`),
   KEY `errcount` (`svc_id`,`node_id`,`begin`),
   KEY `k_instance` (`node_id`,`svc_id`),
-  KEY `idx_count_err` (`svc_id`,`node_id`,`status`,`begin`)
+  KEY `idx_count_err` (`svc_id`,`node_id`,`status`,`begin`),
+  KEY `k_sid` (`sid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14486366 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
