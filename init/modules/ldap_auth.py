@@ -305,6 +305,19 @@ def ldap_auth(server='ldap',
                                           "(objectClass=*)",
                                           [user_firstname_attrib, user_lastname_attrib, user_mail_attrib])[0][1]
 
+            if ldap_mode == 'freeipa':
+                dn = "uid=" + username + ",cn=users,cn=accounts," + ldap_basedn
+                try:
+                    con.simple_bind_s(dn, password)
+                except Exception as exc:
+                    logger.error("bind dn %s error: %s" % (dn, str(exc)))
+                    raise
+                if manage_user:
+                    result = con.search_s(dn, ldap.SCOPE_BASE,
+                                          "(objectClass=*)",
+                                          [user_firstname_attrib, user_lastname_attrib, user_mail_attrib])[0][1]
+                    logger.debug("result dn %s: %s" % (dn, str(result)))
+
             if ldap_mode == 'uid':
                 # OpenLDAP (UID)
                 if ldap_binddn and ldap_bindpw:
@@ -695,6 +708,8 @@ def ldap_auth(server='ldap',
         if username is None:
             return list()
         # search for groups where user is in
+	if ldap_mode == "freeipa":
+            username = "uid=%s,cn=users,cn=accounts,%s" % (username, base_dn)
         filter = '(&(%s=%s)(%s))' % (ldap.filter.escape_filter_chars(group_member_attrib),
                                      ldap.filter.escape_filter_chars(username),
                                      group_filterstr)
