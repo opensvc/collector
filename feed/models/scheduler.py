@@ -190,7 +190,7 @@ def _end_action(vars, vals, auth):
             else:
                 upd.append('%s="%s"' % (a, b))
 
-    sql = """select id from svcactions where node_id="%s" and svc_id="%s" and begin=%s and action="%s" """ %\
+    sql = """select id from svcactions where node_id="%s" and svc_id="%s" and begin=%s and action="%s" and pid is NULL""" %\
           (node_id, svc_id, h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
     if len(ids) == 0:
