@@ -2377,15 +2377,15 @@ def insert_nsr(name=None, node_id=None):
             lines = f.read().split('\n')
 
         i = 0
-	# 0  10.198.234.6;
-	# 1  /fsmntpt;
-	# 2  DAY_savegroup;
-	# 3  129138964;
-	# 4  05/29/15 00:41:49;
-	# 5  06/19/15 23:59:59;
-	# 6  DDCLONEMAR.001;
-	# 7  incr;
-	# 8  2e0d2628-00000006-796799ac-556799ac-b298000b-5de57314
+        # 0  10.198.234.6;
+        # 1  /fsmntpt;
+        # 2  DAY_savegroup;
+        # 3  129138964;
+        # 4  05/29/15 00:41:49;
+        # 5  06/19/15 23:59:59;
+        # 6  DDCLONEMAR.001;
+        # 7  incr;
+        # 8  2e0d2628-00000006-796799ac-556799ac-b298000b-5de57314
         for line in lines:
             l = line.split(';')
             if len(l) != 9:
@@ -2410,14 +2410,14 @@ def insert_nsr(name=None, node_id=None):
                 app = node_app[node_id]
             else:
                 app = ''
-	    try:
-	        l[4] = datetime.datetime.strptime(l[4], "%m/%d/%y %H:%M:%S")
-	    except:
-	        pass
-	    try:
-	        l[5] = datetime.datetime.strptime(l[5], "%m/%d/%y %H:%M:%S")
-	    except:
-	        pass
+            try:
+                l[4] = datetime.datetime.strptime(l[4], "%m/%d/%y %H:%M:%S")
+            except:
+                pass
+            try:
+                l[5] = datetime.datetime.strptime(l[5], "%m/%d/%y %H:%M:%S")
+            except:
+                pass
             vals.append([server, node_id, svc_id]+l[1:]+[app])
             i += 1
             if i > 300:
@@ -3089,7 +3089,7 @@ def insert_sym(symid=None, node_id=None):
 
     for d in sym_dirs:
         s = symmetrix.get_sym(d)
-	s.init_data()
+        s.init_data()
 
         if s is None:
             continue
@@ -4318,11 +4318,11 @@ def update_dash_pkgdiff(node_id):
 
     # clean old
     if len(svc_ids) > 0:
-	q = db.dashboard.svc_id.belongs(svc_ids)
-	q &= db.dashboard.dash_type == "package differences in cluster"
-	q &= db.dashboard.dash_updated < now - datetime.timedelta(seconds=1)
-	db(q).delete()
-	db.commit()
+        q = db.dashboard.svc_id.belongs(svc_ids)
+        q &= db.dashboard.dash_type == "package differences in cluster"
+        q &= db.dashboard.dash_updated < now - datetime.timedelta(seconds=1)
+        db(q).delete()
+        db.commit()
     dashboard_events()
 
 def update_dash_flex_cpu(svc_id):
@@ -5136,6 +5136,9 @@ def merge_daemon_ping(node_id):
         return
 
     node = get_node(node_id)
+    if not node:
+        return
+
     node_ids = {
         node.nodename: node,
     }
@@ -5340,6 +5343,10 @@ def merge_daemon_status(node_id):
     raw_data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
     changed = set()
 
+    node = get_node(node_id)
+    if not node:
+        return
+
     if raw_data is None:
         return
 
@@ -5347,14 +5354,13 @@ def merge_daemon_status(node_id):
     cluster_id = data.get("cluster_id", "")
     cluster_name = data.get("cluster_name", "")
     if cluster_id:
-	db.clusters.update_or_insert({
-	        "cluster_id": cluster_id,
-	    },
-	    cluster_id=cluster_id,
-	    cluster_name=cluster_name,
-	    cluster_data=raw_data,
-	)
-    node = get_node(node_id)
+        db.clusters.update_or_insert({
+                "cluster_id": cluster_id,
+            },
+            cluster_id=cluster_id,
+            cluster_name=cluster_name,
+            cluster_data=raw_data,
+        )
     if cluster_id and node and node.cluster_id != cluster_id:
         q = db.nodes.node_id == node_id
         db(q).update(cluster_id=cluster_id)
