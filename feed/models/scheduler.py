@@ -5332,6 +5332,10 @@ def _push_status(svcname, data, auth):
         _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth)
 
 def merge_daemon_status(node_id):
+    # Early remove pending flag, new task can be queued again
+    # Note: may be killed before hdel pending task => prevent queue new task
+    rconn.hdel(R_DAEMON_STATUS_PENDING, node_id)
+
     changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     if changes:
         changes = json.loads(changes)
