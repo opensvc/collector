@@ -297,6 +297,15 @@ def _update_service(svcname, auth):
         # agent compat
         h["svc_topology"] = h["svc_cluster_type"]
         del(h["svc_cluster_type"])
+    if node_id and "cluster_id" in h:
+        cluster_id = h["cluster_id"]
+        if cluster_id:
+            # take time to verify unexpected node cluster id value, it may be outdated after daemon join new cluster.
+            # Outdated node cluster_id values may lead to unexpected services creation during next node_svc_id call.
+            db_cluster_id = db(db.nodes.node_id == node_id).select(db.nodes.cluster_id).first()
+            if db_cluster_id and db_cluster_id != cluster_id:
+                db(db.nodes.node_id == node_id).update(cluster_id=cluster_id)
+                db.commit()
     svcname = h["svcname"].strip("'")
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
@@ -5168,6 +5177,7 @@ def merge_daemon_ping(node_id):
                 node_ids[nodename] = None
             else:
                 node_ids[nodename] = _node
+                # TODO: should remove following unexpected condition because of nodes_filter_q value
                 if cluster_id and _node.cluster_id != cluster_id:
                     q = db.nodes.node_id == _node.node_id
                     db(q).update(cluster_id=cluster_id)
@@ -5386,6 +5396,7 @@ def merge_daemon_status(node_id):
                 node_ids[nodename] = None
             else:
                 node_ids[nodename] = _node
+                # TODO: should remove following unexpected condition because of nodes_filter_q value
                 if cluster_id and _node.cluster_id != cluster_id:
                     q = db.nodes.node_id == _node.node_id
                     db(q).update(cluster_id=cluster_id)
