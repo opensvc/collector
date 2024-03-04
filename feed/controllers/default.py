@@ -16,6 +16,7 @@ from applications.init.modules import timeseries
 
 R_DAEMON_STATUS_HASH = "osvc:h:daemon_status"
 R_DAEMON_STATUS_CHANGES_HASH = "osvc:h:daemon_status_changes"
+R_DAEMON_STATUS_PENDING = "osvc:h:daemon_status_pending"
 R_DAEMON_STATUS = "osvc:q:daemon_status"
 R_DAEMON_PING = "osvc:q:daemon_ping"
 R_PACKAGES_HASH = "osvc:h:packages"
@@ -2405,9 +2406,27 @@ def rpc_push_daemon_status(data, changes, auth):
         changes |= set(json.loads(pending_changes))
     rconn.hset(R_DAEMON_STATUS_CHANGES_HASH, node_id, json.dumps(list(changes)))
 
-    # mark the node as needing attention from task_rq
     key = json.dumps([node_id])
-    rconn.lrem(R_DAEMON_STATUS, 0, key)
+
+    # detect if there is already pending task to preserve position in task queue.
+    pending_task = rconn.hget(R_DAEMON_STATUS_PENDING, node_id)
+    timeout = 3600
+    if pending_task:
+        elapsed = timeout
+        try:
+            elapsed = time.time() - float(pending_task)
+        except:
+            # can't parse pending
+            pass
+        if elapsed >= timeout:
+            # can't parse pending or task start and get killed before removal pending.
+            # the task will be recreated, ensure remove existing task before.
+            rconn.lrem(R_DAEMON_STATUS, 0, key)
+        else:
+            # recent pending task already exists and has not yet been started
+            return
+    # mark the node as needing attention from task_rq
+    rconn.hset(R_DAEMON_STATUS_PENDING, node_id, repr(time.time()))
     rconn.rpush(R_DAEMON_STATUS, key)
 
 ##############################################################################
