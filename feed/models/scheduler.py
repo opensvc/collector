@@ -302,9 +302,9 @@ def _update_service(svcname, auth):
         if cluster_id:
             # take time to verify unexpected node cluster id value, it may be outdated after daemon join new cluster.
             # Outdated node cluster_id values may lead to unexpected services creation during next node_svc_id call.
-            db_cluster_id = db(db.nodes.node_id == node_id).select(db.nodes.cluster_id).first()
-            if db_cluster_id and db_cluster_id != cluster_id:
-                db(db.nodes.node_id == node_id).update(cluster_id=cluster_id)
+            row = db(db.nodes.node_id == node_id).select(db.nodes.cluster_id).first()
+            if row and row.cluster_id != cluster_id:
+                db(db.nodes.node_id == node_id).update(cluster_id=row.cluster_id)
                 db.commit()
     svcname = h["svcname"].strip("'")
     svc_id = node_svc_id(node_id, svcname)
