@@ -251,15 +251,16 @@ def common_responsible(node_id=None, svc_id=None, app=None, user_id=None):
         pass
     if node_id is None and svc_id is None and app is None and user_id is None:
         return False
-    q = db.auth_group.id > 0
     l = []
     if node_id:
+        # TODO: verify possible dups apps_responsibles entries because no uniq key app_id, group_id
+        #       => multiple rows returned => break final request count(t.group_id) ...
         l.append(""" select ar.group_id from nodes n, apps a, apps_responsibles ar where n.app=a.app and n.node_id="%(node_id)s" and ar.app_id=a.id """ % dict(node_id=node_id))
     if svc_id:
         l.append(""" select ar.group_id from services s, apps a, apps_responsibles ar where s.svc_app=a.app and s.svc_id="%(svc_id)s" and ar.app_id=a.id """ % dict(svc_id=svc_id))
     if app:
         l.append(""" select ar.group_id from apps a, apps_responsibles ar where a.app="%(app)s" and ar.app_id=a.id  """ % dict(app=app))
-    if user_id and not "Manager" in user_groups():
+    if user_id:
         l.append(""" select am.group_id from auth_membership am where am.user_id=%(user_id)d  """ % dict(user_id=user_id))
     sub = " union all ".join(l)
     sql = """ select * from (select count(t.group_id) as c from (%(sub)s) as t group by t.group_id) u where u.c=%(n)d """ % dict(sub=sub, n=len(l))
