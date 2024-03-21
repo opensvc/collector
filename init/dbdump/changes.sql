@@ -6845,3 +6845,22 @@ alter table svcactions add column sid char(36);
 alter table svcactions add key k_sid (sid);
 alter table svcactions add column rid varchar(255);
 alter table svcactions add column subset varchar(255);
+
+# 2024-02-21
+
+alter table nodes modify `last_boot` datetime DEFAULT NULL;
+
+# 2024-02-28
+
+alter table resmon_log_last drop key idx1;
+alter table resmon_log_last add key idx1 (`node_id`,`svc_id`);
+
+# 2024-03-20
+
+alter table resmon modify rid varchar(255) character set utf8 collate utf8_bin;
+alter table svcactions modify rid varchar(255) character set utf8 collate utf8_bin;
+alter table resmon_log_last modify rid varchar(255) character set utf8 collate utf8_bin;
+alter table resinfo modify rid varchar(255) character set utf8 collate utf8_bin;
+alter table resmon_log modify rid varchar(255) character set utf8 collate utf8_bin;
+drop view v_resmon_log; create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
+
