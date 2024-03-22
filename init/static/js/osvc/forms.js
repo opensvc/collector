@@ -1836,7 +1836,7 @@ function form(divid, options) {
 						val = val[keys[i]]
 					}
 				}
-				let re1 = RegExp("#"+key, "g")
+				let re1 = RegExp("#"+key)
 				let t = typeof val
 				if ((t === "number") || (t === "string")) {
 					_s = _s.replace(re1, val)
