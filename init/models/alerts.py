@@ -147,13 +147,12 @@ def update_dash_moddiff_node(node_id):
 
 def update_dash_moddiff(svc_id):
 
-    def cleanup(svc_id, now):
+    def cleanup(svc_id):
         sql = """delete from dashboard
                  where
                    dash_type="compliance moduleset attachment differences in cluster" and
-                   svc_id="%(svc_id)s" and
-                   dash_updated < "%(now)s"
-              """%dict(svc_id=svc_id, now=str(now))
+                   svc_id="%(svc_id)s"
+              """%dict(svc_id=svc_id)
         db.executesql(sql)
         db.commit()
 
@@ -165,7 +164,7 @@ def update_dash_moddiff(svc_id):
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
     if n < 2:
-        cleanup(svc_id, now)
+        cleanup(svc_id)
         return
 
     if rows.first().mon_svctype == 'PRD':
@@ -208,7 +207,7 @@ def update_dash_moddiff(svc_id):
     _rows = db.executesql(sql)
 
     if _rows[0][0] == 0:
-        cleanup(svc_id, now)
+        cleanup(svc_id)
         return
 
     sql = """
@@ -229,7 +228,6 @@ def update_dash_moddiff(svc_id):
     db.executesql(sql)
     db.commit()
 
-    cleanup(svc_id, now)
     return svc_id, _rows[0][0]
 
 def update_dash_rsetdiff_node(node_id):
