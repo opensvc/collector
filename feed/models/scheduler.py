@@ -1648,7 +1648,6 @@ def insert_hcs(name=None, node_id=None):
             generic_insert('stor_array', vars, vals)
 
             sql = """select id from stor_array where array_name="%s" """ % name
-            print(sql)
             array_id = str(db.executesql(sql)[0][0])
             return array_id
 
@@ -4532,16 +4531,16 @@ def update_dash_checks_all():
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
                         '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
+                        ', "min": ', IFNULL(t.min, "null"),
+                        ', "max": ', IFNULL(t.max, "null"),
                         '}'),
                  "%(now)s",
                  md5(concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
                         '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
+                        ', "min": ', IFNULL(t.min, "null"),
+                        ', "max": ', IFNULL(t.max, "null"),
                         '}')),
                  t.node_env,
                  "%(now)s",
@@ -4613,16 +4612,16 @@ def update_dash_checks(node_id):
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
                         '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
+                        ', "min": ', IFNULL(t.min, "null"),
+                        ', "max": ', IFNULL(t.max, "null"),
                         '}'),
                  "%(now)s",
                  md5(concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
                         '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
+                        ', "min": ', IFNULL(t.min, "null"),
+                        ', "max": ', IFNULL(t.max, "null"),
                         '}')),
                  "%(env)s",
                  "%(now)s",

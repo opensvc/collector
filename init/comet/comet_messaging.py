@@ -177,8 +177,8 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
             listeners[self.group].remove(self)
         del names[self]
         # notify clients that a member has left the groups
-        for client in listeners.get(self.group, []):
-            client.write_message('-' + self.name)
+        #for client in listeners.get(self.group, []):
+        #    client.write_message('-' + self.name)
         print '%s:DISCONNECT from %s' % (time.time(), self.group)
 
 # if your webserver is different from tornado server uncomment this
