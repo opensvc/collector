@@ -4883,6 +4883,7 @@ def update_dash_service_frozen(svc_id, node_id, env, frozen):
     return set()
 
 def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
+    # TODO: Verify following conditions on 'svc_autostart', since it doesn't exist in agent
     if env == 'PRD':
         sev = 1
     else:
