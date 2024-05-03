@@ -5136,6 +5136,8 @@ def ping_peer(peer, now):
     return changed
 
 def merge_daemon_ping(node_id):
+    # TODO: remove use of R_DAEMON_STATUS_HASH since merge_daemon_status job has already processed those data
+    #       instead we can simply update existing db data as what is done during oc3 daemon ping
     print "daemon ping", node_id
     changed = set()
     now = datetime.datetime.now()
