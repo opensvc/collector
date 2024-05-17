@@ -1050,13 +1050,20 @@ def _register_disk(vars, vals, auth, node_id=None, disk_nodename=None, svc_id=No
 def _insert_pkg(auth):
     vars, vals = json.loads(rconn.hget(R_PACKAGES_HASH, json.dumps([auth])))
     now = datetime.datetime.now()
+    threshold = now - datetime.timedelta(minutes=1)
     if "pkg_updated" not in vars:
         vars.append("pkg_updated")
+        pkg_updated = now.strftime("%Y-%m-%d %H:%M:%S")
         for i, val in enumerate(vals):
-            vals[i].append(str(now))
+            vals[i].append(pkg_updated)
+    idx = vars.index("pkg_install_date")
+    if idx > 0:
+        for i, val in enumerate(vals):
+            if val[idx] == "":
+                # for agent version without commit: [om node pushpkg-oc2] pkglist is not anymore responsible for installe…
+                vals[i][idx] = None
     vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="pkg_nodename")
     node_id = auth_to_node_id(auth)
-    threshold = now - datetime.timedelta(minutes=1)
     generic_insert('packages', vars, vals)
     delete_old_pkg(threshold, node_id)
     update_dash_pkgdiff(node_id)
