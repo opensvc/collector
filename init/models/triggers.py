@@ -122,7 +122,7 @@ def resmon_log_update(node_id, svc_id, rid, astatus, res_log, deferred=False):
                                  res_begin=prev[3],
                                  res_end=end,
                                  res_status=prev[1],
-                                 res_log=res_log)
+                                 res_log=prev[4])
             change = True
         changed.add("resmon_log")
     if len(rows) == 0 or change:
