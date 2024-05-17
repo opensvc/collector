@@ -6864,3 +6864,15 @@ alter table resinfo modify rid varchar(255) character set utf8 collate utf8_bin;
 alter table resmon_log modify rid varchar(255) character set utf8 collate utf8_bin;
 drop view v_resmon_log; create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
 
+# 2024-05-17
+
+alter table networks drop end;
+alter table networks add `end` varchar(16) GENERATED ALWAYS AS (inet_ntoa(inet_aton(`network`) + pow(2,32 - `netmask`) - 2)) VIRTUAL;
+alter table networks drop broadcast;
+alter table networks add `broadcast` varchar(16) GENERATED ALWAYS AS (inet_ntoa(inet_aton(`network`) + pow(2,32 - `netmask`) - 1)) VIRTUAL;
+alter table saves drop chk_instance;
+alter table saves add `chk_instance` varchar(100) GENERATED ALWAYS AS (if(substr(`save_name`,1,4) = 'RMAN',substring_index(`save_name`,'_',1),`save_name`)) VIRTUAL;
+alter table saves drop save_resolved;
+alter table saves add `save_resolved` varchar(1) GENERATED ALWAYS AS (octet_length(`node_id`) <> 36) VIRTUAL;
+
+
