@@ -2453,6 +2453,11 @@ function form(divid, options) {
 			console.log("fn:", key, "->", d.Id)
 			input.val(null)
 			input.change()
+			if (input.is("select.select2-hidden-accessible")) {
+				// clear the Option elements cached in DOM,
+				// so the option_data is not lost when returning to a cached option.
+				input.html(null)
+			}
 			fn_init(input, d, d.Default)
 			o.update_submit()
 		})
