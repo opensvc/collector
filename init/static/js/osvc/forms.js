@@ -1839,7 +1839,7 @@ function form(divid, options) {
 				}
 				let re1 = RegExp("#"+key)
 				let t = typeof val
-				if ((t === "number") || (t === "string")) {
+				if ((t === "number") || (t === "string") || (t === "boolean")) {
 					_s = _s.replace(re1, val)
 				}
 			}
