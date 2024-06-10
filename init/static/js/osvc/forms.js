@@ -233,6 +233,7 @@ function form(divid, options) {
 
 	let getProcessResultFunc = function(input, d) {
 		return function (data) {
+			input.html(null)
 			let id_prop = get_id_prop(input, d)
 			let l = data.data.map(function(data){
 				ndata = {
