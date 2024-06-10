@@ -2298,10 +2298,7 @@ function form(divid, options) {
 
 	o.eval_condition = function(c, data) {
 		let val = data[c.id]
-		if (typeof val === "undefined") {
-			return false
-		}
-		else if (typeof val === "number") {
+		if (typeof val === "number") {
 			try {
 				c.ref = parseInt(c.ref)
 			} catch(e) {}
@@ -2309,7 +2306,7 @@ function form(divid, options) {
 		else if (typeof val === "boolean") {
 			c.ref = (c.ref.toLowerCase() == 'true')
 		}
-		if ((val != "") && (val != null)) {
+		if ((val != "") && (val != null) && (typeof(val) !== "undefined")) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
