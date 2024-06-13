@@ -107,11 +107,6 @@ def check_condition(cond, _d=None):
         if not var.startswith("#") or len(var) < 2:
             raise Exception("malformed output condition: %s"%cond)
         var = var[1:]
-        if var not in _d:
-            if op == "==" and val == "empty":
-                pass
-            else:
-                raise Exception("input id %s is not present in submitted data : %s"%(var, str(_d)))
         return var, val
 
     raise_if_no_form_data(_d)
@@ -119,7 +114,7 @@ def check_condition(cond, _d=None):
     if "==" in cond:
         var, val = get_var_val("==")
         if val == "empty":
-            if var not in _d or _d[val] in (None, "undefined", ""):
+            if var not in _d or _d[var] in (None, "undefined", ""):
                 return True
             return False
         if var not in _d:
@@ -157,7 +152,7 @@ def check_condition(cond, _d=None):
         var, val = get_var_val("IN")
         val = val.split(",")
         if len(val) == 0:
-            if var not in _d or _d[val] in (None, "undefined", ""):
+            if var not in _d or _d[var] in (None, "undefined", ""):
                 return True
             return False
         if var not in _d:
