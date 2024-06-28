@@ -1456,18 +1456,16 @@ function form(divid, options) {
 				return
 			}
 			let strcontent = []
-			content.forEach(function(e) {
-				strcontent.push(""+e)
-			})
+			if (Array.isArray(content)) {
+				content.forEach(function(e) {
+					strcontent.push(""+e)
+				})
+			} else {
+				strcontent.push(content)
+			}
 			data.results.forEach(function(e){
-				if (Array.isArray(content)) {
-					if (strcontent.indexOf(""+e.id) < 0) {
-						return
-					}
-				} else {
-					if (e.id != strcontent) {
-						return
-					}
+				if (strcontent.indexOf(""+e.id) < 0) {
+					return
 				}
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
