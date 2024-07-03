@@ -499,10 +499,11 @@ def output_rest(output, form_definition, _d=None, results=None):
         import tempfile
         f = tempfile.NamedTemporaryFile()
         fname = f.name
-        s = """var mangle = %(mangler)s; var out = mangle(%(data)s, %(results)s); console.log(JSON.stringify(out));""" % dict(
+        s = """var mangle = %(mangler)s; var out = mangle(%(data)s, %(outputs)s, %(results_id)d); console.log(JSON.stringify(out));""" % dict(
           mangler=mangler,
           data=sjson.dumps(_d, default=datetime.datetime.isoformat),
-          results=sjson.dumps(results["outputs"], default=datetime.datetime.isoformat),
+          outputs=sjson.dumps(results["outputs"], default=datetime.datetime.isoformat),
+          results_id=results["results_id"],
         )
         f.write(s)
         f.flush()
