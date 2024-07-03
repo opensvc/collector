@@ -798,6 +798,9 @@ class rest_put_form_output_result(rest_put_handler):
           "output_id": {
               "desc": "The id of the form output for which to store the result"
           },
+          "log": {
+              "desc": "The logs to append to <output_id> logs. [[<lvl>, <fmt>, <data>], ...] where lvl is 0 for info, 1 for error.",
+          },
         }
         examples = [
           """# curl -u %(email)s -d output_id="add disk" -d result='{"lun": 1}' -X PUT -o- https://%(collector)s/init/rest/api/form_output_results/10"""
@@ -811,15 +814,29 @@ class rest_put_form_output_result(rest_put_handler):
           examples=examples,
         )
 
-    def handler(self, results_id, output_id=None, result=None):
-        results = rest_get_form_output_result().handler(results_id)
-        if output_id not in results["outputs"]:
-	    results["outputs"][output_id] = []
+    def handler(self, results_id, output_id=None, result=None, log=None):
         import gluon.contrib.simplejson as sjson
-        try:
-            results["outputs"][output_id] += [sjson.loads(result)]
-        except TypeError:
-            results["outputs"][output_id] += [result]
+        results = rest_get_form_output_result().handler(results_id)
+
+        if not result and not log:
+            return results
+
+        if result:
+            if output_id not in results["outputs"]:
+                results["outputs"][output_id] = []
+            try:
+                results["outputs"][output_id] += [sjson.loads(result)]
+            except TypeError:
+                results["outputs"][output_id] += [result]
+
+        if log:
+            if output_id not in results["log"]:
+                results["log"][output_id] = []
+            try:
+                results["log"][output_id] += sjson.loads(log)
+            except TypeError:
+                results["log"][output_id] += log
+
         s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
 
         q = db.form_output_results.id == int(results_id)
