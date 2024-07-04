@@ -611,7 +611,15 @@ def output_rest(output, form_definition, _d=None, results=None):
         if "data" not in jd:
             return results
 
-        results["outputs"][output_id] = jd["data"]
+        try:
+            # [{}] + {} => [{}, {}]
+            results["outputs"][output_id].append(jd["data"])
+        except KeyError:
+            # None + {} => {}
+            results["outputs"][output_id] = jd["data"]
+        except AttributeError:
+            # {} + {} => [{}, {}]
+            results["outputs"][output_id] = [results["outputs"][output_id], jd["data"]]
 
         if output.get("WaitResult", 0) > 0:
             if isinstance(jd["data"], list):
@@ -631,6 +639,11 @@ def output_rest(output, form_definition, _d=None, results=None):
 
     try:
         jd = run_handler(args, vars, url, wait)
+
+        # results may have been changed by the api call, via PUT /form_output_results.
+        # reload to not lose these changes
+        results = reload_results(results)
+
         results = post_run(jd, results)
     except Exception as e:
         results = form_log(output_id, results,
@@ -723,6 +736,14 @@ def workflow_continuation(form, prev_wfid):
                 if prev_wf.form_next_id is not None:
                     return True
     return False
+
+def reload_results(results):
+    # commit to see updates from other db clients (ie api that receives PUT /form_output_results/<id>)
+    db.commit()
+    q = db.form_output_results.id == results["results_id"]
+    row = db(q).select().first()
+    results = sjson.loads(row.results)
+    return results
 
 def update_results(results, reload_outputs=False):
     q = db.form_output_results.id == results["results_id"]
