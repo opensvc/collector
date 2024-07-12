@@ -2402,6 +2402,9 @@ def rpc_push_daemon_status(data, changes, auth):
     # store daemon status data
     rconn.hset(R_DAEMON_STATUS_HASH, node_id, data)
 
+    # prevent next daemon ping to ask one more daemon status: remove possible R_DAEMON_STATUS_REQUIRED flag,
+    rconn.hdel(R_DAEMON_STATUS_REQUIRED, node_id)
+
     # merge changes with pending changes, and store
     changes = set(json.loads(changes))
     pending_changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
