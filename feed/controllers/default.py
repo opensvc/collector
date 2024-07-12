@@ -17,6 +17,7 @@ from applications.init.modules import timeseries
 R_DAEMON_STATUS_HASH = "osvc:h:daemon_status"
 R_DAEMON_STATUS_CHANGES_HASH = "osvc:h:daemon_status_changes"
 R_DAEMON_STATUS_PENDING = "osvc:h:daemon_status_pending"
+R_DAEMON_STATUS_REQUIRED = "osvc:h:daemon_status_required"
 R_DAEMON_STATUS = "osvc:q:daemon_status"
 R_DAEMON_PING = "osvc:q:daemon_ping"
 R_PACKAGES_HASH = "osvc:h:packages"
@@ -2377,9 +2378,11 @@ def daemon_ping(auth):
 def rpc_daemon_ping(auth):
     node_id = auth_to_node_id(auth)
     elem = json.dumps([node_id])
-    ret = rconn.hexists(R_DAEMON_STATUS_HASH, node_id)
-    if not ret:
-        return {"ret": 1, "info": "resync"}
+    if not rconn.hexists(R_DAEMON_STATUS_HASH, node_id):
+        return {"ret": 1, "info": "resync", "no daemon status": True}
+    if rconn.hexists(R_DAEMON_STATUS_REQUIRED, node_id):
+        rconn.hdel(R_DAEMON_STATUS_REQUIRED, node_id)
+        return {"ret": 1, "info": "resync", "daemon status required": True}
     rconn.lrem(R_DAEMON_PING, 0, elem)
     rconn.rpush(R_DAEMON_PING, elem)
 
@@ -2398,6 +2401,9 @@ def rpc_push_daemon_status(data, changes, auth):
 
     # store daemon status data
     rconn.hset(R_DAEMON_STATUS_HASH, node_id, data)
+
+    # prevent next daemon ping to ask one more daemon status: remove possible R_DAEMON_STATUS_REQUIRED flag,
+    rconn.hdel(R_DAEMON_STATUS_REQUIRED, node_id)
 
     # merge changes with pending changes, and store
     changes = set(json.loads(changes))

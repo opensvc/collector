@@ -6,6 +6,7 @@ import base64
 import os
 import copy
 import logging
+import time
 
 from applications.init.modules import timeseries
 
@@ -5143,8 +5144,10 @@ def ping_peer(peer, now):
     return changed
 
 def merge_daemon_ping(node_id):
-    # TODO: remove use of R_DAEMON_STATUS_HASH since merge_daemon_status job has already processed those data
-    #       instead we can simply update existing db data as what is done during oc3 daemon ping
+    # daemon_status_required is True when we detect out of sync situation that requires new
+    # daemon status data. This may happen when we delete db services in database but we found
+    # service in latest daemon status data (R_DAEMON_STATUS_HASH)
+    daemon_status_required = False
     print "daemon ping", node_id
     changed = set()
     now = datetime.datetime.now()
@@ -5208,6 +5211,12 @@ def merge_daemon_ping(node_id):
             except:
                 continue
             if svc:
+                if not daemon_status_required and svc.svc_availstatus == "undef":
+                    # log entry on first missing svc avail status occurrence
+                    print "ping %s enable need of new daemon status because of missing svc_availstatus for service %s" % (node_id, svcname)
+                    rconn.hset(R_DAEMON_STATUS_REQUIRED, node_id, repr(time.time()))
+                    daemon_status_required = True
+                # TODO: also search lost instances when not daemon_status_required ?
                 break
         if svc is None:
             continue
@@ -5609,6 +5618,7 @@ def merge_daemon_status(node_id):
                 break
         if svc is None:
             continue
+        # Note: changes can't be None
         if changes is not None and svcname not in changes and not svc.svc_availstatus == "undef":
             ping_svc(svc, now)
         else:
@@ -5622,6 +5632,7 @@ def merge_daemon_status(node_id):
             if peer is None:
                 print "  skip instance on unknwon peer", nodename
                 continue
+            # Note: changes can't be None
             if changes is not None and svcname+"@"+nodename not in changes and not svc.svc_availstatus == "undef":
                 pi_changed = ping_instance(svc, peer, now)
                 if pi_changed is not None:
