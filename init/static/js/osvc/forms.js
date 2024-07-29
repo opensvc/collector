@@ -884,7 +884,12 @@ function form(divid, options) {
 			console.log("render_form: unsupported format", f) 
 		}
 		o.reinit_select2()
+		o.reinit_booleans()
 		o.update_submit()
+	}
+
+	o.reinit_booleans = function() {
+		o.area.find(".formbool-input").trigger("change")
 	}
 
 	o.reinit_select2 = function() {
