@@ -3,6 +3,16 @@ const userLocale =
     ? navigator.languages[0]
     : navigator.language;
 
+function debounce(func, wait) {
+    let timeout;
+
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
 function convert_boolean(val) {
 	try {
 		if (String(val)[0].toLowerCase().match(/[1ty]/)) {
@@ -2448,7 +2458,7 @@ function form(divid, options) {
 		}
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("select,input,textarea")
-		cell.bind("change", function() {
+		cell.bind("change", debounce(function() {
 			var input = table.find("[iid="+d.Id+"]").find("select,input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
 				return
@@ -2463,7 +2473,7 @@ function form(divid, options) {
 			}
 			fn_init(input, d, d.Default)
 			o.update_submit()
-		})
+		}, 300))
 	}
 
 	o.install_fn_triggers = function(table) {
