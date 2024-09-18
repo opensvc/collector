@@ -366,11 +366,13 @@ class rest_delete_array_diskgroup_quota(rest_delete_handler):
         if quota is None:
             raise HTTP(404, "quota %s not found" % str(quota_id))
 
-        q = db.apps.id == quota.app_id
-        app = db(q).select().first()
+        q2 = db.apps.id == quota.app_id
+        app = db(q2).select().first()
 
-        q = db.stor_array_dg.id == quota.dg_id
-        dg = db(q).select().first()
+        q2 = db.stor_array_dg.id == quota.dg_id
+        dg = db(q2).select().first()
+
+        db(q).delete()
 
         fmt = "%(quota)s quota deleted for app %(app)s in dg %(dg)s"
         d = dict(quota=str(quota.quota), app=str(app.app), dg=str(dg.dg_name))
