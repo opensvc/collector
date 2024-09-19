@@ -1186,7 +1186,7 @@ def comp_status_load():
 @auth.requires_login()
 def ajax_comp_svc_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    mt = table_comp_svc_status('css', 'ajax_comp_svc_status')
+    mt = table_comp_svc_status('aggcss', 'ajax_comp_svc_status')
 
     o = t.get_orderby(default=db.services.svcname)
     q = q_filter(node_field=db.comp_status.node_id)
@@ -1257,7 +1257,7 @@ def ajax_comp_svc_status():
 @auth.requires_login()
 def ajax_comp_node_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    mt = table_comp_node_status('cns', 'ajax_comp_node_status')
+    mt = table_comp_node_status('aggcns', 'ajax_comp_node_status')
 
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
@@ -1504,7 +1504,7 @@ def json_node_history():
 @auth.requires_login()
 def ajax_comp_mod_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
+    mt = table_comp_mod_status('aggcms', 'ajax_comp_mod_status')
 
     o = mt.get_orderby(default=~db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
@@ -1590,6 +1590,63 @@ def ajax_comp_mod_status():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
+
+@auth.requires_login()
+def ajax_comp_mod_status_col_values():
+    col = request.args[0]
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    mt = table_comp_mod_status('aggcms', 'ajax_comp_mod_status')
+
+    o = mt.get_orderby(default=~db.nodes.nodename)
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
+    l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters_id(q, db.comp_status.node_id)
+    sql1 = db(q)._select(left=l).rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
+    regex = re.compile("SELECT .* FROM")
+    sql1 = regex.sub('', sql1)
+
+    q = db.comp_mod_status.id > 0
+    for f in mt.cols:
+        q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
+    where = str(q).replace("comp_mod_status", "u")
+
+    mt.additional_inputs = t.ajax_inputs()
+
+    sql2 = """select u.%(col)s as p, count(u.id) as n from (
+                select t.id,
+                     t.run_module as mod_name,
+                     t.ok+t.nok+t.na+t.obs as total,
+                     t.ok,
+                     t.nok,
+                     t.na,
+                     t.obs,
+                     floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
+                from (select comp_status.id,
+                           run_module,
+                           sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
+                           sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
+                           sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
+                           sum(if(run_date<"%(d)s", 1, 0)) as obs
+                    from %(sql)s group by run_module) t) u
+              where %(where)s
+              group by p
+              order by n
+              """%dict(
+                sql=sql1,
+                col=col,
+                where=where,
+                d=(now-datetime.timedelta(days=7)),
+           )
+
+    rows = db.executesql(sql2)
+
+    mt.object_list = map(lambda x: {col: x[0], "_extra": {"count": x[1]}}, rows)
+
+    return mt.col_values_cloud_grouped(col)
+
 
 class table_comp_log(table_comp_status):
     def __init__(self, id=None, func=None, innerhtml=None):

@@ -3,6 +3,16 @@ const userLocale =
     ? navigator.languages[0]
     : navigator.language;
 
+function debounce(func, wait) {
+    let timeout;
+
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
 function convert_boolean(val) {
 	try {
 		if (String(val)[0].toLowerCase().match(/[1ty]/)) {
@@ -884,7 +894,12 @@ function form(divid, options) {
 			console.log("render_form: unsupported format", f) 
 		}
 		o.reinit_select2()
+		o.reinit_booleans()
 		o.update_submit()
+	}
+
+	o.reinit_booleans = function() {
+		o.area.find(".formbool-input").trigger("change")
 	}
 
 	o.reinit_select2 = function() {
@@ -1321,10 +1336,14 @@ function form(divid, options) {
 
 	o.select_rest_set_autodef = function(input, d) {
 		if (d.DisableAutoDefault == true) {
-			console.log("autodef", d.Id, "skip")
+			console.log("autodef", d.Id, "skip, disabled")
 			data = $.data(input[0])
 			let options = data.s2options
 			input.select2(options)
+			return
+		}
+		if (!input.parents("tr[iid]:visible").first().is(":visible") && o.has_conditions(d)) {
+			console.log("autodef", d.Id, "deferred, conditioned")
 			return
 		}
 		let url = getUrlFunc(input, d.Function)()
@@ -1375,6 +1394,14 @@ function form(divid, options) {
 	}
 
 	o.select_rest_set_autodef_from_default_func = function(input, d) {
+		if (d.DisableAutoDefault == true) {
+			console.log("autodef", d.Id, "skip, disabled")
+			return
+		}
+		if (!input.parents("tr[iid]:visible").first().is(":visible") && o.has_conditions(d)) {
+			console.log("autodef", d.Id, "deferred, conditioned")
+			return
+		}
 		let url = getUrlFunc(input, d.DefaultFunction)()
 		if (!url) {
 			return
@@ -2276,6 +2303,16 @@ function form(divid, options) {
 		return {"id": id, "op": op, "ref": ref}
 	}
 
+	o.has_conditions = function(d) {
+		if (typeof(d.Condition) === "string") {
+			return (d.Condition != "")
+		}
+		if (Array.isArray(d.Condition)) {
+			return d.Condition.length>0
+		}
+		return false
+	}
+
 	o.eval_conditions = function(d, data) {
 		if (typeof(d.Condition) === "string") {
 			let c = o.parse_condition(d.Condition)
@@ -2443,7 +2480,7 @@ function form(divid, options) {
 		}
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("select,input,textarea")
-		cell.bind("change", function() {
+		cell.bind("change", debounce(function() {
 			var input = table.find("[iid="+d.Id+"]").find("select,input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
 				return
@@ -2458,7 +2495,7 @@ function form(divid, options) {
 			}
 			fn_init(input, d, d.Default)
 			o.update_submit()
-		})
+		}, 300))
 	}
 
 	o.install_fn_triggers = function(table) {
