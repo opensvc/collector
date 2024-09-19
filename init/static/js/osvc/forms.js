@@ -1336,10 +1336,14 @@ function form(divid, options) {
 
 	o.select_rest_set_autodef = function(input, d) {
 		if (d.DisableAutoDefault == true) {
-			console.log("autodef", d.Id, "skip")
+			console.log("autodef", d.Id, "skip, disabled")
 			data = $.data(input[0])
 			let options = data.s2options
 			input.select2(options)
+			return
+		}
+		if (!input.parents("tr[iid]:visible").first().is(":visible") && o.has_conditions(d)) {
+			console.log("autodef", d.Id, "deferred, conditioned")
 			return
 		}
 		let url = getUrlFunc(input, d.Function)()
@@ -1390,6 +1394,14 @@ function form(divid, options) {
 	}
 
 	o.select_rest_set_autodef_from_default_func = function(input, d) {
+		if (d.DisableAutoDefault == true) {
+			console.log("autodef", d.Id, "skip, disabled")
+			return
+		}
+		if (!input.parents("tr[iid]:visible").first().is(":visible") && o.has_conditions(d)) {
+			console.log("autodef", d.Id, "deferred, conditioned")
+			return
+		}
 		let url = getUrlFunc(input, d.DefaultFunction)()
 		if (!url) {
 			return
@@ -2289,6 +2301,16 @@ function form(divid, options) {
 		id = id.replace(/^\s+/, "").replace(/\s+$/, "").replace(/^#/, "")
 		ref = ref.replace(/^\s+/, "").replace(/\s+$/, "")
 		return {"id": id, "op": op, "ref": ref}
+	}
+
+	o.has_conditions = function(d) {
+		if (typeof(d.Condition) === "string") {
+			return (d.Condition != "")
+		}
+		if (Array.isArray(d.Condition)) {
+			return d.Condition.length>0
+		}
+		return false
 	}
 
 	o.eval_conditions = function(d, data) {
