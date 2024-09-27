@@ -1374,6 +1374,7 @@ function form(divid, options) {
 				input.select2(options)
 				return
 			}
+			input.empty("option")
 			normData.results.forEach(function(e) {
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)
@@ -1427,6 +1428,7 @@ function form(divid, options) {
 				input.select2(options)
 				return
 			}
+			input.empty("option")
 			normData.results.forEach(function(e) {
 				let option = new Option(e.text, e.id, true, true)
 				$.data(option, "data", e)

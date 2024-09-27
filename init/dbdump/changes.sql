@@ -6875,4 +6875,14 @@ alter table saves add `chk_instance` varchar(100) GENERATED ALWAYS AS (if(substr
 alter table saves drop save_resolved;
 alter table saves add `save_resolved` varchar(1) GENERATED ALWAYS AS (octet_length(`node_id`) <> 36) VIRTUAL;
 
+# 2024-09-27
+
+CREATE TABLE `service_ids` (
+  `svcname` varchar(256) DEFAULT NULL,
+  `cluster_id` varchar(256) DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `svc_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT uuid(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk` (`svcname`,`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1065238 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
 
