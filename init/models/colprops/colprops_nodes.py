@@ -41,6 +41,7 @@ nodes_cols = [
     'mem_slots',
     'mem_bytes',
     'node_frozen',
+    'node_frozen_at',
     'listener_port',
     'version',
     'action_type',
@@ -218,6 +219,10 @@ nodes_colprops = {
             ),
     'node_frozen': HtmlTableColumn(
              field='node_frozen',
+             table = 'nodes',
+            ),
+    'node_frozen_at': HtmlTableColumn(
+             field='node_frozen_at',
              table = 'nodes',
             ),
     'version': HtmlTableColumn(

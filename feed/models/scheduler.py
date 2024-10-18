@@ -4855,6 +4855,38 @@ def update_dash_service_placement(svc_id, env, placement):
         return set(["dashboard"])
     return set()
 
+def update_dash_node_frozen(node_id, env, frozen):
+    if not frozen:
+        sql = """delete from dashboard
+                 where
+                   dash_type="node frozen" and
+                   node_id="%(node_id)s"
+              """%dict(node_id=node_id)
+    else:
+        sql = """insert into dashboard
+                 set
+                   dash_type="node frozen",
+                   node_id="%(node_id)s",
+                   dash_severity=1,
+                   dash_fmt="",
+                   dash_dict="",
+                   dash_created=now(),
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_severity=1,
+                   dash_fmt="",
+                   dash_dict="",
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+              """%dict(node_id=node_id,
+                       env=env,
+                      )
+    ret = db.executesql(sql)
+    if ret:
+        return set(["dashboard"])
+    return set()
+
 def update_dash_service_frozen(svc_id, node_id, env, frozen):
     if int(frozen) == 0:
         sql = """delete from dashboard
@@ -5184,7 +5216,7 @@ def merge_daemon_ping(node_id):
             return node_ids[nodename]
         except KeyError:
             q = nodes_filter_q & (db.nodes.nodename == nodename)
-            _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id, db.nodes.node_frozen).first()
+            _node = db(q).select(db.nodes.node_id, db.nodes.cluster_id, db.nodes.node_frozen, db.nodes.node_env).first()
             if _node is None:
                 node_ids[nodename] = None
             else:
@@ -5584,13 +5616,19 @@ def merge_daemon_status(node_id):
         if peer is None:
             print "  skip instance on unknwon peer", nodename
             continue
-        node_frozen = ndata.get("frozen", 0) > 0
+        node_frozen_at = ndata.get("frozen", 0)
+        node_frozen = node_frozen_at > 0
         if node_frozen != peer.node_frozen:
-            q = db.nodes.node_id == peer.node_id
-            db(q).update(
-                node_frozen=ndata.get("frozen", 0) > 0,
-                updated=now,
-            )
+            if node_frozen_at > 0:
+                set_node_frozen_at = "node_frozen_at=FROM_UNIXTIME(%d)" % node_frozen_at
+            else:
+                set_node_frozen_at = "node_frozen_at=NULL"
+            db.executesql("""update nodes set node_frozen="%(node_frozen)s", %(set_node_frozen_at)s, updated=NOW() where node_id="%(node_id)s" """ % dict(
+                node_id=peer.node_id,
+                node_frozen=node_frozen,
+                set_node_frozen_at=set_node_frozen_at,
+            ))
+            changed |= update_dash_node_frozen(peer.node_id, peer.node_env, node_frozen)
             db.commit()
             changed.add("nodes")
 

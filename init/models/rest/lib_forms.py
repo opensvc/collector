@@ -14,6 +14,16 @@ def form_log(output_id, results, ret, action, fmt, d):
     except AttributeError:
         # before auth restore
         pass
+    except Exception as exc:
+        s = str(exc).lower()
+        if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
+            db._adapter.close()
+            db._adapter.reconnect()
+            _log(action, fmt, d, level=level)
+        else:
+            raise
+
+    db.commit()
     return results
 
 def form_get_val(d, v):
@@ -966,17 +976,23 @@ def form_submit(form, _d=None, prev_wfid=None):
             svc_id=auth.user.svc_id if "svc_id" in auth.user else None,
             results=sjson.dumps(results, default=datetime.datetime.isoformat)
         )
+
     for i in range(3):
         try:
             dbdo()
             break
         except Exception as exc:
-            errstr = str(exc)
-            if "try restarting" in errstr:
+            s = str(exc).lower()
+            if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
+                db._adapter.close()
+                db._adapter.reconnect()
+            if "try restarting" in s:
                 if i == 2:
                     raise exc
                 time.sleep(0.2)
                 continue
+
+    db.commit()
 
     if form_definition.get("Async", False):
         rconn.rpush("osvc:q:form_submit", json.dumps([
