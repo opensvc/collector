@@ -6886,3 +6886,7 @@ CREATE TABLE `service_ids` (
   UNIQUE KEY `uk` (`svcname`,`cluster_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1065238 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
 
+# 2024-10-18
+
+alter table nodes add column node_frozen_at datetime;
+

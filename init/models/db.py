@@ -547,6 +547,7 @@ db.define_table('nodes',
     Field('notifications', 'boolean'),
     Field('snooze_till', 'datetime'),
     Field('node_frozen', 'boolean'),
+    Field('node_frozen_at', 'datetime'),
     migrate=False)
 
 db.define_table('v_users',

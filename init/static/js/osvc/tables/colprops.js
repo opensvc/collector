@@ -42,6 +42,7 @@ objcols = {
 		'mem_slots',
 		'mem_bytes',
 		'node_frozen',
+		'node_frozen_at',
 		'listener_port',
 		'version',
 		'action_type',
@@ -2087,8 +2088,13 @@ colprops = {
 	},
 	"node_frozen": {
 		"_class": "frozen",
-		"img": "svc",
+		"img": "node",
 		"title": "Node frozen"
+	},
+	"node_frozen_at": {
+		"_class": "datetime_daily",
+		"img": "time16",
+		"title": "Node frozen at"
 	},
 	"svc_frozen": {
 		"_class": "frozen",
