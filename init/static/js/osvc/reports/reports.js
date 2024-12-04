@@ -68,6 +68,7 @@ function metric(divid, options) {
 			for (var i=0; i<data.length; i++) {
 				var point = data[i]
 				var tr = $("<tr></tr>")
+				var styles = o.options.styles
 				for (var j=0; j<objname.length; j++) {
 					var name = objname[j]
 					var val = point[name]
@@ -76,6 +77,9 @@ function metric(divid, options) {
 					}
 					var td = $("<td></td>")
 					td.text(val)
+					if ((styles !== undefined) && (styles[j] !== undefined)) {
+						td.css(styles[j])
+					}
 					tr.append(td)
 				}
 				o.table.append(tr)
