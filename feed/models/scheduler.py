@@ -5199,9 +5199,8 @@ def merge_daemon_ping(node_id):
         return
 
     cluster_id = data.get("cluster_id", "")
-    if cluster_id and node and node.cluster_id != cluster_id:
-        q = db.nodes.node_id == node_id
-        db(q).update(cluster_id=cluster_id)
+    if cluster_id:
+        check_or_fix_node_cluster_id(node_id, cluster_id)
 
     if cluster_id:
         nodes_filter_q = db.nodes.cluster_id == cluster_id
@@ -5219,9 +5218,8 @@ def merge_daemon_ping(node_id):
             else:
                 node_ids[nodename] = _node
                 # TODO: should remove following unexpected condition because of nodes_filter_q value
-                if cluster_id and _node.cluster_id != cluster_id:
-                    q = db.nodes.node_id == _node.node_id
-                    db(q).update(cluster_id=cluster_id)
+                if cluster_id:
+                    check_or_fix_node_cluster_id(_node.node_id, cluster_id)
             return node_ids[nodename]
 
     for nodename, ndata in data["nodes"].items():
@@ -5427,9 +5425,8 @@ def merge_daemon_status(node_id):
             cluster_name=cluster_name,
             cluster_data=raw_data,
         )
-    if cluster_id and node and node.cluster_id != cluster_id:
-        q = db.nodes.node_id == node_id
-        db(q).update(cluster_id=cluster_id)
+    if cluster_id:
+        check_or_fix_node_cluster_id(node_id, cluster_id)
     node_ids = {
         node.nodename: node,
     }
@@ -5449,9 +5446,8 @@ def merge_daemon_status(node_id):
             else:
                 node_ids[nodename] = _node
                 # TODO: should remove following unexpected condition because of nodes_filter_q value
-                if cluster_id and _node.cluster_id != cluster_id:
-                    q = db.nodes.node_id == _node.node_id
-                    db(q).update(cluster_id=cluster_id)
+                if cluster_id:
+                    check_or_fix_node_cluster_id(_node.node_id, cluster_id)
             return node_ids[nodename]
 
     def update_container_node_fields(svc, peer, container_id, idata):
