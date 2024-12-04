@@ -301,12 +301,7 @@ def _update_service(svcname, auth):
     if node_id and "cluster_id" in h:
         cluster_id = h["cluster_id"]
         if cluster_id:
-            # take time to verify unexpected node cluster id value, it may be outdated after daemon join new cluster.
-            # Outdated node cluster_id values may lead to unexpected services creation during next node_svc_id call.
-            row = db(db.nodes.node_id == node_id).select(db.nodes.cluster_id).first()
-            if row and row.cluster_id != cluster_id:
-                db(db.nodes.node_id == node_id).update(cluster_id=cluster_id)
-                db.commit()
+            check_or_fix_node_cluster_id(node_id, cluster_id)
     svcname = h["svcname"].strip("'")
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
@@ -712,6 +707,8 @@ def _update_resinfo(svcname, auth):
     __update_resinfo(vars, vals, auth)
 
 def __update_resinfo(vars, vals, auth):
+    # TODO: include cluster_id to vars, vals to allow check_or_fix_node_cluster_id
+    #       need new __update_resinfo_v2 for compat with previous b2.1 agent push resinfo
     if len(vals) == 0:
         return
     now = datetime.datetime.now()
@@ -5202,9 +5199,8 @@ def merge_daemon_ping(node_id):
         return
 
     cluster_id = data.get("cluster_id", "")
-    if cluster_id and node and node.cluster_id != cluster_id:
-        q = db.nodes.node_id == node_id
-        db(q).update(cluster_id=cluster_id)
+    if cluster_id:
+        check_or_fix_node_cluster_id(node_id, cluster_id)
 
     if cluster_id:
         nodes_filter_q = db.nodes.cluster_id == cluster_id
@@ -5222,9 +5218,8 @@ def merge_daemon_ping(node_id):
             else:
                 node_ids[nodename] = _node
                 # TODO: should remove following unexpected condition because of nodes_filter_q value
-                if cluster_id and _node.cluster_id != cluster_id:
-                    q = db.nodes.node_id == _node.node_id
-                    db(q).update(cluster_id=cluster_id)
+                if cluster_id:
+                    check_or_fix_node_cluster_id(_node.node_id, cluster_id)
             return node_ids[nodename]
 
     for nodename, ndata in data["nodes"].items():
@@ -5277,6 +5272,11 @@ def _push_status(svcname, data, auth):
         if encap is True:
             # the master agent is responsible for that
             return
+
+        cluster_id = data.get("cluster_id", None)
+        if cluster_id:
+            node_id = auth_to_node_id(auth)
+            check_or_fix_node_cluster_id(node_id, cluster_id)
 
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         r_vars = [
@@ -5425,9 +5425,8 @@ def merge_daemon_status(node_id):
             cluster_name=cluster_name,
             cluster_data=raw_data,
         )
-    if cluster_id and node and node.cluster_id != cluster_id:
-        q = db.nodes.node_id == node_id
-        db(q).update(cluster_id=cluster_id)
+    if cluster_id:
+        check_or_fix_node_cluster_id(node_id, cluster_id)
     node_ids = {
         node.nodename: node,
     }
@@ -5447,9 +5446,8 @@ def merge_daemon_status(node_id):
             else:
                 node_ids[nodename] = _node
                 # TODO: should remove following unexpected condition because of nodes_filter_q value
-                if cluster_id and _node.cluster_id != cluster_id:
-                    q = db.nodes.node_id == _node.node_id
-                    db(q).update(cluster_id=cluster_id)
+                if cluster_id:
+                    check_or_fix_node_cluster_id(_node.node_id, cluster_id)
             return node_ids[nodename]
 
     def update_container_node_fields(svc, peer, container_id, idata):
