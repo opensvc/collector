@@ -197,4 +197,16 @@ def which(program):
 
     return None
 
-
+def check_or_fix_node_cluster_id(node_id, expected_cluster_id):
+    """
+    check or fix unexpected node cluster id value, it may be outdated after daemon join new cluster.
+    Outdated node cluster_id values may lead to unexpected services creation during next node_svc_id call.
+    :return: True when outdated node cluster id value has been fixed
+    """
+    if node_id and expected_cluster_id:
+        row = db(db.nodes.node_id == node_id).select(db.nodes.cluster_id).first()
+        if row and row.cluster_id != expected_cluster_id:
+            db(db.nodes.node_id == node_id).update(cluster_id=expected_cluster_id)
+            db.commit()
+            return True
+    return False

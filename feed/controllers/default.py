@@ -2399,6 +2399,14 @@ def rpc_push_daemon_status(data, changes, auth):
     """
     node_id = auth_to_node_id(auth)
 
+    loaded_data = json.loads(data)
+    if "cluster_id" in loaded_data:
+        # We update the node cluster_id as soon as possible (it is changed on the node that
+        # joins a new cluster).
+        # This prevents push resinfo to create service with the previous node cluster_id
+        # (if it is called before the node cluster_id is refreshed in db).
+        check_or_fix_node_cluster_id(node_id, loaded_data["cluster_id"])
+
     # store daemon status data
     rconn.hset(R_DAEMON_STATUS_HASH, node_id, data)
 
