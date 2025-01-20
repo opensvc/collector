@@ -80,7 +80,7 @@ class rest_post_disks(rest_post_handler):
         manager = "Manager" in user_groups()
         proxy_node = auth.user.node_id and auth.user.node_id in array_proxies(vars["disk_arrayid"])
         if not manager and not proxy_node:
-            raise HTTP(403, "you are not allowed to use this handler")
+            raise HTTP(403, "you are not allowed to use this handler. you are node %s, array %s allowed proxies are %s" % (auth.user.node_id, vars.get("disk_arrayid"), array_proxies(vars["disk_arrayid"])))
         db.diskinfo.update_or_insert(
             {"disk_id": vars["disk_id"]},
             **vars
@@ -139,7 +139,7 @@ class rest_delete_disk(rest_delete_handler):
         manager = "Manager" in user_groups()
         proxy_node = hasattr(auth.user, "node_id") and auth.user.node_id in array_proxies(disk.disk_arrayid)
         if not manager and not proxy_node:
-            raise HTTP(403, "you are not allowed to use this handler")
+            raise HTTP(403, "you are not allowed to use this handler. you are node %s, array %s allowed proxies are %s" % (auth.user.node_id, vars.get("disk_arrayid"), array_proxies(vars["disk_arrayid"])))
         db(q).delete()
         table_modified("disks")
         ws_send("disks_change")
