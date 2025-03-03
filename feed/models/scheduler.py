@@ -5475,6 +5475,11 @@ def merge_daemon_status(node_id):
         )
         return set(["nodes"])
 
+    def tsftime(ts):
+        if not ts:
+            return None
+        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ts))
+
     def update_instance(svc, peer, container_id, idata):
         _changed = set()
 
@@ -5497,12 +5502,15 @@ def merge_daemon_status(node_id):
             except KeyError:
                 return _data.get(group, "n/a")
 
+        mon_frozen_at = tsftime(idata.get("frozen", 0))
+
         if container_id == "":
             cdata = {"resources": {}}
             cname = ""
             ctype = ""
             data = idata
             data["frozen"] = 1 if idata.get("frozen") else 0
+            mon_encap_frozen_at = None
         else:
             cdata = idata["encap"][container_id]
             cname = cdata["hostname"]
@@ -5527,6 +5535,8 @@ def merge_daemon_status(node_id):
             else:
                 data["frozen"] = 1 if idata.get("frozen") else 0
 
+            mon_encap_frozen_at = tsftime(cdata.get("frozen", 0))
+
         db.svcmon.update_or_insert({
                 "node_id": peer.node_id,
                 "svc_id": svc.svc_id,
@@ -5547,6 +5557,8 @@ def merge_daemon_status(node_id):
             mon_appstatus=gstatus("app", data),
             mon_syncstatus=gstatus("sync", data),
             mon_frozen=data.get("frozen"),
+            mon_frozen_at=mon_frozen_at,
+            mon_encap_frozen_at=mon_encap_frozen_at,
             mon_vmtype=ctype,
             mon_updated=now,
         )

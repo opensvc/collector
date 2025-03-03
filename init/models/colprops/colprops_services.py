@@ -36,6 +36,8 @@ svcmon_cols = [
     'mon_updated',
     'mon_changed',
     'mon_frozen',
+    'mon_frozen_at',
+    'mon_encap_frozen_at',
     'mon_smon_status',
     'mon_smon_global_expect',
     'mon_containerstatus',
@@ -209,6 +211,14 @@ svcmon_colprops = {
             ),
     'mon_frozen': HtmlTableColumn(
              field='mon_frozen',
+             table = 'svcmon',
+            ),
+    'mon_frozen_at': HtmlTableColumn(
+             field='mon_frozen_at',
+             table = 'svcmon',
+            ),
+    'mon_encap_frozen_at': HtmlTableColumn(
+             field='mon_encap_frozen_at',
              table = 'svcmon',
             ),
     'mon_smon_status': HtmlTableColumn(
