@@ -107,6 +107,8 @@ objcols = {
 		'mon_smon_status',
 		'mon_smon_global_expect',
 		'mon_frozen',
+		'mon_frozen_at',
+		'mon_encap_frozen_at',
 		'mon_containerstatus',
 		'mon_ipstatus',
 		'mon_fsstatus',
@@ -1360,6 +1362,16 @@ colprops = {
 	"mon_frozen": {
 		"img": "svcinstance",
 		"title": "Frozen"
+	},
+	"mon_frozen_at": {
+		"_class": "datetime_daily",
+		"img": "svcinstance",
+		"title": "Frozen At"
+	},
+	"mon_encap_frozen_at": {
+		"_class": "datetime_daily",
+		"img": "svcinstance",
+		"title": "Encap Frozen At"
 	},
 	"mon_fsstatus": {
 		"_class": "status",

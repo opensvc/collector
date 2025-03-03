@@ -1776,6 +1776,8 @@
 		"Updated": "Mise à jour",
 		"Fqdn": "Fqdn",
 		"Frozen": "Figé",
+		"Frozen At": "Figé à",
+		"Encap Frozen At": "Encap figée à",
 		"Container path": "Chemin du container",
 		"Ip status": "Etat des ips",
 		"Id": "Id",

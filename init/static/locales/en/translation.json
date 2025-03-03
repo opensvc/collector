@@ -1833,6 +1833,8 @@
 		"Updated": "Updated",
 		"Fqdn": "Fqdn",
 		"Frozen": "Frozen",
+		"Frozen At": "Frozen At",
+		"Encap Frozen At": "Encap Frozen At",
 		"Container path": "Container path",
 		"Ip status": "Ip status",
 		"Id": "Id",

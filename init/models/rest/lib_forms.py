@@ -748,12 +748,24 @@ def workflow_continuation(form, prev_wfid):
     return False
 
 def reload_results(results):
-    # commit to see updates from other db clients (ie api that receives PUT /form_output_results/<id>)
-    db.commit()
-    q = db.form_output_results.id == results["results_id"]
-    row = db(q).select().first()
-    results = sjson.loads(row.results)
-    return results
+    def dbdo(results_id):
+        # commit to see updates from other db clients (ie api that receives PUT /form_output_results/<id>)
+        db.commit()
+        q = db.form_output_results.id == results_id
+        row = db(q).select().first()
+        r = sjson.loads(row.results)
+        return r
+
+    try:
+        return dbdo(results["results_id"])
+    except Exception as exc:
+        s = str(exc).lower()
+        if "server has gone away" in s or "lost connection" in s or "socket.error" in s:
+            db._adapter.close()
+            db._adapter.reconnect()
+            return dbdo()
+        else:
+            raise
 
 def update_results(results, reload_outputs=False):
     q = db.form_output_results.id == results["results_id"]
@@ -772,7 +784,7 @@ def update_results(results, reload_outputs=False):
         dbdo()
     except Exception as exc:
         s = str(exc).lower()
-        if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
+        if "server has gone away" in s or "lost connection" in s or "socket.error" in s:
             db._adapter.close()
             db._adapter.reconnect()
             dbdo()
