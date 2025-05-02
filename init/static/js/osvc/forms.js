@@ -1861,6 +1861,10 @@ function form(divid, options) {
 				let key = m[0].replace("#", "")
 				let keys = key.split(".")
 				let val = data
+				if ((keys.length > 1) && (keys[0] == "parent") && (o.options.parent_form !== "undefined")) {
+					val = o.options.parent_form.form_to_data()
+					keys.shift()
+				}
 				for (let i=0; i<keys.length; i++) {
 					if (keys[i] in val) {
 						val = val[keys[i]]
