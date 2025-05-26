@@ -6900,3 +6900,8 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 # 2025-01-20
 
 alter table table_modified modify column id bigint NOT NULL AUTO_INCREMENT;
+
+# 2025-05-26
+
+# for om3
+alter table services modify column svc_frozen varchar(9);
