@@ -6905,3 +6905,7 @@ alter table table_modified modify column id bigint NOT NULL AUTO_INCREMENT;
 
 # for om3
 alter table services modify column svc_frozen varchar(9);
+
+# 2025-06-05
+
+alter table packages modify column id bigint NOT NULL AUTO_INCREMENT;
