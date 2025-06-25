@@ -6909,3 +6909,55 @@ alter table services modify column svc_frozen varchar(9);
 # 2025-06-05
 
 alter table packages modify column id bigint NOT NULL AUTO_INCREMENT;
+
+# 2025-06-10
+
+CREATE TABLE IF NOT EXISTS `hbmon` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `driver` varchar(32) DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `desc` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `last_beating` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name` (`node_id`,`peer_node_id`,`name`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `hbmon_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `desc` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name_begin_end` (`node_id`,`peer_node_id`,`name`,`begin`,`end`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2019 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `hbmon_log_last` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name` (`node_id`,`peer_node_id`,`name`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1216 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
