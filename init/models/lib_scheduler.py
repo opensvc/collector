@@ -8,13 +8,16 @@ def get_new_node_id():
         if db(q).count() == 0:
             return u
 
-def get_new_svc_id():
-    import uuid
-    while True:
-        u = str(uuid.uuid4())
-        q = db.services.svc_id == u
-        if db(q).count() == 0:
-            return u
+def object_id_find_or_create(svcname, cluster_id):
+    db.commit()
+    sql = "INSERT IGNORE INTO `service_ids` (`svcname`, `cluster_id`) VALUES (%s, %s)"
+    db.executesql(sql, (svcname, cluster_id))
+    db.commit()
+    sql = "SELECT svc_id FROM `service_ids` WHERE `svcname` = '%s' AND 'cluster_id` = '%s' LIMIT 1" % (svcname, cluster_id)
+    rows = db.executesql(sql, (svcname, cluster_id))
+    if len(rows) == 1:
+        return rows[0]["svc_id"]
+    return ""
 
 def get_preferred_app(node_id, svc_id):
     if svc_id is None:

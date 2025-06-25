@@ -6961,3 +6961,29 @@ CREATE TABLE IF NOT EXISTS `hbmon_log_last` (
   UNIQUE KEY `k_node_peer_name` (`node_id`,`peer_node_id`,`name`),
   KEY `k_cluster_id` (`cluster_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1216 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+# List dup services entries
+SELECT MIN(`id`) AS `oldest_id`, `svcname`, `cluster_id`, COUNT(*) AS `count`
+   FROM `services`
+   GROUP BY `svcname`,`cluster_id`
+   HAVING `count` > 1
+   ORDER BY `count`;
+
+# Delete duplicate service entries
+DELETE FROM `services` WHERE `id` IN (
+    SELECT `oldest_id`
+    FROM (
+       SELECT MIN(`id`) AS `oldest_id`, `svcname`, `cluster_id`, COUNT(*) AS `count`
+       FROM `services`
+       GROUP BY `svcname`,`cluster_id`
+       HAVING `count` > 1
+       ORDER BY `count`
+    ) AS duplicates
+);
+
+# Populate service_ids from existing service entries
+INSERT INTO `service_ids` (`svcname`, `cluster_id`, `svc_id`)
+    SELECT `svcname`, `cluster_id`, `svc_id`
+    FROM `services` ORDER BY `updated`
+ON DUPLICATE KEY UPDATE `svc_id`= VALUES(`svc_id`);
+

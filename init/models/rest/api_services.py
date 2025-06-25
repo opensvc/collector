@@ -133,7 +133,7 @@ class rest_post_services(rest_post_handler):
           "Modify or create services",
         ]
         examples = [
-          "# curl -u %(email)s -X POST -d svcname=test -o- https://%(collector)s/init/rest/api/services"
+          "# curl -u %(email)s -X POST -d svcname=test -d cluster_id=xxx -o- https://%(collector)s/init/rest/api/services"
         ]
 
         rest_post_handler.__init__(
@@ -163,7 +163,12 @@ class rest_post_services(rest_post_handler):
             else:
                 raise
 
-        svc_id = get_new_svc_id()
+        cluster_id = vars.get("cluster_id")
+        if cluster_id is None or svcname is None:
+            raise HTTP(400, "Either the 'svcname' or 'cluster_id' key is mandatory when service need to be created.")
+
+        # TODO: verify if user is allowed for cluster_id
+        svc_id = object_id_find_or_create(svcname, cluster_id)
         vars["svc_id"] = svc_id
         vars["updated"] = datetime.datetime.now()
         if "svc_app" not in vars or \
