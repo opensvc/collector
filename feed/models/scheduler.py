@@ -4483,6 +4483,7 @@ def update_dash_flex_instances_started(svc_id):
                     where
                      c.svc_id = "%(svc_id)s" and
                      c.mon_availstatus = "up"
+                    group by c.node_id, c.svc_id
                    ) AS up
                   from v_svcmon p
                   where
