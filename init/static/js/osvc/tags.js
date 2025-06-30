@@ -1808,6 +1808,7 @@ function service_nodes(options) {
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/services/%1/nodes", [options.svc_id], {
 			"orderby": "nodes.nodename",
+			"groupby": "nodes.node_id",
 			"props": "nodes.node_id,nodes.nodename",
 			"limit": "0",
 			"meta": "false"
