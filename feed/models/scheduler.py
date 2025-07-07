@@ -4478,12 +4478,11 @@ def update_dash_flex_instances_started(svc_id):
                    p.svc_flex_max_nodes AS svc_flex_max_nodes,
                    (
                     select
-                     count(1)
+                     count(distinct(c.node_id))
                     from svcmon c
                     where
                      c.svc_id = "%(svc_id)s" and
                      c.mon_availstatus = "up"
-                    group by c.node_id, c.svc_id
                    ) AS up
                   from v_svcmon p
                   where
