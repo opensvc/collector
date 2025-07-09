@@ -10,13 +10,13 @@ def get_new_node_id():
 
 def object_id_find_or_create(svcname, cluster_id):
     db.commit()
-    sql = "INSERT IGNORE INTO `service_ids` (`svcname`, `cluster_id`) VALUES (%s, %s)"
-    db.executesql(sql, (svcname, cluster_id))
+    sql = "INSERT IGNORE INTO `service_ids` (`svcname`, `cluster_id`) VALUES ('%s', '%s')" % (svcname, cluster_id)
+    db.executesql(sql)
     db.commit()
-    sql = "SELECT svc_id FROM `service_ids` WHERE `svcname` = '%s' AND 'cluster_id` = '%s' LIMIT 1" % (svcname, cluster_id)
-    rows = db.executesql(sql, (svcname, cluster_id))
+    sql = "SELECT `svc_id` FROM `service_ids` WHERE `svcname` = '%s' AND `cluster_id` = '%s' LIMIT 1" % (svcname, cluster_id)
+    rows = db.executesql(sql)
     if len(rows) == 1:
-        return rows[0]["svc_id"]
+        return rows[0][0]
     return ""
 
 def get_preferred_app(node_id, svc_id):
