@@ -189,7 +189,7 @@ def _create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
              level="info")
         return found
 
-    svc_id = get_new_svc_id()
+    svc_id = object_id_find_or_create(svcname, cluster_id)
     data = {
       "svcname": svcname,
       "svc_app": app,

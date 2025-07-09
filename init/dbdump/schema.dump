@@ -2700,7 +2700,7 @@ CREATE TABLE `services` (
   `svc_ha` tinyint(1) DEFAULT 0,
   `svc_status_updated` datetime DEFAULT NULL,
   `svc_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
-  `svc_frozen` varchar(6) DEFAULT NULL,
+  `svc_frozen` varchar(9) DEFAULT NULL,
   `svc_provisioned` varchar(6) DEFAULT NULL,
   `svc_placement` varchar(12) DEFAULT NULL,
   `svc_notifications` varchar(1) DEFAULT 'T',

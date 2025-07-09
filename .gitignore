@@ -27,3 +27,4 @@ __init__.py
 init/modules/replication_config.py
 init/static/custom.css
 init/static/css/custom.css
+.idea
