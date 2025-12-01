@@ -6900,3 +6900,90 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 # 2025-01-20
 
 alter table table_modified modify column id bigint NOT NULL AUTO_INCREMENT;
+
+# 2025-05-26
+
+# for om3
+alter table services modify column svc_frozen varchar(9);
+
+# 2025-06-05
+
+alter table packages modify column id bigint NOT NULL AUTO_INCREMENT;
+
+# 2025-06-10
+
+CREATE TABLE IF NOT EXISTS `hbmon` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `driver` varchar(32) DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `desc` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `last_beating` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name` (`node_id`,`peer_node_id`,`name`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `hbmon_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `desc` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name_begin_end` (`node_id`,`peer_node_id`,`name`,`begin`,`end`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2019 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `hbmon_log_last` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cluster_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `peer_node_id` char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT '',
+  `name` varchar(64) DEFAULT '',
+  `state` enum('running','stopped','failed','unknown','') DEFAULT '',
+  `beating` tinyint(1) DEFAULT 0,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `k_node_peer_name` (`node_id`,`peer_node_id`,`name`),
+  KEY `k_cluster_id` (`cluster_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1216 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+# List dup services entries
+SELECT MIN(`id`) AS `oldest_id`, `svcname`, `cluster_id`, COUNT(*) AS `count`
+   FROM `services`
+   GROUP BY `svcname`,`cluster_id`
+   HAVING `count` > 1
+   ORDER BY `count`;
+
+# Delete duplicate service entries
+DELETE FROM `services` WHERE `id` IN (
+    SELECT `oldest_id`
+    FROM (
+       SELECT MIN(`id`) AS `oldest_id`, `svcname`, `cluster_id`, COUNT(*) AS `count`
+       FROM `services`
+       GROUP BY `svcname`,`cluster_id`
+       HAVING `count` > 1
+       ORDER BY `count`
+    ) AS duplicates
+);
+
+# Populate service_ids from existing service entries
+INSERT INTO `service_ids` (`svcname`, `cluster_id`, `svc_id`)
+    SELECT `svcname`, `cluster_id`, `svc_id`
+    FROM `services` ORDER BY `updated`
+ON DUPLICATE KEY UPDATE `svc_id`= VALUES(`svc_id`);
+
