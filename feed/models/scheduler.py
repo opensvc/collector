@@ -3676,7 +3676,8 @@ def cron_dash_service_not_updated():
                  svc_env,
                  now(),
                  "",
-                 NULL
+                 NULL,
+                 NULL 
                from services
                where updated < date_sub(now(), interval 25 hour)
                on duplicate key update
