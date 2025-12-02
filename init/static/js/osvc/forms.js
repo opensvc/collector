@@ -1175,6 +1175,9 @@ function form(divid, options) {
 		if (d.Type == "password") {
 			input.prop("type", "password")
 		}
+		if (d.Default && d.Default.match(/#/)) {
+			o.add_fn_triggers(d)
+		}
 		input.val(content)
 		input.prop("acid", content)
 		input.prop("placeholder", d.Placeholder)
@@ -1605,6 +1608,11 @@ function form(divid, options) {
 	}
 
 	function fn_init(input, d, content) {
+		if (!(d.Function)) {
+			content2 = subst_refs(input, content)
+			input.val(content2)
+			return
+		}
 		if (d.Type == "checklist") {
 			var fn_callback = checklist_callback
 		} else {
@@ -1619,7 +1627,7 @@ function form(divid, options) {
 		} else {
 			if (input.is("select.select2-hidden-accessible")) {
 				o.select_static_set_content(input, d, content)
-			}else {
+			} else {
 				return jsonrpc_init(input, d, content, fn_callback)
 			}
 		}
@@ -1861,11 +1869,16 @@ function form(divid, options) {
 				let key = m[0].replace("#", "")
 				let keys = key.split(".")
 				let val = data
+				let finaldot = ""
 				if ((keys.length > 1) && (keys[0] == "parent") && (o.options.parent_form !== "undefined")) {
 					val = o.options.parent_form.form_to_data()
 					keys.shift()
 				}
 				for (let i=0; i<keys.length; i++) {
+					if (keys[i] == "") {
+						finaldot = "."
+						break
+					}
 					if (keys[i] in val) {
 						val = val[keys[i]]
 					}
@@ -1873,7 +1886,7 @@ function form(divid, options) {
 				let re1 = RegExp("#"+key)
 				let t = typeof val
 				if ((t === "number") || (t === "string") || (t === "boolean")) {
-					_s = _s.replace(re1, val)
+					_s = _s.replace(re1, val+finaldot)
 				}
 			}
 		} while (m)
@@ -2538,6 +2551,11 @@ function form(divid, options) {
 					}
 				}
 			} while (m)
+		}
+		if ((d.Function == "") && d.Default) {
+			// simple input may have dynamic defaults
+			parse(d.Default)
+			return
 		}
 		parse(d.Function)
 		parse(d.DefaultFunction)
