@@ -1175,7 +1175,7 @@ function form(divid, options) {
 		if (d.Type == "password") {
 			input.prop("type", "password")
 		}
-		if (d.Default && d.Default.match(/#/)) {
+		if (d.Default && typeof d.Default === 'string' && d.Default.match(/#/)) {
 			o.add_fn_triggers(d)
 		}
 		input.val(content)
@@ -1220,7 +1220,7 @@ function form(divid, options) {
 		}
 
 		let options = {
-			tags: d.Multiple && !d.StrictCandidates,
+			tags: !d.StrictCandidates,
 			dropdownParent: o.div,
 			minimumResultsForSearch: 3,
 			selectionCssClass: "ois2selection",
@@ -1308,7 +1308,7 @@ function form(divid, options) {
 				processResults: getProcessResultFunc(input, d),
 				transport: transport
 			},
-			tags: d.Multiple && !d.StrictCandidates,
+			tags: !d.StrictCandidates,
 			language: userLocale,
 			allowClear: d.AllowClear,
 			placeholder: d.Placeholder || "Select a candidate",
