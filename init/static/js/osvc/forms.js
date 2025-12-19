@@ -212,7 +212,7 @@ function form(divid, options) {
 				console.log("mangle form definition: switch __user_primary_group__ to rest GET /users/self/primary_group")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/primary_group"
 				o.form_data.form_definition.Inputs[i].Args = ["props = role"]
-				o.form_data.form_definition.Inputs[i].Default = null
+				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Default == "__user_name__") {
 				o.form_data.form_definition.Inputs[i].Default = _self.first_name + " " + _self.last_name
