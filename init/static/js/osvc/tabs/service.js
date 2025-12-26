@@ -397,7 +397,7 @@ function service_properties(divid, options)
 
 	o.event_handler = function(data) {
 		if (data.event == "services_change") {
-			if (data.data.svc_id != o.options.svc_id) {
+			if (!data.data || data.data.svc_id !== o.options.svc_id) {
 				return
 			}
 			o.div = o.div.parent()
