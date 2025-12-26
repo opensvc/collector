@@ -495,14 +495,14 @@ def update_dash_action_errors():
                    svc_id="%(svc_id)s",
                    node_id="%(node_id)s",
                    dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s action errors",
+                   dash_fmt="%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now(),
                    dash_env="%(env)s",
                    dash_updated=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s action errors",
+                   dash_fmt="%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_updated=now()
               """%dict(svc_id=row[2],
