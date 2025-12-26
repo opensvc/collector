@@ -6987,3 +6987,25 @@ INSERT INTO `service_ids` (`svcname`, `cluster_id`, `svc_id`)
     FROM `services` ORDER BY `updated`
 ON DUPLICATE KEY UPDATE `svc_id`= VALUES(`svc_id`);
 
+# 2025-12-01
+
+CREATE TABLE `oc3_scheduler` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_name` varchar(256) DEFAULT NULL,
+  `is_disabled` boolean DEFAULT false,
+  `last_run_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk` (`task_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1065238 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+alter table svcmon_log_last modify column mon_sharestatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon_log modify column mon_sharestatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_sharestatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_diskstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_containerstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_overallstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_syncstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_appstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_hbstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table svcmon modify column mon_availstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+
