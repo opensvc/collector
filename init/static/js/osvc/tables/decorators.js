@@ -1500,11 +1500,26 @@ function cell_decorator_status_run_status(e, line) {
 	cell_decorator_run_status(e, line, comp_status_tabs)
 }
 
+function escapeHtml(unsafe) {
+  if (!unsafe) return unsafe; // Gère les valeurs nulles/indéfinies
+
+  return unsafe
+    .toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/\n/g, "<br>")
+    .replace(/\t/g, "    ")
+}
+
 function cell_decorator_run_log(e, line, fn) {
 	var v = $.data(e[0], "v")
 	if (typeof v === "undefined") {
 		var s = ""
 	} else {
+		v = escapeHtml(v)
 		var s = "<pre class='m-0'>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
 	}
 	e.html(s)
