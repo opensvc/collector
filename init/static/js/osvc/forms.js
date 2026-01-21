@@ -524,6 +524,9 @@ function form(divid, options) {
 	}
 
 	o.render_display_normal_dict = function(data) {
+		if (!is_dict(data)) {
+                        data = {}
+                }
 		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
