@@ -252,8 +252,11 @@ class rest_post_action_queue_one(rest_post_handler):
             return dict(error="Permission denied: properties not updateable: %(props)s" % dict(props=invalid))
         if row.status == 'T' and vars.get("status") == "C":
             return dict(error="Can not cancel action %d in %s state" % (row.id, row.status))
-        if row.status in ('R', 'W') and vars.get("status") == "W":
-            return dict(error="Can not redo action %d in %s state" % (row.id, row.status))
+        if vars.get("status") == "W":
+            if row.status in ('R', 'W'):
+                return dict(error="Can not redo action %d in %s state" % (row.id, row.status))
+            vars["date_dequeued"] = 0
+
         db(q).update(**vars)
         _log('action_queue.update',
              'update properties %(data)s',
