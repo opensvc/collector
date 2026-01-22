@@ -67,9 +67,9 @@ CREATE VIEW `v_svcmon` AS select s.svc_vmname, `s`.`svc_version` AS `svc_version
 
 alter table alerts add column action_pid integer;
 
-#
-# 2010-04-13
-#
+--
+-- 2010-04-13
+--
 CREATE TABLE `stats_block` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nodename` varchar(60) NOT NULL,
@@ -171,23 +171,23 @@ drop view v_users;
 
 CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` separator ', ') AS `groups` from (((`auth_user` `u` left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `domain_permissions` `d` on((`m`.`group_id` = `d`.`group_id`))) group by concat_ws(' ',`u`.`first_name`,`u`.`last_name`));
 
-#
-# 2010-04-20
-#
+--
+-- 2010-04-20
+--
 alter table SVCactions add index `err_index` (`svcname`,`status`);
 
 insert into filters set fil_name='team responsible',fil_column='team_responsible', fil_need_value=1,fil_pos=1,fil_table='v_svcmon',fil_img='node16.png';
 
 insert into filters set fil_name='team responsible',fil_column='team_responsible', fil_need_value=1,fil_pos=1,fil_table='v_svcactions',fil_img='node16.png';
 
-#
-# 2010-04-23
-#
+--
+-- 2010-04-23
+--
 ALTER TABLE `opensvc`.`stats_mem_u` ADD COLUMN `kbmemsys` integer  NOT NULL DEFAULT 0 AFTER `date`;
 
-#
-# 2010-04-26
-#
+--
+-- 2010-04-26
+--
 DELIMITER //
 
 CREATE FUNCTION trusted_status(status VARCHAR(20), updated DATETIME)
@@ -209,28 +209,28 @@ drop view v_svc_group_status;
 
 CREATE VIEW `v_svc_group_status` AS (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_svcname` AS `svcname`,`svcmon`.`mon_svctype` AS `svctype`,group_concat(trusted_status(`svcmon`.`mon_overallstatus`,mon_updated) separator ',') AS `groupstatus` from `svcmon` group by `svcmon`.`mon_svcname`);
 
-#
-# 2010-05-03
-#
+--
+-- 2010-05-03
+--
 insert into filters values (NULL, 'frozen services', 'mon_frozen', 1, 12, 'v_svcmon', 'svc.png');
 
-#
-# 2010-05-06
-#
+--
+-- 2010-05-06
+--
 alter table resmon add column `res_log` varchar(200) DEFAULT '';
 
-#
-# 2010-05-06
-# 
+--
+-- 2010-05-06
+-- 
 alter table auth_filters add column fil_active boolean default true;
 alter table services add column svc_vmem integer default 0;
 alter table services add column svc_vcpus integer default 0;
 drop view v_svcmon;
 create view v_svcmon as select (select count(`a`.`ID`) AS `count(a.id)` from `SVCactions` `a` where ((m.mon_nodname=a.hostname) and (`a`.`svcname` = `s`.`svc_name`) and (`a`.`status` = 'err') and ((`a`.`ack` <> 1) or isnull(`a`.`ack`)))) AS `err`,`s`.`svc_vmname` AS `svc_vmname`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_appstatus` AS `mon_appstatus` from ((`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`)));
 
-#
-# 2010-05-11
-# 
+--
+-- 2010-05-11
+-- 
 drop view v_svcmon;
 drop view v_services;
 
@@ -238,9 +238,9 @@ CREATE VIEW `v_services` AS select `s`.`svc_vmname` AS `svc_vmname`,`s`.`svc_ver
 
 CREATE VIEW `v_svcmon` AS select (select count(`a`.`ID`) AS `count(a.id)` from `SVCactions` `a` where ((`m`.`mon_nodname` = `a`.`hostname`) and (`a`.`svcname` = `s`.`svc_name`) and (`a`.`status` = 'err') and ((`a`.`ack` <> 1) or isnull(`a`.`ack`)))) AS `err`,`s`.`svc_vmname` AS `svc_vmname`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,s.svc_vcpus, s.svc_vmem, `m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_appstatus` AS `mon_appstatus` from ((`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`)));
 
-#
-# 2010-05-12
-#
+--
+-- 2010-05-12
+--
 alter table filters add column fil_search_table varchar(30) default null;
 update filters set fil_search_table='nodes' where fil_column like 'os_%';
 update filters set fil_search_table='nodes' where fil_column like 'loc_%';
@@ -266,9 +266,9 @@ update filters set fil_search_table='services' where fil_column like 'app';
 update filters set fil_search_table='services' where fil_column like 'version';
 update filters set fil_search_table='v_services' where fil_column like 'responsibles';
 
-#
-# 2010-05-13
-#
+--
+-- 2010-05-13
+--
 insert into filters values (null,"environment","environnement",1,1,"v_svcmon","node16.png","nodes");
 insert into filters values (null,"environment","environnement",1,1,"v_svcactions","node16.png","nodes");
 CREATE TABLE `opensvc`.`packages` (
@@ -289,9 +289,9 @@ create view v_svc_group_status as (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_sv
 
 alter table packages add column pkg_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
-#
-# 2010-05-17
-#
+--
+-- 2010-05-17
+--
 CREATE TABLE `stats_netdev` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nodename` varchar(60) NOT NULL,
@@ -317,31 +317,31 @@ CREATE TABLE `stats_netdev_err` (
   PRIMARY KEY (`id`)
 );
 
-#
-# 2010-05-19
-#
+--
+-- 2010-05-19
+--
 ALTER TABLE `opensvc`.`packages` DROP INDEX `idx3`,
  ADD UNIQUE INDEX `idx3` USING BTREE(`pkg_nodename`, `pkg_name`, `pkg_arch`);
 
-#
-# 2010-05-26
-#
+--
+-- 2010-05-26
+--
 create view v_stats_netdev_err_avg_last_day as (select id, nodename, dev, avg(rxerrps) as avgrxerrps, avg(txerrps) as avgtxerrps, avg(collps) as avgcollps, avg(rxdropps) as avgrxdropps, avg(txdropps) as avgtxdropps from stats_netdev_err where date > date_sub(now(), interval 1 day) group by nodename, dev order by nodename, dev);
 
-#
-# 2010-05-28
-#
+--
+-- 2010-05-28
+--
 create view v_svcmon_clusters as (select *, (select group_concat(mon_nodname order by mon_nodname) from svcmon where mon_svcname=m.mon_svcname) as nodes from v_svcmon m);
 alter table SVCactions modify pid VARCHAR(32);
 
-#
-# 2010-06-02
-#
+--
+-- 2010-06-02
+--
 update alerts set body=replace(body, 'node?nodename', 'svcmon?nodename') where body like '%node?nodename%';
 
-#
-# 2010-06-18
-#
+--
+-- 2010-06-18
+--
 alter table services add column svc_guestos varchar(30);
 
 drop view v_services;
@@ -352,14 +352,14 @@ drop view v_svcmon;
 
 CREATE VIEW `v_svcmon` AS select (select count(`a`.`ID`) AS `count(a.id)` from `SVCactions` `a` where ((`m`.`mon_nodname` = `a`.`hostname`) and (`a`.`svcname` = `s`.`svc_name`) and (`a`.`status` = 'err') and ((`a`.`ack` <> 1) or isnull(`a`.`ack`)))) AS `err`,`s`.`svc_vmname` AS `svc_vmname`,s.svc_guestos,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,`s`.`svc_vcpus` AS `svc_vcpus`,`s`.`svc_vmem` AS `svc_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_appstatus` AS `mon_appstatus` from ((`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`)));
 
-#
-# 20100719
-#
+--
+-- 20100719
+--
 CREATE TABLE `svcmon_log_ack_periodic` (   `id` int(11) NOT NULL AUTO_INCREMENT,   `mon_svcname` varchar(60) NOT NULL,   `mon_begin` datetime NOT NULL,   `mon_end` datetime NOT NULL, mon_period varchar(10) default "",  `mon_comment` text NOT NULL,   `mon_acked_by` varchar(100) NOT NULL,   `mon_acked_on` datetime NOT NULL,   `mon_account` int(11) NOT NULL DEFAULT '1',   PRIMARY KEY (`id`),   UNIQUE KEY `key_1` (`mon_svcname`,`mon_begin`,`mon_end`),   KEY `mon_svcname` (`mon_svcname`),   KEY `mon_begin` (`mon_begin`),   KEY `mon_end` (`mon_end`) );
 
-#
-# 20100801
-#
+--
+-- 20100801
+--
 alter table nodes modify os_release VARCHAR(64);
 alter table SVCactions modify hostid VARCHAR(30);
 
@@ -401,9 +401,9 @@ CREATE TABLE `checks_defaults` (
 
 CREATE VIEW `v_checks` AS select `cl`.`id` AS `id`,`cl`.`chk_nodename` AS `chk_nodename`,`cl`.`chk_svcname` AS `chk_svcname`,`cl`.`chk_type` AS `chk_type`,`cl`.`chk_updated` AS `chk_updated`,`cl`.`chk_value` AS `chk_value`,`cl`.`chk_created` AS `chk_created`,`cl`.`chk_instance` AS `chk_instance`,if(`cs`.`chk_low` is not NULL,`cs`.`chk_low`,`cd`.`chk_low`) AS `chk_low`,if(`cs`.`chk_high` is not NULL,`cs`.`chk_high`,`cd`.`chk_high`) AS `chk_high` from ((`checks_live` `cl` left join `checks_settings` `cs` on(((`cl`.`chk_nodename` = `cs`.`chk_nodename`) and (`cl`.`chk_svcname` = `cs`.`chk_svcname`) and (`cl`.`chk_type` = `cs`.`chk_type`) and (`cl`.`chk_instance` = `cs`.`chk_instance`)))) left join `checks_defaults` `cd` on((`cl`.`chk_type` = `cd`.`chk_type`)));
 
-#
-# 20100909
-#
+--
+-- 20100909
+--
 CREATE TABLE `billing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `bill_min_svc` int(11) NOT NULL,
@@ -421,9 +421,9 @@ create view v_billing_svc_os_count as select id, count(os_name) as nb,os_name,gr
 
 create view v_billing as select c.id, c.nb, c.os_name, b.bill_cost as unit_cost, b.bill_cost*c.nb as cost, c.svc_list from v_billing_svc_os_count c join billing b on c.os_name=b.bill_os_name and c.nb>=b.bill_min_svc and c.nb<=b.bill_max_svc;
 
-#
-# 20100913
-#
+--
+-- 20100913
+--
 drop view v_billing;
 
 drop view v_billing_svc_os_count;
@@ -460,7 +460,7 @@ alter table lifecycle_os add column lc_os_name varchar(60) default null;
 
 alter table lifecycle_os add column lc_os_vendor varchar(60) default null;
 
-# test => set in config file
+-- test => set in config file
 set global concurrent_insert=2;
 
 create view v_lifecycle_os_name as select id, lc_date, sum(lc_count) as lc_count,lc_os_name from lifecycle_os group by lc_date, lc_os_name order by lc_date,lc_os_name;
@@ -527,7 +527,7 @@ CREATE TABLE `sym_upload` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(5
 
 alter table sym_upload drop column name;
 
-# sncf
+-- sncf
 
 CREATE TABLE `opensvc`.`comp_log` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -605,7 +605,7 @@ ALTER TABLE `opensvc`.`comp_log` ADD COLUMN `run_ruleset` char(100)  NOT NULL AF
 
 ALTER TABLE `opensvc`.`comp_status` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
 
-# sncf
+-- sncf
 
 ALTER TABLE `opensvc`.`comp_rules` DROP COLUMN `rule_var_name`,
  DROP COLUMN `rule_var_value`;
@@ -622,8 +622,8 @@ create unique index idx1 on comp_rules_vars (rule_name, rule_var_name);
 
 alter table comp_rules_vars add column rule_var_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
-# ovh
-# sncf
+-- ovh
+-- sncf
 
 create view v_comp_mod_status as (select id, run_module as mod_name, count(id) as mod_total, sum(if(run_status=0,1,0)) as mod_ok, group_concat(run_nodename) as mod_nodes, ifnull(count(id)/sum(if(run_status=0,1,0))*100,0) as mod_percent from comp_status where run_status in (0,1) group by run_module );
 
@@ -673,7 +673,7 @@ CREATE TABLE `comp_node_moduleset` (   `id` int(11) NOT NULL AUTO_INCREMENT, `mo
 
 drop view v_comp_moduleset_names;
 
-# sncf
+-- sncf
 
 CREATE TABLE gen_filters (`id` int(11) NOT NULL AUTO_INCREMENT, f_table varchar(30) NOT NULL, f_field varchar(30) NOT NULL, f_value varchar(60) NOT NULL, f_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, f_author varchar(100) NOT NULL DEFAULT '', f_op varchar(4) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (f_table, f_field, f_value, f_op)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
@@ -941,7 +941,7 @@ alter table nodes modify column nodename varchar(60) NOT NULL;
 
 alter table services modify column svc_autostart varchar(60) NOT NULL;
 
-# 2011-04-04
+-- 2011-04-04
 
 alter table svcmon add column mon_availstatus varchar(10) default 'undef';
 
@@ -955,7 +955,7 @@ drop view v_svc_group_status;
 
 create view v_svc_group_status as (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_svcname` AS `svcname`,`svcmon`.`mon_svctype` AS `svctype`,group_concat(`trusted_status`(`svcmon`.`mon_availstatus`,`svcmon`.`mon_updated`) separator ',') AS `groupstatus`, group_concat(`svcmon`.`mon_nodname` separator ',') AS `nodes` from `svcmon` group by `svcmon`.`mon_svcname`);
 
-# 2011-04-05
+-- 2011-04-05
 
 alter table services add column svc_status varchar(10) default 'undef';
 
@@ -973,13 +973,13 @@ drop view v_svcmon;
 
 CREATE VIEW `v_svcmon` AS select (select count(`a`.`ID`) AS `count(a.id)` from `SVCactions` `a` where ((`m`.`mon_nodname` = `a`.`hostname`) and (`a`.`svcname` = `s`.`svc_name`) and (`a`.`status` = 'err') and ((`a`.`ack` <> 1) or isnull(`a`.`ack`)))) AS `err`,s.svc_cluster_type, s.svc_status, s.svc_availstatus, s.svc_flex_min_nodes, s.svc_flex_max_nodes, s.svc_flex_cpu_low_threshold, s.svc_flex_cpu_high_threshold, `s`.`svc_vmname` AS `svc_vmname`,`s`.`svc_guestos` AS `svc_guestos`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,s.svc_created,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,`s`.`svc_vcpus` AS `svc_vcpus`,`s`.`svc_vmem` AS `svc_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus` from ((`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((convert(`m`.`mon_nodname` using utf8) = `n`.`nodename`)));
 
-# 2011-04-06
+-- 2011-04-06
 
 drop view v_flex_status;
 
 create view v_flex_status as (select p.id, p.mon_svcname as svc_name, p.svc_flex_min_nodes, p.svc_flex_max_nodes, p.svc_flex_cpu_low_threshold, p.svc_flex_cpu_high_threshold, count(1) as n, (select count(1) from svcmon c where c.mon_svcname=p.mon_svcname and c.mon_availstatus="up") as up, (select 100-c.idle from stats_cpu c, svcmon m where c.nodename=m.mon_nodname and m.mon_svcname=p.mon_svcname and date>adddate(now(), interval - 15 minute) and c.CPU="all" and m.mon_overallstatus="up" group by p.mon_svcname) as cpu from v_svcmon p where svc_cluster_type like "%flex" group by p.mon_svcname);
 
-# 2011-04-11
+-- 2011-04-11
 
 CREATE TABLE `comp_ruleset_team_responsible` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -993,11 +993,11 @@ drop view v_comp_rulesets;
 
 create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.ruleset_type,group_concat(distinct g.role separator ', ') as teams_responsible,rv.id,rv.var_name,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id left join comp_ruleset_team_responsible rt on r.id=rt.ruleset_id left join auth_group g on rt.group_id=g.id group by r.id, rv.id);
 
-# 2011-04-13
+-- 2011-04-13
 
 create view v_outdated_services as (select mon_svcname as svcname, sum(if(mon_updated >= DATE_SUB(NOW(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by mon_svcname);
 
-# 2011-04-14
+-- 2011-04-14
 
 CREATE TABLE `services_log` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -1009,7 +1009,7 @@ CREATE TABLE `services_log` (
   KEY `idx1` (`svc_name`)
 );
 
-# 2011-04-15
+-- 2011-04-15
 
 alter table comp_rulesets_variables add column var_class varchar(60) not null default "raw";
 
@@ -1017,7 +1017,7 @@ drop view v_comp_rulesets;
 
 create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.ruleset_type,group_concat(distinct g.role separator ', ') as teams_responsible,rv.id,rv.var_name,rv.var_class,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id left join comp_ruleset_team_responsible rt on r.id=rt.ruleset_id left join auth_group g on rt.group_id=g.id group by r.id, rv.id);
 
-# 2011-04-21
+-- 2011-04-21
 
 CREATE TABLE auth_node (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -1027,7 +1027,7 @@ CREATE TABLE auth_node (
   KEY `idx1` (`nodename`)
 )
 
-# 2011-04-22
+-- 2011-04-22
 
 CREATE TABLE `comp_moduleset_team_responsible` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -1049,7 +1049,7 @@ create view v_comp_moduleset_teams_responsible as (select m.id as modset_id, gro
 
 create view v_gen_filterset_teams_responsible as (select m.id as fset_id, group_concat(g.role separator ', ') as teams_responsible from gen_filtersets m left join gen_filterset_team_responsible j on m.id=j.fset_id left join auth_group g on j.group_id=g.id group by m.id);
 
-# 2011-04-26
+-- 2011-04-26
 
 CREATE TABLE `gen_filterset_check_threshold` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -1068,7 +1068,7 @@ alter table checks_live add column chk_threshold_provider varchar(60);
 
 drop view v_checks;
 
-# 2011-05-07
+-- 2011-05-07
 
 CREATE TABLE `prov_templates` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -1090,11 +1090,11 @@ CREATE TABLE `prov_template_team_responsible` (
   KEY `idx2` (`group_id`)
 );
 
-#
-# 2011-06-02
-#
-# as root
-# set global slow_query_log=1;
+--
+-- 2011-06-02
+--
+-- as root
+-- set global slow_query_log=1;
 
 alter table SVCactions modify column status ENUM('err','ok','warn') NOT NULL;
 alter table SVCactions modify column ack tinyint default NULL;
@@ -1109,7 +1109,7 @@ CREATE VIEW `v_svcactions` AS select `ac`.`version` AS `version`,`ac`.`svcname` 
 
 alter table apps add index i_app (app);
 
-#alter table SVCactions engine=innodb;
+--alter table SVCactions engine=innodb;
 
 alter table SVCactions modify hostname varchar(50) CHARACTER SET utf8 NOT NULL DEFAULT '';
 
@@ -1148,9 +1148,9 @@ CREATE VIEW `v_svcmon` AS select e.err AS `err`,`s`.`svc_cluster_type` AS `svc_c
 
 truncate b_action_errors; insert into b_action_errors select NULL, m.mon_svcname, m.mon_nodname, count(a.id) from svcmon m left join SVCactions a on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname where a.status='err' and (a.ack=0 or isnull(a.ack)) group by m.mon_svcname, m.mon_nodname;
 
-#
-# 2011-06-06
-#
+--
+-- 2011-06-06
+--
 create tables services2 like services;
 
 create table services2 like services;
@@ -1165,9 +1165,9 @@ alter table services rename services_old;
 
 alter table services2 rename services;
 
-#
-# 2011-06-23
-#
+--
+-- 2011-06-23
+--
 CREATE TABLE `im_types` (
   `id` integer  NOT NULL AUTO_INCREMENT,
   `im_type` varchar(64)  NOT NULL,
@@ -1204,9 +1204,9 @@ drop view v_services;
 
 CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.svc_cluster_type, s.svc_flex_min_nodes, s.svc_flex_max_nodes, s.svc_flex_cpu_low_threshold, s.svc_flex_cpu_high_threshold, `s`.`svc_vmname` AS `svc_vmname`,`s`.`svc_guestos` AS `svc_guestos`,`s`.`svc_version` AS `svc_version`,`s`.`svc_hostid` AS `svc_hostid`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_ipname` AS `svc_ipname`,`s`.`svc_ipdev` AS `svc_ipdev`,`s`.`svc_drpipname` AS `svc_drpipname`,`s`.`svc_drpipdev` AS `svc_drpipdev`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_fs` AS `svc_fs`,`s`.`svc_dev` AS `svc_dev`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_mntopt` AS `svc_mntopt`,`s`.`svc_scsi` AS `svc_scsi`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,svc_created,`s`.`updated` AS `updated`,`s`.`cksum` AS `cksum`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_hasec` AS `svc_hasec`,`s`.`svc_hapri` AS `svc_hapri`,`s`.`svc_hastonith` AS `svc_hastonith`,`s`.`svc_hastartup` AS `svc_hastartup`,`s`.`svc_wave` AS `svc_wave`,`s`.`svc_vcpus` AS `svc_vcpus`,`s`.`svc_vmem` AS `svc_vmem`,`a`.`app` AS `app`,`a`.`responsibles` AS `responsibles`,`a`.`mailto` AS `mailto` from (`services` `s` left join `v_apps` `a` on((`a`.`app` = `s`.`svc_app`))) ;
 
-#
-# 2011-07-02
-#
+--
+-- 2011-07-02
+--
 alter table action_queue add column ret integer default 0;
 
 alter table svcmon engine=innodb;
@@ -1218,9 +1218,9 @@ alter table log add column log_svcname varchar(256) default NULL;
 alter table log add column log_nodename varchar(256) default NULL;
 alter table log add column log_gtalk_sent tinyint(1) default 0;
 
-#
-# 2011-07-19
-#
+--
+-- 2011-07-19
+--
 alter table resmon modify column res_desc varchar(200);
 alter table stats_fs_u modify column size bigint;
 alter table stats_cpu modify column soft float default 0;
@@ -1235,9 +1235,9 @@ drop view v_svcactions;
 
 CREATE VIEW `v_svcactions` AS select ac.cron as cron, `ac`.`time` AS `time`, `ac`.`version` AS `version`,`ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,s.svc_ha as svc_ha,`s`.`svc_app` AS `app`, a.mailto, a.responsibles,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2` from `SVCactions` `ac` left join `services` `s` on `s`.`svc_name` = `ac`.`svcname` left join `nodes` `n` on `ac`.`hostname` = `n`.`nodename` left join b_apps a on a.app=s.svc_app;
 
-#
-# 2011-07-21
-#
+--
+-- 2011-07-21
+--
 create view v_comp_node_status_current_week as (select `v_comp_status_weekly`.`id` AS `id`,`v_comp_status_weekly`.`year` AS `year`,`v_comp_status_weekly`.`week` AS `week`,`v_comp_status_weekly`.`run_nodename` AS `run_nodename`,sum(if((`v_comp_status_weekly`.`run_status` = 0),1,0)) AS `nb_ok`,sum(if((`v_comp_status_weekly`.`run_status` = 1),1,0)) AS `nb_nok`,sum(if((`v_comp_status_weekly`.`run_status` = 2),1,0)) AS `nb_na` from `v_comp_status_weekly` where `v_comp_status_weekly`.`year`=year(now()) and `v_comp_status_weekly`.`week`=week(now()) group by `v_comp_status_weekly`.`year`,`v_comp_status_weekly`.`week`,`v_comp_status_weekly`.`run_nodename`);
 
 create table b_comp_node_status_weekly as (select `v_comp_status_weekly`.`id` AS `id`,`v_comp_status_weekly`.`year` AS `year`,`v_comp_status_weekly`.`week` AS `week`,`v_comp_status_weekly`.`run_nodename` AS `run_nodename`,sum(if((`v_comp_status_weekly`.`run_status` = 0),1,0)) AS `nb_ok`,sum(if((`v_comp_status_weekly`.`run_status` = 1),1,0)) AS `nb_nok`,sum(if((`v_comp_status_weekly`.`run_status` = 2),1,0)) AS `nb_na` from `v_comp_status_weekly` group by `v_comp_status_weekly`.`year`,`v_comp_status_weekly`.`week`,`v_comp_status_weekly`.`run_nodename`);
@@ -1255,12 +1255,12 @@ create unique index idx1 on b_comp_module_status_weekly (year, week, run_module)
 
 drop view v_comp_module_status_weekly;
 
-#
-# 2011-07-29
-#  v_svcactions optimization for 100k nodes & 100k services
-#  - do not convert to utf8 on join
-#  - join instead of left join in v_svcactions
-#
+--
+-- 2011-07-29
+--  v_svcactions optimization for 100k nodes & 100k services
+--  - do not convert to utf8 on join
+--  - join instead of left join in v_svcactions
+--
 alter table services default charset utf8;
 
 drop view v_svcactions;
@@ -1390,9 +1390,9 @@ alter table auth_user add column im_log_level enum("debug", "info", "warning", "
 
 drop table alerts;
 
-#
-# remove join key conversion to utf8
-#
+--
+-- remove join key conversion to utf8
+--
 alter table services modify column svc_name varchar(60) character set utf8;
 
 drop view v_svcactions;
@@ -1424,16 +1424,16 @@ CREATE TABLE `dashboard_log` (
 
 alter table comp_status modify run_svcname varchar(60) default "";
 
-# re-factorize comp_status
-# alter table comp_status rename comp_status_old
-# create table comp_status like comp_status_old
-# insert into comp_status select a.* from comp_status_old a inner join (select max(id) as maxid from comp_status_old group by run_nodename, run_module) as b on a.id=b.maxid;
+-- re-factorize comp_status
+-- alter table comp_status rename comp_status_old
+-- create table comp_status like comp_status_old
+-- insert into comp_status select a.* from comp_status_old a inner join (select max(id) as maxid from comp_status_old group by run_nodename, run_module) as b on a.id=b.maxid;
 
-# use rw compression for data with high compression ratio ?
-# alter table comp_log engine=innodb ROW_FORMAT=COMPRESSED;
-# alter table stats_netdev_err engine=innodb ROW_FORMAT=COMPRESSED;
-# alter table stats_netdev engine=innodb ROW_FORMAT=COMPRESSED;
-# alter table stats_fs_u engine=innodb ROW_FORMAT=COMPRESSED;
+-- use rw compression for data with high compression ratio ?
+-- alter table comp_log engine=innodb ROW_FORMAT=COMPRESSED;
+-- alter table stats_netdev_err engine=innodb ROW_FORMAT=COMPRESSED;
+-- alter table stats_netdev engine=innodb ROW_FORMAT=COMPRESSED;
+-- alter table stats_fs_u engine=innodb ROW_FORMAT=COMPRESSED;
 
 alter table dashboard add column dash_dict_md5 varchar(32) default "";
 
@@ -1458,7 +1458,7 @@ CREATE TABLE `feed_queue_stats` (
   PRIMARY KEY (`id`)
 );
 
-# optimize v_flex_status
+-- optimize v_flex_status
 alter table services add index idx2 (svc_cluster_type);
 
 drop view v_flex_status;
@@ -1467,16 +1467,16 @@ CREATE VIEW `v_flex_status` AS (select `p`.`ID` AS `id`,`p`.`mon_svcname` AS `sv
 
 alter table dashboard_log drop column dash_nodename;
 
-# 2011-10-22
+-- 2011-10-22
 alter table gen_filterset_check_threshold add unique key idx2 (fset_id, chk_type, chk_instance);
 
 CREATE TABLE gen_filterset_user (  `id` int(11) NOT NULL AUTO_INCREMENT,   `fset_id` int(11) NOT NULL, user_id int(11) NOT NULL,   PRIMARY KEY (`id`), UNIQUE KEY idx1 (fset_id, user_id) ) CHARSET=utf8;
 
 alter table nodes modify column model varchar(60);
 
-#
-# upgrade CGR 2011-11-03
-#
+--
+-- upgrade CGR 2011-11-03
+--
 
 alter table svcmon drop key mon_svcname_2;
 alter table svcmon drop key mon_svcname_3;
@@ -1684,11 +1684,11 @@ alter table packages ADD CONSTRAINT packages_fk1 FOREIGN KEY (pkg_nodename) REFE
 
 delete from gen_filtersets_filters where fset_id not in (select id from gen_filtersets);
 
-#alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+--alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
 
 delete from gen_filtersets_filters where f_id not in (select id from gen_filters);
 
-#alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk2 FOREIGN KEY (f_id) REFERENCES gen_filters(id) ON DELETE CASCADE;
+--alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk2 FOREIGN KEY (f_id) REFERENCES gen_filters(id) ON DELETE CASCADE;
 
 alter table gen_filterset_user ADD CONSTRAINT gen_filterset_user_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
 
@@ -1802,7 +1802,7 @@ create view v_network_segments as (select s.*, group_concat(g.role separator ", 
 
 alter table services modify svc_vcpus float default 0;
 
-#
+--
 
 alter table stat_day add column fset_id integer default 0;
 
@@ -1939,9 +1939,9 @@ alter table svcdisks add key svcdisks_k1 (mon_nodname, mon_svcname);
 alter table svcdisks add CONSTRAINT `svcdisks_ibfk_1` FOREIGN KEY (disk_nodename, disk_svcname) REFERENCES `svcmon` (mon_nodname, mon_svcname) ON DELETE CASCADE;
 
 
-# zstat format
-# datenow, z, stor[z]['SWAP'], stor[z]['RSS'], stor[z]['CAP'], stor[z]['at'], stor[z]['avgat'], stor[z]['pg'], stor[z]['avgpg'], stor[z]['NPROC'], stor[z]['mem'], stor[z]['cpu'], stor[z]['TIME'], txt[-3], txt[-2], txt[-1]
-# 2011-12-31 16:24:00 v11z5 29M 35M 0 0 0 0 0 22 2.3% 0.0% 0:06:57 Nov 9 21:47
+-- zstat format
+-- datenow, z, stor[z]['SWAP'], stor[z]['RSS'], stor[z]['CAP'], stor[z]['at'], stor[z]['avgat'], stor[z]['pg'], stor[z]['avgpg'], stor[z]['NPROC'], stor[z]['mem'], stor[z]['cpu'], stor[z]['TIME'], txt[-3], txt[-2], txt[-1]
+-- 2011-12-31 16:24:00 v11z5 29M 35M 0 0 0 0 0 22 2.3% 0.0% 0:06:57 Nov 9 21:47
 
 CREATE TABLE `stats_svc` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -2094,7 +2094,7 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
-# add host_mode column
+-- add host_mode column
 
 alter table nodes add column host_mode varchar(6) not null default "TST";
 
@@ -2112,7 +2112,7 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
-#
+--
 
 alter table svcdisks add column disk_used integer not null default 0;
 
@@ -2885,7 +2885,7 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
-#alter table dashboard add column dash_updated datetime;
+--alter table dashboard add column dash_updated datetime;
 
 alter table diskinfo add column disk_name varchar(120) default "";
 
@@ -3018,8 +3018,8 @@ alter table checks_settings modify column chk_instance varchar(100);
 
 alter table checks_defaults add column chk_prio integer default 0;
 
-# display actions on services without "app" set
-# (ie "left join b_apps" instead of "join")
+-- display actions on services without "app" set
+-- (ie "left join b_apps" instead of "join")
 
 drop view v_svcactions;
 
@@ -3045,9 +3045,9 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
-#drop table nodes_import;
+--drop table nodes_import;
 
-#create table nodes_import as select * from nodes;
+--create table nodes_import as select * from nodes;
 
 alter table dashboard add column dash_updated datetime;
 
@@ -3135,7 +3135,7 @@ alter table stats_svc add column cap_cpu float default 1;
 
 update stats_svc set cap_cpu=(select mon_vcpus from svcmon s where s.mon_svcname=svcname and s.mon_nodname=nodename) ;
 
-#
+--
 
 alter table comp_rulesets_services add column slave varchar(1) DEFAULT 'F';
 
@@ -3172,30 +3172,30 @@ CREATE TABLE `stats_fs_u_last` (
   UNIQUE KEY `index_1` (`nodename`, `mntpt`)
 ) ENGINE=InnoDB AUTO_INCREMENT=179025 DEFAULT CHARSET=utf8;
 
-#drop trigger if exists stats_fs_u_add;
-#delimiter #
-#create trigger stats_fs_u_add before insert on stats_fs_u for each row
-#begin
-# declare _size bigint ;
-# declare _used int ;
-# set _size = (select size from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
-# set _used = (select used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
-# if (_size is null) then
-#  insert into stats_fs_u_last (begin, end, nodename, mntpt, size, used) values (new.date, new.date, new.nodename, new.mntpt, new.size, new.used) ;
-#  set _size = new.size ;
-#  set _used = new.used ;
-# end if ;
-#
-# if (new.size != _size or new.used != _used) then
-#  insert into stats_fs_u_diff (select null, begin, end, nodename, mntpt, size, used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
-#  update stats_fs_u_last set begin=new.date, end=new.date, size=new.size, used=new.used where nodename=new.nodename and mntpt=new.mntpt ;
-# else
-#  update stats_fs_u_last set end=new.date ;
-# end if ;
-#  
-# set new.date = "0000-00-00 00:00:00" ;
-#end#
-#delimiter ;
+--drop trigger if exists stats_fs_u_add;
+--delimiter #
+--create trigger stats_fs_u_add before insert on stats_fs_u for each row
+--begin
+-- declare _size bigint ;
+-- declare _used int ;
+-- set _size = (select size from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+-- set _used = (select used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+-- if (_size is null) then
+--  insert into stats_fs_u_last (begin, end, nodename, mntpt, size, used) values (new.date, new.date, new.nodename, new.mntpt, new.size, new.used) ;
+--  set _size = new.size ;
+--  set _used = new.used ;
+-- end if ;
+--
+-- if (new.size != _size or new.used != _used) then
+--  insert into stats_fs_u_diff (select null, begin, end, nodename, mntpt, size, used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+--  update stats_fs_u_last set begin=new.date, end=new.date, size=new.size, used=new.used where nodename=new.nodename and mntpt=new.mntpt ;
+-- else
+--  update stats_fs_u_last set end=new.date ;
+-- end if ;
+--  
+-- set new.date = "0000-00-00 00:00:00" ;
+--end#
+--delimiter ;
 
 alter table comp_rulesets add column ruleset_public varchar(1) default 'T';
 
@@ -3448,7 +3448,7 @@ drop view v_action_queue;
 
 create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;
 
-# alter table packages modify column pkg_type varchar(7) DEFAULT '';
+-- alter table packages modify column pkg_type varchar(7) DEFAULT '';
 
 CREATE TABLE `metrics` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -3696,7 +3696,7 @@ alter table networks drop key idx2;
 
 alter table networks add unique key idx2 (network, netmask);
 
-#
+--
 create table stats_cpu_hour like stats_cpu;
 
 create table stats_cpu_day like stats_cpu;
@@ -3773,11 +3773,11 @@ alter table nodes modify column team_integ varchar(32);
 
 alter table nodes modify column team_support varchar(32);
 
-#alter table nodes_import modify column team_responsible varchar(32);
+--alter table nodes_import modify column team_responsible varchar(32);
 
-#alter table nodes_import modify column team_integ varchar(32);
+--alter table nodes_import modify column team_integ varchar(32);
 
-#alter table nodes_import modify column team_support varchar(32);
+--alter table nodes_import modify column team_support varchar(32);
 
 alter table nodes add column cpu_threads integer;
 
@@ -3920,7 +3920,7 @@ drop table b_apps;
 
 create table b_apps as (select * from v_apps);
 
-#create table apps_import like apps;
+--create table apps_import like apps;
 
 drop view v_svcmon;
 
@@ -5158,7 +5158,7 @@ insert into auth_group values (NULL, "SelfManager", "", "T");
 
 insert into auth_group values (NULL, "ContextCheckManager", "", "T");
 
-###
+--##
 
 alter table nodes add column node_id CHAR(36) character set ascii default "";
 update nodes set node_id = uuid();
@@ -5649,7 +5649,7 @@ delete from node_pw where node_id="";
 alter table node_pw add unique key k_node_id (`node_id`);
 alter table node_pw drop column nodename;
 
-# READ CAREFULLY
+-- READ CAREFULLY
 select concat("[ -d ", nodes.nodename, " ] && mv ", nodes.nodename, " ", nodes.node_id) as run_me_in_sysreport_d from nodes;
 
 alter table svcdisks add column node_id CHAR(36) character set ascii default "";
@@ -5671,7 +5671,7 @@ drop view v_nodesan; CREATE VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt
 drop view v_comp_nodes ; CREATE VIEW `v_comp_nodes` AS (select n.node_id as node_id, `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,n.sec_zone,n.last_boot,n.action_type, `r`.`id` AS `ruleset_id`, `r`.`ruleset_name` AS `ruleset_name`, `m`.`id` AS `modset_id`, `m`.`modset_name` AS `modset_name` from ((((`nodes` `n` left join `comp_rulesets_nodes` `rn` on((`n`.`node_id` = `rn`.`node_id`))) left join `comp_rulesets` `r` on((`r`.`id` = `rn`.`ruleset_id`))) left join `comp_node_moduleset` `mn` on((`mn`.`node_id` = `n`.`node_id`))) left join `comp_moduleset` `m` on((`m`.`id` = `mn`.`modset_id`))) );
 
 
-###
+--##
 
 alter table services add column svc_id CHAR(36) character set ascii default "";
 update services set svc_id = uuid();
@@ -5707,12 +5707,12 @@ alter table svcmon_log_ack drop column mon_svcname;
 
 alter table SVCactions rename to svcactions;
 alter table svcactions change column ID id int(11) NOT NULL AUTO_INCREMENT;
-# dump
+-- dump
 alter table svcactions modify id int not null;
 alter table svcactions drop PRIMARY KEY;
-# trunc
+-- trunc
 alter table svcactions modify id int not null primary key auto_increment;
-# restore
+-- restore
 
 alter table svcactions add column svc_id CHAR(36) character set ascii default "";
 insert into svcactions select svcactions.* from svcactions, services where services.svc_name=svcactions.svcname on duplicate key update svcactions.svc_id=services.svc_id;
@@ -5784,7 +5784,7 @@ alter table comp_modulesets_services add column svc_id CHAR(36) character set as
 insert into comp_modulesets_services select comp_modulesets_services.* from comp_modulesets_services, services where services.svc_name=comp_modulesets_services.modset_svcname on duplicate key update comp_modulesets_services.svc_id=services.svc_id;
 alter table comp_modulesets_services add key k_svc_id (`svc_id`);
 alter table comp_modulesets_services drop key idx1;
-# delete from comp_modulesets_services where svc_id="";
+-- delete from comp_modulesets_services where svc_id="";
 alter table comp_modulesets_services add UNIQUE KEY `idx1` (`svc_id`,`modset_id`,`slave`);
 alter table comp_modulesets_services drop column modset_svcname;
 
@@ -5792,7 +5792,7 @@ alter table comp_rulesets_services add column svc_id CHAR(36) character set asci
 insert into comp_rulesets_services select comp_rulesets_services.* from comp_rulesets_services, services where services.svc_name=comp_rulesets_services.svcname on duplicate key update comp_rulesets_services.svc_id=services.svc_id;
 alter table comp_rulesets_services add key k_svc_id (`svc_id`);
 alter table comp_rulesets_services drop key ruleset_id;
-# delete from comp_rulesets_services where svc_id="";
+-- delete from comp_rulesets_services where svc_id="";
 alter table comp_rulesets_services add UNIQUE KEY `idx1` (`svc_id`,`ruleset_id`,`slave`);
 alter table comp_rulesets_services drop column svcname;
 
@@ -6114,7 +6114,7 @@ drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.
 
 drop view v_tags; create view v_tags as select NULL as id, tags.tag_id as tag_id, tags.tag_name as tag_name, node_tags.node_id as node_id, "" as svc_id, node_tags.created as created from tags join node_tags on tags.tag_id=node_tags.tag_id union all select NULL as id, tags.tag_id as tag_id, tags.tag_name as tag_name, "" as node_id, svc_tags.svc_id as svc_id, svc_tags.created as created from tags join svc_tags on tags.tag_id=svc_tags.tag_id;
 
-# 2016-09-08
+-- 2016-09-08
 
 CREATE TABLE `resmon_log` (
   `id` integer  NOT NULL AUTO_INCREMENT,
@@ -6132,7 +6132,7 @@ INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,
 
 alter table resinfo modify `rid` varchar(255) DEFAULT '';
 alter table resinfo modify `res_key` varchar(40) DEFAULT '';
-#truncate resinfo;
+--truncate resinfo;
 alter table resinfo add unique key uk (node_id, svc_id, rid, res_key);
 
 alter table services change column svc_envfile svc_config mediumtext;
@@ -6149,7 +6149,7 @@ drop view v_nodenetworks; CREATE VIEW `v_nodenetworks` AS select `n`.`nodename` 
 
 update gen_filters set f_field="asset_env" where f_field="environnement";
 
-##
+--#
 
 alter table nodes change column host_mode node_env varchar(6) NOT NULL DEFAULT 'TST';
 
@@ -6186,7 +6186,7 @@ alter table checks_live add key k_chk_type (chk_type);
 
 alter table links modify link_title_args text;
 
-# 2016-10-10
+-- 2016-10-10
 create table resmon_log_last like resmon_log;
 create table svcmon_log_last like svcmon_log;
 create table services_log_last like services_log;
@@ -6332,12 +6332,12 @@ create view v_disk_quota as
 
 alter table resmon modify rid varchar(32);
 
-# install plugin tokudb soname 'ha_tokudb.so';
-# install plugin tokudb_user_data soname 'ha_tokudb.so';
-# install plugin tokudb_user_data_exact soname 'ha_tokudb.so';
-# install plugin tokudb_file_map soname 'ha_tokudb.so';
-# install plugin tokudb_fractal_tree_info soname 'ha_tokudb.so';
-# install plugin tokudb_fractal_tree_block_map soname 'ha_tokudb.so';
+-- install plugin tokudb soname 'ha_tokudb.so';
+-- install plugin tokudb_user_data soname 'ha_tokudb.so';
+-- install plugin tokudb_user_data_exact soname 'ha_tokudb.so';
+-- install plugin tokudb_file_map soname 'ha_tokudb.so';
+-- install plugin tokudb_fractal_tree_info soname 'ha_tokudb.so';
+-- install plugin tokudb_fractal_tree_block_map soname 'ha_tokudb.so';
 
 CREATE TABLE  `opensvc`.`user_prefs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -6457,7 +6457,7 @@ alter table resinfo_log change column cluster_type topology varchar(20) default 
 update gen_filters set f_field="topology" where f_field="cluster_type";
 update gen_filters set f_field="svc_topology" where f_field="svc_cluster_type";
 
-# for vmware long serials
+-- for vmware long serials
 alter table nodes modify column serial varchar(64);
 
 alter table tags modify tag_name varchar(128) default "";
@@ -6498,7 +6498,7 @@ CREATE TABLE `node_hw` (
   UNIQUE KEY (node_id, hw_type, hw_path)
 );
 
-# 2017-12-12
+-- 2017-12-12
 
 drop table stats_block;       
 drop table stats_block_day;   
@@ -6546,7 +6546,7 @@ drop table billing;
 drop table billing_agent;
 drop table stat_day_billing;
 
-# run before: python /opt/web2py/web2py.py -S init/batchs/migrate_metrics_wsp
+-- run before: python /opt/web2py/web2py.py -S init/batchs/migrate_metrics_wsp
 drop table metrics_log;
 
 alter table svcactions modify column time integer;
@@ -6790,7 +6790,7 @@ CREATE TABLE `safe_log` (
 alter table node_hw modify hw_description varchar(512);
 alter table nodes modify bios_version varchar(64);
 
-#
+--
 alter table svcactions add key begin (begin);
 alter table svcactions add key errcount (svc_id,node_id,begin);
 
@@ -6835,27 +6835,27 @@ CREATE TABLE  `opensvc`.`clusters` (
   UNIQUE KEY `cluster_id` (`cluster_id`)
 );
 
-# 2021-12-30
+-- 2021-12-30
 
 CREATE INDEX disk_arrayid_updated ON diskinfo (disk_arrayid, disk_updated);
 
-# 2023-10-05
+-- 2023-10-05
 
 alter table svcactions add column sid char(36);
 alter table svcactions add key k_sid (sid);
 alter table svcactions add column rid varchar(255);
 alter table svcactions add column subset varchar(255);
 
-# 2024-02-21
+-- 2024-02-21
 
 alter table nodes modify `last_boot` datetime DEFAULT NULL;
 
-# 2024-02-28
+-- 2024-02-28
 
 alter table resmon_log_last drop key idx1;
 alter table resmon_log_last add key idx1 (`node_id`,`svc_id`);
 
-# 2024-03-20
+-- 2024-03-20
 
 alter table resmon modify rid varchar(255) character set utf8 collate utf8_bin;
 alter table svcactions modify rid varchar(255) character set utf8 collate utf8_bin;
@@ -6864,7 +6864,7 @@ alter table resinfo modify rid varchar(255) character set utf8 collate utf8_bin;
 alter table resmon_log modify rid varchar(255) character set utf8 collate utf8_bin;
 drop view v_resmon_log; create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
 
-# 2024-05-17
+-- 2024-05-17
 
 alter table networks drop end;
 alter table networks add `end` varchar(16) GENERATED ALWAYS AS (inet_ntoa(inet_aton(`network`) + pow(2,32 - `netmask`) - 2)) VIRTUAL;
@@ -6875,7 +6875,7 @@ alter table saves add `chk_instance` varchar(100) GENERATED ALWAYS AS (if(substr
 alter table saves drop save_resolved;
 alter table saves add `save_resolved` varchar(1) GENERATED ALWAYS AS (octet_length(`node_id`) <> 36) VIRTUAL;
 
-# 2024-09-27
+-- 2024-09-27
 
 CREATE TABLE `service_ids` (
   `svcname` varchar(256) DEFAULT NULL,
@@ -6886,31 +6886,31 @@ CREATE TABLE `service_ids` (
   UNIQUE KEY `uk` (`svcname`,`cluster_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1065238 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
 
-# 2024-10-18
+-- 2024-10-18
 
 alter table nodes add column node_frozen_at datetime;
 
-# 2025-01-16
+-- 2025-01-16
 
 alter table svcmon add column mon_frozen_at datetime;
 alter table svcmon add column mon_encap_frozen_at datetime;
 
 drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_topology` AS `svc_topology`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_id` AS `svc_id`,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_env` AS `svc_env`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_config_updated` AS `svc_config_updated`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svctype` AS `mon_svctype`,m.mon_smon_status as mon_smon_status,m.mon_smon_global_expect as mon_smon_global_expect,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozen_at` AS `mon_frozen_at`,`m`.`mon_encap_frozen_at` AS `mon_encap_frozen_at`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`m`.`node_id` AS `node_id`,`n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`last_comm` AS `last_comm`,`n`.`collector` AS `collector`,`n`.`connect_to` AS `connect_to`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`hv` as hv,`n`.`hvpool` as hvpool,`n`.`hvvdc` as hvvdc,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`serial` AS `serial`,sp_version as sp_version, bios_version as bios_version,`n`.`manufacturer` AS `manufacturer`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`asset_env` AS `asset_env`,`n`.`node_env` AS `node_env`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_id` = `m`.`svc_id`))) left join `nodes` `n` on((`m`.`node_id` = `n`.`node_id`))) left join `apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svc_id` = `s`.`svc_id`) and (`e`.`node_id` = `m`.`node_id`))));
 
-# 2025-01-20
+-- 2025-01-20
 
 alter table table_modified modify column id bigint NOT NULL AUTO_INCREMENT;
 
-# 2025-05-26
+-- 2025-05-26
 
-# for om3
+-- for om3
 alter table services modify column svc_frozen varchar(9);
 
-# 2025-06-05
+-- 2025-06-05
 
 alter table packages modify column id bigint NOT NULL AUTO_INCREMENT;
 
-# 2025-06-10
+-- 2025-06-10
 
 CREATE TABLE IF NOT EXISTS `hbmon` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -6962,14 +6962,14 @@ CREATE TABLE IF NOT EXISTS `hbmon_log_last` (
   KEY `k_cluster_id` (`cluster_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1216 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
-# List dup services entries
+-- List dup services entries
 SELECT MIN(`id`) AS `oldest_id`, `svcname`, `cluster_id`, COUNT(*) AS `count`
    FROM `services`
    GROUP BY `svcname`,`cluster_id`
    HAVING `count` > 1
    ORDER BY `count`;
 
-# Delete duplicate service entries
+-- Delete duplicate service entries
 DELETE FROM `services` WHERE `id` IN (
     SELECT `oldest_id`
     FROM (
@@ -6981,13 +6981,13 @@ DELETE FROM `services` WHERE `id` IN (
     ) AS duplicates
 );
 
-# Populate service_ids from existing service entries
+-- Populate service_ids from existing service entries
 INSERT INTO `service_ids` (`svcname`, `cluster_id`, `svc_id`)
     SELECT `svcname`, `cluster_id`, `svc_id`
     FROM `services` ORDER BY `updated`
 ON DUPLICATE KEY UPDATE `svc_id`= VALUES(`svc_id`);
 
-# 2025-12-01
+-- 2025-12-01
 
 CREATE TABLE `oc3_scheduler` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -7009,3 +7009,18 @@ alter table svcmon modify column mon_appstatus enum('up','down','warn','n/a','un
 alter table svcmon modify column mon_hbstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
 alter table svcmon modify column mon_availstatus enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
 
+
+-- 2025-01-22
+
+create table tags_20250122 as select * from tags;
+create table node_tags_20250122 as select * from node_tags;
+create table svc_tags_20250122 as select * from svc_tags;
+alter table tags add unique key tag_id (tag_id);
+-- verify no error adding the unique key before continuing
+alter table tags add column new_tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT UUID();
+update node_tags nt set tag_id=(select new_tag_id from tags where tags.tag_id=nt.tag_id);
+update svc_tags st set tag_id=(select new_tag_id from tags where tags.tag_id=st.tag_id);
+alter table tags drop column tag_id;
+alter table tags change new_tag_id tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci default UUID();
+alter table node_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci;
+alter table svc_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci;
