@@ -1941,13 +1941,14 @@ function form(divid, options) {
 		})
 		function trigger(e) {
 			let val = o.get_converted_val(d, input)
-			let c = o.parse_constraint(d)
 			if (val == "" && !d.Mandatory) {
 				e.removeClass("constraint_violation")
 			} else {
+				let c = o.parse_constraint(d)
+				c.ref = subst_refs(input, c.ref)
 				let ret = o.eval_constraint(c, val)
 
-				console.log("constraint:", d.Id, val , d.Constraint, "=>", ret)
+				console.log("constraint:", d.Id, val , c, "=>", ret)
 				if (!ret) {
 					e.addClass("constraint_violation")
 				} else {
@@ -1994,7 +1995,8 @@ function form(divid, options) {
 			if (c.op == "match") {
 				val = "" + val
 			} else {
-				try { c.ref = parseInt(c.ref) } catch(e) {}
+				let i = parseInt(c.ref)
+				if (!isNaN(i)) { c.ref = i }
 			}
 		}
 		else if (typeof val === "boolean") {
@@ -2007,7 +2009,6 @@ function form(divid, options) {
 				return false
 			}
 		}
-				console.log(c, val, typeof(val))
 		if (((val != "") && (val != null)) || (typeof val === "number")) {
 			if (c.op == ">") {
 				if (c.ref == "empty") {
