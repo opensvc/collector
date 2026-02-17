@@ -2577,6 +2577,7 @@ function form(divid, options) {
 			parse(d.Default)
 			return
 		}
+		parse(d.Constraint)
 		parse(d.Function)
 		parse(d.DefaultFunction)
 		let args = []
