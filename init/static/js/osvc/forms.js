@@ -1184,6 +1184,20 @@ function form(divid, options) {
 		input.val(content)
 		input.prop("acid", content)
 		input.prop("placeholder", d.Placeholder)
+
+		let debounceTimeout
+		input.on('input', function(e) {
+			input.prop("acid", input.val())
+			// Cancel the previous timer
+			if (debounceTimeout) {
+				clearTimeout(debounceTimeout);
+			}
+
+			// Trigger a "change" after a short inactivity
+			debounceTimeout = setTimeout(function() {
+				input.trigger('change')
+			}, 500)
+		})
 		return input
 	}
 	o.render_input = function(d, content) {
@@ -1614,6 +1628,7 @@ function form(divid, options) {
 		if (!(d.Function)) {
 			content2 = subst_refs(input, content)
 			input.val(content2)
+			input.prop("acid", content2)
 			return
 		}
 		if (d.Type == "checklist") {
@@ -2256,8 +2271,9 @@ function form(divid, options) {
 					input.change()
 				}
 			} else if ((!d.Type || d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
-				input.val(d.Default)
-				input.prop("acid", d.Default)
+				let val = subst_refs(input, d.Default)
+				input.val(val)
+				input.prop("acid", val)
 				input.change()
 			}
 		})
@@ -2502,7 +2518,7 @@ function form(divid, options) {
 		}
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("select,input,textarea")
-		cell.bind("change", debounce(function() {
+		cell.bind("keyup change", debounce(function() {
 			var input = table.find("[iid="+d.Id+"]").find("select,input:not([type=checkbox]),textarea,.form_input_info")
 			if (input.length == 0) {
 				return
@@ -2710,7 +2726,7 @@ function form(divid, options) {
 			}
 		}
 		var val = input.prop("acid")
-		if ((typeof(val) === "undefined") || (typeof(input.attr("autocomplete")) === "undefined")) {
+		if (typeof(val) === "undefined") {
 			val = input.val()
 		}
 		if (typeof(val) === "undefined") {
