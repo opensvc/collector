@@ -398,7 +398,7 @@ function node_properties(divid, options)
 				services_osvcpostrest("R_NODE", [o.options.node_id], "", _data, callback, error_callback)
 			},
 			"get": function(callback) {
-				var opts = ["push", "pull"]
+				var opts = ["push", "pull", "feed"]
 				callback(opts)
 			}
 		})

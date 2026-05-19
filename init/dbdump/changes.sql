@@ -7024,3 +7024,8 @@ alter table tags drop column tag_id;
 alter table tags change new_tag_id tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci default UUID();
 alter table node_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci;
 alter table svc_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci;
+
+-- 2026-05-19
+-- add 'feed' for opensvc oc3 clients
+alter table nodes modify action_type enum('push','pull','feed') DEFAULT NULL;
+

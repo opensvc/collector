@@ -2024,7 +2024,7 @@ CREATE TABLE `nodes` (
   `enclosureslot` varchar(256) DEFAULT NULL,
   `sec_zone` varchar(256) DEFAULT NULL,
   `last_boot` datetime DEFAULT NULL,
-  `action_type` enum('push','pull') DEFAULT 'pull',
+  `action_type` enum('push','pull','feed') DEFAULT 'pull',
   `os_concat` varchar(140) GENERATED ALWAYS AS (concat_ws(' ',`os_name`,`os_vendor`,`os_release`,`os_update`)) STORED,
   `connect_to` varchar(256) DEFAULT NULL,
   `tz` varchar(256) DEFAULT NULL,
