@@ -110,7 +110,7 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None,
         connect_to = get_reachable_name(node)
     q = db.services.svc_id == svc_id
     svc = db(q).select().first()
-    if action_type == "pull":
+    if action_type in ("pull", "feed"):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
@@ -148,7 +148,7 @@ def fmt_options(options):
 def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
     if connect_to is None:
         connect_to = get_reachable_name(node)
-    if action_type == "pull":
+    if action_type in ("pull", "feed"):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
@@ -159,7 +159,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
 def fmt_node_action(node, action, action_type, connect_to=None, options=None):
     if connect_to is None:
         connect_to = get_reachable_name(node)
-    if action_type == "pull":
+    if action_type in ("pull", "feed"):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
@@ -175,7 +175,7 @@ def fmt_svc_comp_action(node, svc_id, action, mode, mod, action_type, connect_to
         connect_to = get_reachable_name(node)
     q = db.services.svc_id == svc_id
     svc = db(q).select().first()
-    if action_type == "pull":
+    if action_type in ("pull", "feed"):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
