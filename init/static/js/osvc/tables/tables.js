@@ -847,6 +847,7 @@ function table_comp_modules(divid, options) {
 		'icon': "modset16",
 		'ajax_url': '/init/compliance/ajax_comp_moduleset',
 		'span': ['modset_name'],
+		'spankeys': ['modset_id'],
 		'orderby': ["modset_name", "modset_mod_name"],
 		'force_cols': ["id", "modset_id"],
 		'columns': ['id', 'modset_id', 'modset_name', 'teams_responsible', 'teams_publication', 'modset_mod_name', 'autofix', 'modset_mod_updated', 'modset_mod_author'],
