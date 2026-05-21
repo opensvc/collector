@@ -405,6 +405,16 @@ tab_properties_generic_boolean = function(options) {
 	)}
 }
 
+tab_properties_generic_candidates = function(options) {
+	let candidates = osvc.candidates.nodes[options.div.attr("id")]
+	if (typeof(candidates) === "undefined") {
+		tab_properties_generic_simple(options)
+	}
+	tab_properties_generic_autocomplete($.extend({}, options, {"get": function(callback) {
+		callback(candidates)
+	}}))
+}
+
 tab_properties_generic_simple = function(options) {
 	if (options.privileges && !services_ismemberof(options.privileges)) {
 		return
@@ -554,6 +564,8 @@ tab_properties_generic_updater = function(options) {
 
 		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb") || (updater == "duration") || (updater == "time")) {
 			tab_properties_generic_simple($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "candidates") {
+			tab_properties_generic_candidates($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "boolean") {
 			tab_properties_generic_boolean($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "org_group") {

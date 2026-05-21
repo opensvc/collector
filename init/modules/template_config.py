@@ -200,3 +200,15 @@ custom_get_handlers = {"mycorp": ["rest_get_mycorp_custohandler"]}
 custom_delete_handlers = {"mycorp": ["rest_delete_mycorp_custohandler"]}
 custom_post_handlers = {"mycorp": ["rest_post_mycorp_custohandler"]}
 custom_put_handlers = {"mycorp": ["rest_put_mycorp_custohandler"]}
+
+
+# Set custom suggestions for inputs in properties tabs.
+# To enforce a strict candidate, the admin must also change the table schema
+# because the javascript can still be workaround by using the api directly.
+candidates = {
+    "nodes": {
+        "status": ["recommended", "deprecated", "so-so"],
+        "asset_env": ["PROD", "NON-PROD"],
+        "type": ["Compute/Serveur", "Storage/Array", "Network/Switch"],
+    }
+}
