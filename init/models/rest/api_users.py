@@ -53,6 +53,7 @@ class rest_get_user_dump(rest_get_handler):
         return {
             "code_rev": _code_rev,
             "server_timezone": config_get("server_timezone", "Europe/Paris"),
+            "candidates": config_get("candidates", dict()),
             "user": rest_get_user().handler(id)["data"],
             "prefs": rest_get_user_prefs().handler(id)["data"],
             "groups": rest_get_user_groups().handler(id, limit=0)["data"],
