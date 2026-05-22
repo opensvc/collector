@@ -409,6 +409,7 @@ tab_properties_generic_candidates = function(options) {
 	let candidates = osvc.candidates.nodes[options.div.attr("id")]
 	if (typeof(candidates) === "undefined") {
 		tab_properties_generic_simple(options)
+		return
 	}
 	tab_properties_generic_autocomplete($.extend({}, options, {"get": function(callback) {
 		callback(candidates)
