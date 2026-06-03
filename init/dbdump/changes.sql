@@ -7029,3 +7029,7 @@ alter table svc_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE a
 -- add 'feed' for opensvc oc3 clients
 alter table nodes modify action_type enum('push','pull','feed') DEFAULT NULL;
 
+-- 2026-06-03
+ALTER TABLE svcactions ADD COLUMN command VARCHAR(256) DEFAULT "";
+ALTER TABLE svcactions ADD COLUMN origin VARCHAR(128) DEFAULT "";
+

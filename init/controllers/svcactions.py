@@ -12,6 +12,8 @@ class table_actions(HtmlTable):
                      'rid',
                      'subset',
                      'action',
+                     'command',
+                     'origin',
                      'status',
                      'begin',
                      'end',
@@ -60,6 +62,14 @@ class table_actions(HtmlTable):
             'action': HtmlTableColumn(
                 table = 'svcactions',
                 field='action',
+            ),
+            'command': HtmlTableColumn(
+                table='svcactions',
+                field='command',
+            ),
+            'origin': HtmlTableColumn(
+                table='svcactions',
+                field='origin',
             ),
             'status': HtmlTableColumn(
                 table = 'svcactions',
