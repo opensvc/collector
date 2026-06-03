@@ -1922,6 +1922,7 @@
 		"Net VLAN id": "Réseau, id de VLAN",
 		"Net Ip range begin": "Réseau, début de plage ip",
 		"Net Ip range end": "Réseau, fin de plage ip",
+		"Origin": "Origine",
 		"Hba Id": "Id de hba",
 		"Target Id": "Id de target",
 		"Array Name": "Nom de la baie",
