@@ -1597,6 +1597,11 @@ colprops = {
 		"img": "compstatus",
 		"title": "Ok"
 	},
+	"origin": {
+		"_class": "action",
+		"img": "action16",
+		"title": "Origin"
+	},
 	"os_arch": {
 		"img": "os16",
 		"title": "OS arch"
