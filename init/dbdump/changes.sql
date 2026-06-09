@@ -7037,3 +7037,5 @@ ALTER TABLE svcactions ADD COLUMN origin VARCHAR(128) DEFAULT "";
 -- 2026-06-05
 
 alter table resinfo modify `res_key` varchar(255) DEFAULT '';
+alter table svcactions modify `status_log` mediumtext CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL;
+

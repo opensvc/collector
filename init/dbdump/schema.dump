@@ -3145,7 +3145,7 @@ CREATE TABLE `svcactions` (
   `begin` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `end` datetime DEFAULT NULL,
   `hostid` varchar(30) DEFAULT NULL,
-  `status_log` text CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `status_log` mediumtext CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `pid` varchar(32) DEFAULT NULL,
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ack` tinyint(4) DEFAULT NULL,
@@ -5556,7 +5556,7 @@ USE `pdns`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-05 17:49:26
+-- Dump completed on 2026-06-09 16:47:32
 GRANT SELECT ON opensvc.fset_cache TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.checks_defaults TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.stor_array_proxy TO readonly@127.0.0.1;
