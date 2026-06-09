@@ -7026,10 +7026,16 @@ alter table node_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE 
 alter table svc_tags modify column tag_id char(36) CHARACTER SET ascii COLLATE ascii_general_ci;
 
 -- 2026-05-19
+
 -- add 'feed' for opensvc oc3 clients
 alter table nodes modify action_type enum('push','pull','feed') DEFAULT NULL;
 
 -- 2026-06-03
 ALTER TABLE svcactions ADD COLUMN command VARCHAR(256) DEFAULT "";
 ALTER TABLE svcactions ADD COLUMN origin VARCHAR(128) DEFAULT "";
+
+-- 2026-06-05
+
+alter table resinfo modify `res_key` varchar(255) DEFAULT '';
+alter table svcactions modify `status_log` mediumtext CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL;
 
