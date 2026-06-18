@@ -14,6 +14,7 @@ class table_actions(HtmlTable):
                      'action',
                      'command',
                      'origin',
+                     'log_type',
                      'status',
                      'begin',
                      'end',
@@ -70,6 +71,10 @@ class table_actions(HtmlTable):
             'origin': HtmlTableColumn(
                 table='svcactions',
                 field='origin',
+            ),
+            'log_type': HtmlTableColumn(
+                table='svcactions',
+                field='log_type',
             ),
             'status': HtmlTableColumn(
                 table = 'svcactions',

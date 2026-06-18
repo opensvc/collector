@@ -269,6 +269,7 @@ db.define_table('svcactions',
     Field('node_id', 'string', length=36),
     Field('command', 'string', length=256),
     Field('origin', 'string', length=128),
+    Field('log_type', 'string', length=30),  # used to differentiate 'status' (for begin or end actions), vs 'line' for log line
     Field('hostid'),
     Field('ack'),
     Field('acked_by'),
