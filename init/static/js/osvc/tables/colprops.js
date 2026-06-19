@@ -1204,6 +1204,11 @@ colprops = {
 		"img": "guy16",
 		"title": "User"
 	},
+	"log_type": {
+		"_class": "action",
+		"img": "action16",
+		"title": "Type"
+	},
 	"mac": {
 		"img": "net16",
 		"title": "Mac Address"
