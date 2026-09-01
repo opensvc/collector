@@ -1663,6 +1663,7 @@
 'Ruleset attachment differences amongst services': 'Ruleset attachment differences amongst services',
 'Ruleset attachment differences in cluster': "Différences d'attachement de jeux de règles dans le cluster",
 'Ruleset attachment differences in encapsulated cluster': 'Ruleset attachment differences in encapsulated cluster',
+'Ruleset filterset relation added: %(r)s': 'Ruleset filterset relation added: %(r)s',
 'Ruleset id': 'Id de jeu de règles',
 'Ruleset md5': 'Md5 du jeu de règles',
 'Ruleset name': 'Nom du jeu de règles',
