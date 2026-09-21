@@ -1647,6 +1647,7 @@
 	},
 	"col": {
 		"Cluster Id": "Cluster Id",
+		"Cluster Name": "Cluster Name",
 		"Notifications": "Notifications",
 		"Snooze till": "Snooze till",
 		"Path": "Path",
