@@ -93,8 +93,10 @@ import sys
 import optparse
 import urllib
 import time
+import os
 
 listeners, names, tokens = {}, {}, {}
+verbose = False
 
 
 def websocket_send(url, message, hmac_key=None, group='default'):
@@ -117,7 +119,8 @@ class PostHandler(tornado.web.RequestHandler):
         if 'message' in self.request.arguments:
             message = self.request.arguments['message'][0]
             group = self.request.arguments.get('group', ['default'])[0]
-            print '%s:MESSAGE to %s:%s' % (time.time(), group, message)
+            if verbose:
+                print '%s:MESSAGE to %s:%s' % (time.time(), group, message)
             if hmac_key:
                 signature = self.request.arguments['signature'][0]
                 if not hmac.new(hmac_key, message).hexdigest() == signature:
@@ -222,8 +225,15 @@ if __name__ == "__main__":
                       default=False,
                       dest='certfile',
                       help='require ssl certfile full path')
+    parser.add_option('-v',
+                      '--verbose',
+                      action='store_true',
+                      default=os.environ.get('COLLECTOR_VERBOSE', '').lower() in ('1', 'true', 'yes'),
+                      dest='verbose',
+                      help='print each posted message (default from COLLECTOR_VERBOSE)')
     (options, args) = parser.parse_args()
     hmac_key = options.hmac_key
+    verbose = options.verbose
     DistributeHandler.tokens = options.tokens
     urls = [
         (r'/', PostHandler),
