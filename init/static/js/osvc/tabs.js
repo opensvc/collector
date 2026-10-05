@@ -406,7 +406,10 @@ tab_properties_generic_boolean = function(options) {
 }
 
 tab_properties_generic_candidates = function(options) {
-	let candidates = osvc.candidates.nodes[options.div.attr("id")]
+	// A collector whose config.py sets no candidates, or none for the nodes,
+	// offers no choices: the property is edited as a string.
+	let nodes = (osvc.candidates || {}).nodes || {}
+	let candidates = nodes[options.div.attr("id")]
 	if (typeof(candidates) === "undefined") {
 		tab_properties_generic_simple(options)
 		return
