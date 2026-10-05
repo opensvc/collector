@@ -12,6 +12,18 @@ from applications.init.modules import timeseries
 
 log = logging.getLogger("web2py.app.feed")
 
+# Set COLLECTOR_VERBOSE=1 in the container environment to print the
+# per-ping and per-change traces. Printed on stdout, not via logging,
+# because the docker journald driver flags stderr lines as errors.
+VERBOSE = os.environ.get("COLLECTOR_VERBOSE", "").lower() in ("1", "true", "yes")
+
+def vprint(*args):
+    if not VERBOSE:
+        return
+    for arg in args:
+        print arg,
+    print
+
 def send_sysreport_delete(deleted, sysreport_d, node_id):
     if len(deleted) == 0:
         return False
@@ -5045,7 +5057,7 @@ def ping_svc(svc, now):
     result = db(q).update(svc_status_updated=now)
     if result:
         changed.add("services")
-        print " ping service", svc.svcname, svc.svc_id
+        vprint(" ping service", svc.svcname, svc.svc_id)
     else:
         return changed
     q = db.services_log_last.svc_id == svc.svc_id
@@ -5122,7 +5134,7 @@ def ping_instance(svc, peer, now):
     q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_updated=now)
     if result:
-        print "  ping service", svc.svcname, svc.svc_id, "instance on node", peer.nodename
+        vprint("  ping service", svc.svcname, svc.svc_id, "instance on node", peer.nodename)
         changed.add("svcmon")
     else:
         return changed
@@ -5178,7 +5190,7 @@ def merge_daemon_ping(node_id):
     # daemon status data. This may happen when we delete db services in database but we found
     # service in latest daemon status data (R_DAEMON_STATUS_HASH)
     daemon_status_required = False
-    print "daemon ping", node_id
+    vprint("daemon ping", node_id)
     changed = set()
     now = datetime.datetime.now()
     data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
@@ -5250,7 +5262,7 @@ def merge_daemon_ping(node_id):
             continue
         changed |= ping_svc(svc, now)
 
-    print " tables changed:", ",".join(changed)
+    vprint(" tables changed:", ",".join(changed))
     for table_name in changed:
         table_modified(table_name)
         ws_send(table_name+'_change')
@@ -5764,7 +5776,7 @@ def merge_daemon_status(node_id):
             if counter:
                 changed.add(t)
 
-    print " tables changed:", ",".join(changed)
+    vprint(" tables changed:", ",".join(changed))
     for table_name in changed:
         table_modified(table_name)
         ws_send(table_name+'_change')
