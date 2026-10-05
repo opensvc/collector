@@ -5683,7 +5683,7 @@ def merge_daemon_status(node_id):
         if changes is not None and svcname not in changes and not svc.svc_availstatus == "undef":
             ping_svc(svc, now)
         else:
-            print " update service", svcname, svc.svc_id
+            vprint(" update service", svcname, svc.svc_id)
             changed |= svc_log_update(svc.svc_id, sdata.get("avail", "n/a"), deferred=True)
             changed |= update_service(svc, sdata)
 
@@ -5706,7 +5706,7 @@ def merge_daemon_status(node_id):
                 continue
 
             monstatus.add(idata.get("monitor", {}).get("status"))
-            print "  update service", svcname, svc.svc_id, "instance on node", nodename
+            vprint("  update service", svcname, svc.svc_id, "instance on node", nodename)
             encap = idata.get("encap")
             if isinstance(encap, bool) or encap is None or len(encap) == 0:
                 _node_id, vmname, vmtype = translate_encap_nodename(svc.svc_id, peer.node_id)
