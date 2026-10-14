@@ -1768,7 +1768,7 @@ function table_nodes(divid, options) {
 		'spankeys': ['node_id'],
 		'keys': ['node_id'],
 		'force_cols': ['node_id', 'os_name'],
-		'columns': [].concat(['node_id', 'cluster_id', 'nodename'], objcols.node, ["updated", "app_domain", "app_team_ops"]),
+		'columns': [].concat(['node_id', 'cluster_id', 'cluster_name', 'nodename'], objcols.node, ["updated", "app_domain", "app_team_ops"]),
 		'default_columns': [
 			"cpu_cores",
 			"cpu_dies",

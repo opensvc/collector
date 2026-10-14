@@ -25,9 +25,14 @@ class table_nodes(HtmlTable):
                      field='app_team_ops',
                      table='apps',
                     ),
+            'cluster_name': HtmlTableColumn(
+                     field='cluster_name',
+                     table='clusters',
+                    ),
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
         self.cols.insert(self.cols.index('app')+1, 'app_domain')
+        self.cols.insert(self.cols.index('cluster_id')+1, 'cluster_name')
         self.ajax_col_values = 'ajax_nodes_col_values'
 
 @auth.requires_login()
@@ -80,15 +85,15 @@ def ajax_nodes_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.nodes.id > 0
-    j = db.apps.app == db.nodes.app
-    l = db.apps.on(j)
+    l1 = db.apps.on(db.apps.app == db.nodes.app)
+    l2 = db.clusters.on(db.clusters.cluster_id==db.nodes.cluster_id)
     q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters_id(q, db.nodes.node_id, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o,
                                  db.nodes.id.count(),
-                                 left=l,
+                                 left=(l1, l2),
                                  groupby=o,
                                  orderby=~db.nodes.id.count())
     return t.col_values_cloud_grouped(col)
@@ -100,8 +105,8 @@ def ajax_nodes():
 
     o = t.get_orderby(default=db.nodes.nodename)
     q = db.nodes.id>0
-    j = db.apps.app == db.nodes.app
-    l = db.apps.on(j)
+    l1 = db.apps.on(db.apps.app == db.nodes.app)
+    l2 = db.clusters.on(db.clusters.cluster_id==db.nodes.cluster_id)
     q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters_id(q, db.nodes.node_id)
     for f in t.cols:
@@ -111,17 +116,17 @@ def ajax_nodes():
         t.csv_q = q
         t.csv_orderby = o
         t.csv_limit = 10000
-        t.csv_left = l
+        t.csv_left = (l1, l2)
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
-        t.csv_left = l
+        t.csv_left = (l1, l2)
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.nodes.id.count(), left=l).first()(db.nodes.id.count())
+        n = db(q).select(db.nodes.id.count(), left=(l1, l2)).first()(db.nodes.id.count())
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=(l1, l2))
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
