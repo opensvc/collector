@@ -1955,6 +1955,7 @@
 'Test request': 'Tester la requête',
 'testing ip ...': "test de l'ip en cours ...",
 "The 'compliance fix' output needs a valid workflow": "L'Output 'compliance fix' nécessite un workflow valide",
+"The 'username' property is updatable only with a collector setup for ldap authentication": "The 'username' property is updatable only with a collector setup for ldap authentication",
 'The file produced by : "symaccess -sid <SymmID> -file <BackupFileName> backup"': 'Le fichier produit par : "symaccess -sid <SymmID> -file <BackupFileName> backup"',
 'This email already has an account': "Cette adresse email dispose déjà d'un compte",
 'This node has not reported its root password (opensvc agent feature not activated or agent too old)': "Ce noeud n'a pas remonté son mot de passe root (la fonctionnalité de l'agent n'est pas active ou l'agent est obsolète)",
