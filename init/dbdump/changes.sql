@@ -7041,3 +7041,6 @@ alter table svcactions modify `status_log` mediumtext CHARACTER SET utf8 COLLATE
 
 -- 2026-06-18
 ALTER TABLE svcactions ADD COLUMN log_type enum('status', '') DEFAULT "";
+
+-- 2026-10-26  collision task_rq_svcmon et task_dash_min
+ALTER TABLE svcmon ADD KEY k_mon_updated (mon_updated);
