@@ -5416,6 +5416,25 @@ def merge_daemon_status(node_id):
         changes = []
     rconn.hdel(R_DAEMON_STATUS_CHANGES_HASH, node_id)
     print "daemon status", node_id, changes
+    try:
+        _merge_daemon_status(node_id, changes)
+    except Exception:
+        # The db transaction is rolled back by the caller. Restore the
+        # changes so a retry or the next daemon status push applies them,
+        # instead of only pinging the instances.
+        restore_daemon_status_changes(node_id, changes)
+        raise
+
+def restore_daemon_status_changes(node_id, changes):
+    if not changes:
+        return
+    changes = set(changes)
+    pending_changes = rconn.hget(R_DAEMON_STATUS_CHANGES_HASH, node_id)
+    if pending_changes:
+        changes |= set(json.loads(pending_changes))
+    rconn.hset(R_DAEMON_STATUS_CHANGES_HASH, node_id, json.dumps(list(changes)))
+
+def _merge_daemon_status(node_id, changes):
     now = datetime.datetime.now().replace(microsecond=0)
     raw_data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
     changed = set()

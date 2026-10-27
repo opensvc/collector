@@ -22,6 +22,36 @@ def task_rq(rqueues, getfn, app="feed"):
             db.executesql("select 1")
             log.info("db reconnected")
 
+    def is_transient_db_error(exc):
+        # 1205: lock wait timeout, 1213: deadlock
+        try:
+            return exc.args[0] in (1205, 1213)
+        except (AttributeError, IndexError, TypeError):
+            return False
+
+    def rollback():
+        try:
+            db.rollback()
+        except Exception as exc:
+            log.warning("db rollback: %s", exc)
+
+    def call(fn, args, kwargs):
+        # A deadlock or lock wait timeout leaves nothing committed after the
+        # rollback, so the task can be run again.
+        attempt = 0
+        while True:
+            try:
+                fn(*args, **kwargs)
+                db.commit()
+                return
+            except Exception as exc:
+                rollback()
+                attempt += 1
+                if attempt > 3 or not is_transient_db_error(exc):
+                    raise
+                log.warning("%s: retry %d/3", exc, attempt)
+                time.sleep(0.2 * attempt)
+
     l = None
     while True:
         try:
@@ -56,8 +86,7 @@ def task_rq(rqueues, getfn, app="feed"):
             else:
                 log.error("invalid entry: %s", str(data))
                 continue
-            fn(*args, **kwargs)
-            db.commit()
+            call(fn, args, kwargs)
         except KeyboardInterrupt:
             log.info("keyboard interrupt")
             break
