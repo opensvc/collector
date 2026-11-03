@@ -5691,8 +5691,8 @@ def _merge_daemon_status(node_id, changes):
         for peer_node_id in get_peer_node_ids(svcname, data, node_ids):
             try:
                 svc = node_svc(peer_node_id, svcname, app=app)
-            except:
-                # service dups
+            except Exception as exc:
+                print(" skip service %s on node %s: %s" % (svcname, peer_node_id, exc))
                 continue
             if svc:
                 break

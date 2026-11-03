@@ -1,3 +1,4 @@
+import datetime
 def node_app_id(node_id=None):
     if node_id is None:
         node_id = auth.user.node_id
@@ -17,6 +18,40 @@ def node_cluster_id(node_id):
         return ""
 
 
+# (svcname, cluster_id) pairs already reported as duplicated by this process,
+# so the warning is logged once per pair and not on every feed message.
+_svc_dups_warned = set()
+
+def _svc_dups_sort_key(row):
+    """
+    Order duplicated services rows: the most recently updated status first,
+    then the most recently updated row, then the oldest row (lowest id).
+    """
+    return (
+        row.svc_status_updated or datetime.datetime.min,
+        row.updated or datetime.datetime.min,
+        -(row.id or 0),
+    )
+
+def _svc_dups_pick(rows, svcname, node_id, cluster_id, where):
+    """
+    Several services rows match the same name in the same cluster: pick one
+    deterministically and warn, rather than fail the feed and silently lose
+    the service status and actions until an operator notices.
+    """
+    rows = sorted(rows, key=_svc_dups_sort_key, reverse=True)
+    picked = rows[0]
+    key = (svcname, cluster_id)
+    msg = "duplicate services named '%s' in the %s %s: %s. Using %s. Delete the unused rows." % (
+        svcname, where, cluster_id or node_id,
+        ', '.join([r.svc_id for r in rows]), picked.svc_id,
+    )
+    print(" " + msg)
+    if key not in _svc_dups_warned:
+        _svc_dups_warned.add(key)
+        _log('service.duplicate', msg, dict(), node_id=node_id, svc_id=picked.svc_id, user="feed", level="warning")
+    return picked
+
 def search_node_svc(node_id, svcname, responsibles, cluster_id):
     q = db.services.svcname == svcname
     q &= db.services.cluster_id == cluster_id
@@ -24,21 +59,19 @@ def search_node_svc(node_id, svcname, responsibles, cluster_id):
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id.belongs(responsibles)
     rows = db(q).select(
+        db.services.id,
         db.services.svcname,
         db.services.svc_id,
         db.services.svc_app,
         db.services.svc_env,
         db.services.svc_availstatus,
         db.services.svc_status,
+        db.services.svc_status_updated,
+        db.services.updated,
         groupby=db.services.svc_id
     )
     if len(rows) > 1:
-        raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster %(cluster_id)s responsibility zone: %(svc_ids)s" % dict(
-            svcname=svcname,
-            cluster_id=cluster_id,
-            node_id=node_id,
-            svc_ids=', '.join([r.svc_id for r in rows]),
-        ))
+        return _svc_dups_pick(rows, svcname, node_id, cluster_id, "cluster")
 
     if len(rows) == 1:
         return rows.first()
@@ -53,20 +86,19 @@ def search_node_svc(node_id, svcname, responsibles, cluster_id):
     q &= db.apps_responsibles.group_id.belongs(responsibles)
 
     rows = db(q).select(
+        db.services.id,
         db.services.svcname,
         db.services.svc_id,
         db.services.svc_app,
         db.services.svc_env,
         db.services.svc_availstatus,
         db.services.svc_status,
+        db.services.svc_status_updated,
+        db.services.updated,
         groupby=db.services.svc_id,
     )
     if len(rows) > 1:
-        raise Exception("multiple services found matching the service name '%(svcname)s' in the encap node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
-            svcname=svcname,
-            node_id=node_id,
-            svc_ids=', '.join([r.svc_id for r in rows]),
-        ))
+        return _svc_dups_pick(rows, svcname, node_id, "", "encap node")
 
     if len(rows) == 1:
         return rows.first()
@@ -207,8 +239,18 @@ def _create_svc(node_id, cluster_id, svcname, app=None, responsibles=None):
          svc_id=svc_id,
          user="feed",
          level="info")
-    db.services.insert(**data)
-    db.commit()
+    try:
+        db.services.insert(**data)
+        db.commit()
+    except Exception as exc:
+        # Another feed worker may have created the service meanwhile: the
+        # unique key on (cluster_id, svcname) rejects the second insert.
+        # Use the existing row rather than fail the feed message.
+        db.rollback()
+        found = search_node_svc(node_id, svcname, responsibles, cluster_id)
+        if found:
+            return found
+        raise
     return Storage(data)
 
 def node_responsibles(node_id):

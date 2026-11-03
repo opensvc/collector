@@ -7049,3 +7049,15 @@ ALTER TABLE svcmon ADD KEY k_mon_updated (mon_updated);
 ALTER TABLE services ADD KEY k_svc_snooze_till (svc_snooze_till);
 ALTER TABLE nodes ADD KEY k_snooze_till (snooze_till);
 ALTER TABLE services ADD KEY k_updated (updated);
+
+-- 2026-11-03  duplicate services (same svcname in the same cluster)
+-- The feed used to fail on a duplicated service and silently drop its
+-- status and actions. It now picks one row and logs a 'service.duplicate'
+-- warning. List the duplicates, delete the unused rows (no instance, no
+-- history) with the API:
+--   curl -u <email> -X DELETE https://<collector>/init/rest/api/services/<svc_id>
+-- then add the unique key so no duplicate can be created again.
+-- Rows with an empty cluster_id (nodes without cluster) count as the same
+-- cluster: set cluster_id to NULL on those if they share a name.
+SELECT svcname, cluster_id, COUNT(*) n, GROUP_CONCAT(svc_id) svc_ids FROM services GROUP BY svcname, cluster_id HAVING n > 1;
+ALTER TABLE services ADD UNIQUE KEY uk_cluster_svcname (cluster_id, svcname);
