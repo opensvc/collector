@@ -7044,3 +7044,8 @@ ALTER TABLE svcactions ADD COLUMN log_type enum('status', '') DEFAULT "";
 
 -- 2026-10-26  collision task_rq_svcmon et task_dash_min
 ALTER TABLE svcmon ADD KEY k_mon_updated (mon_updated);
+
+-- 2026-10-27  collision task_rq_svcmon et alertd janitor_snooze / task_dash_hourly
+ALTER TABLE services ADD KEY k_svc_snooze_till (svc_snooze_till);
+ALTER TABLE nodes ADD KEY k_snooze_till (snooze_till);
+ALTER TABLE services ADD KEY k_updated (updated);
