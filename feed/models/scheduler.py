@@ -5279,6 +5279,24 @@ def get_peer_node_ids(svcname, data, node_ids):
             peer_ids.append(peer.node_id)
     return peer_ids
 
+def fmt_res_flag(value):
+    """
+    Format a resource boolean flag (monitor, optional, disable) for the
+    resmon.res_monitor, res_optional and res_disable varchar(1) columns.
+
+    Agents send json booleans. Passing a python bool to pydal stores
+    str(True) ("True"), which mariadb truncates to "T" with a
+    "Data truncated for column" warning. Do the conversion explicitly.
+    """
+    if value is None:
+        return None
+    if isinstance(value, basestring):
+        value = value.strip().lower()
+        if value in ("", "undef", "none", "null"):
+            return None
+        return "T" if value in ("t", "true", "1", "yes", "y") else "F"
+    return "T" if value else "F"
+
 def _push_status(svcname, data, auth):
         data = json.loads(data)
         encap = data.get("encap", {})
@@ -5321,9 +5339,9 @@ def _push_status(svcname, data, auth):
                 rdata.get("type", ""),
                 rdata.get("label", ""),
                 rdata.get("status", "undef"),
-                rdata.get("monitor", "undef"),
-                rdata.get("optional", "undef"),
-                rdata.get("disable", "undef"),
+                fmt_res_flag(rdata.get("monitor")),
+                fmt_res_flag(rdata.get("optional")),
+                fmt_res_flag(rdata.get("disable")),
                 now,
                 "\n".join(rdata.get("log", [])),
             ]
@@ -5623,9 +5641,9 @@ def _merge_daemon_status(node_id, changes):
                 res_status=rdata["status"],
                 res_type=rdata["type"],
                 res_log=res_log,
-                res_optional=rdata.get("optional", False),
-                res_disable=rdata.get("disable", False),
-                res_monitor=rdata.get("monitor", False),
+                res_optional=fmt_res_flag(rdata.get("optional", False)),
+                res_disable=fmt_res_flag(rdata.get("disable", False)),
+                res_monitor=fmt_res_flag(rdata.get("monitor", False)),
                 res_desc=rdata["label"],
                 updated=now,
             )
