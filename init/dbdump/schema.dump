@@ -59,29 +59,6 @@ CREATE TABLE `action_queue` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `alerts`
---
-
-DROP TABLE IF EXISTS `alerts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `alerts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sent_at` datetime DEFAULT NULL,
-  `sent_to` text NOT NULL,
-  `body` mediumtext DEFAULT NULL,
-  `subject` varchar(150) NOT NULL,
-  `send_at` datetime NOT NULL,
-  `created_at` datetime NOT NULL,
-  `action_id` int(11) DEFAULT NULL,
-  `app_id` int(11) DEFAULT NULL,
-  `domain` varchar(100) DEFAULT NULL,
-  `action_ids` varchar(1000) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=13833 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `alerts_sent`
 --
 
@@ -5574,7 +5551,6 @@ GRANT SELECT ON opensvc.feed_queue_stats TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.scheduler_worker TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.checks_settings TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.node_hba TO readonly@127.0.0.1;
-GRANT SELECT ON opensvc.alerts TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.comp_moduleset_ruleset TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.saves TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.comp_node_moduleset TO readonly@127.0.0.1;
